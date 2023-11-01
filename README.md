@@ -1,18 +1,14 @@
-# dili-web
+# DILI-VIDEO-WEB
 
 这是一个视频播放平台前端
 
-## Recommended IDE Setup
+## 技术栈
 
-Option1: [WebStorm](https://www.jetbrains.com/webstorm/).
-
-Option2: [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we add a `shims-vue.d.ts` file to tell TypeScript what to do.
-
-Also, we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+- Vue.js 3: [https://v3.vuejs.org/](https://v3.vuejs.org/) 响应式前端框架
+- Pinia: [https://pinia.vuejs.org/](https://pinia.vuejs.org/) vue状态管理
+- TypeScript: [https://www.typescriptlang.org/](https://www.typescriptlang.org/) JS类型超集
+- SCSS/SASS: [https://sass-lang.com/](https://sass-lang.com/) CSS预处理器
+- Vite: [https://vitejs.dev/](https://vitejs.dev/) 构建工具&开发服务器
 
 ## 开始使用
 
@@ -65,3 +61,14 @@ $ pnpm build
 
 ```
 
+## Recommended IDE Setup
+
+Option1: [WebStorm](https://www.jetbrains.com/webstorm/).
+
+Option2: [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+
+## Type Support for `.vue` Imports in TS
+
+TypeScript cannot handle type information for `.vue` imports by default, so we add a `shims-vue.d.ts` file to tell TypeScript what to do.
+
+Also, we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
