@@ -1,52 +1,67 @@
 # dili-web
 
-This template should help get you started developing with Vue 3 in Vite.
+这是一个视频播放平台前端
 
 ## Recommended IDE Setup
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+Option1: [WebStorm](https://www.jetbrains.com/webstorm/).
+
+Option2: [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
 
 ## Type Support for `.vue` Imports in TS
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+TypeScript cannot handle type information for `.vue` imports by default, so we add a `shims-vue.d.ts` file to tell TypeScript what to do.
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+Also, we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
 
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
+## 开始使用
 
 ```sh
-pnpm install
+# 安装依赖
+$ pnpm install
+
+# 启动开发服务器
+$ pnpm dev
+
+# 编译产物
+$ pnpm build
 ```
 
-### Compile and Hot-Reload for Development
+## 项目结构
 
-```sh
-pnpm dev
+```text
+.
+|-- src
+    |-- App.vue # 根组件
+    |-- main.ts # 入口文件
+    |-- shims-vue.d.ts # Vue 模块声明
+    |-- assets # 静态资源
+    |-- components # 组件
+    |   |-- component_name # 组件名
+    |       |-- index.vue # 组件
+    |       |-- index.ts # 组件导出
+    |       
+    |-- commands # 自定义命令
+    |-- pages # 页面
+    |   |-- common # 公共页面
+    |   |   |-- page_name # 页面名
+    |   |       |-- index.vue # 页面
+    |
+    |   |-- video # 视频播放相关页面
+    |   |   |-- page_name # 页面名
+    |   |       |-- index.vue # 页面
+    |
+    |   |-- personal # 个人中心相关页面
+    |   |   |-- page_name # 页面名
+    |   |       |-- index.vue # 页面
+    |
+    |   |-- platform # 创作中心相关页面
+    |       |-- page_name # 页面名
+    |           |-- index.vue # 页面
+    |
+    |-- router # 路由
+    |-- stores # Pinia 状态管理
+        |-- useSomeStore.ts # 某个 store
+
 ```
 
-### Type-Check, Compile and Minify for Production
-
-```sh
-pnpm build
-```
-
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
-pnpm test:unit
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-pnpm lint
-```
