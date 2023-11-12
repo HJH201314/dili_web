@@ -1,38 +1,22 @@
-<template>
-  <header>
-    <ul class="left-entry">
-      <li v-for="entry in leftEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
-        <span>{{ entry.name }}</span>
-      </li>
-    </ul>
-    <div class="center-search-container">
-      <div class="center-search-bar">
-        <form>
-          <input v-model="form.searchVal" @change="e => form.searchVal = e.target.value" type="text" id="nav-search-input" placeholder="搜索" />
-          <Search />
-        </form>
-        <div id="search-panel">
-
-        </div>
-      </div>
-    </div>
-    <ul class="right-entry">
-      <li v-for="entry in rightEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
-        <span>{{ entry.name }}</span>
-      </li>
-    </ul>
-    <Button @click="e => handleEntryClick(e, {key: 'upload', name: '投稿', href: '/upload'})">
-      投稿
-    </Button>
-  </header>
-</template>
 
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { Search } from "@icon-park/vue-next";
 import { useRouter } from "vue-router";
 import showToast from "@/components/toast/toast";
+import useUserStore from "@/stores/useUserStore";
 
+const userStore = useUserStore();
+
+/* 页面挂载时初始化 */
+onMounted(() => {
+  /* 初始化搜索框 */
+  searchContainer.value?.addEventListener('focusout', (e) => {
+    isSearching.value = false;
+  });
+});
+
+/* 定义入口项属性 */
 type Entry = {
   key: string;
   name: string;
@@ -40,6 +24,7 @@ type Entry = {
   href?: string;
   onClick?: () => void;
 };
+/* 左侧列表 */
 const leftEntries = ref<Entry[]>([
   {
     key: "home",
@@ -66,7 +51,7 @@ const leftEntries = ref<Entry[]>([
     href: "/game",
   },
 ]);
-
+/* 右侧列表 */
 const rightEntries = ref<Entry[]>([
   {
     key: "vip",
@@ -117,10 +102,51 @@ function handleEntryClick(e: Event, entry: Entry) {
   showToast({text: entry.name, position: 'top'});
 }
 
+function handleLoginClick() {
+  userStore.login();
+}
+
+const isSearching = ref(false);
+const searchContainer = ref<HTMLDivElement>();
 const form = reactive({
   searchVal: "",
 });
 </script>
+
+<template>
+  <header>
+    <ul class="left-entry">
+      <li v-for="entry in leftEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
+        <span>{{ entry.name }}</span>
+      </li>
+    </ul>
+    <div class="center-search-container" ref="searchContainer">
+      <div class="center-search-bar" :class="{'center-search-bar-focus': isSearching}" @focusin="() => isSearching = true">
+        <form :class="{'focus': isSearching}">
+          <input v-model="form.searchVal" @change="e => form.searchVal = e.target.value" type="text" id="nav-search-input" placeholder="搜点什么呢...?" />
+          <Search class="search" size="1.25rem" />
+        </form>
+        <Transition name="opacity-circ">
+          <div v-if="isSearching" class="center-search-panel">
+            123<br>123<br>123<br>123<br>123<br>123<br>123<br>123<br>123<br>123<br>
+          </div>
+        </Transition>
+      </div>
+    </div>
+    <div id="nav-user-container">
+      <span v-if="!userStore.isLogin" @click="handleLoginClick">登录</span>
+      <img id="user-avatar" v-if="userStore.isLogin" :src="userStore.avatar ?? '/favicon.ico'"  alt="avatar"/>
+    </div>
+    <ul class="right-entry">
+      <li v-for="entry in rightEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
+        <span>{{ entry.name }}</span>
+      </li>
+    </ul>
+    <Button id="upload-button" type="default" @click="e => handleEntryClick(e, {key: 'upload', name: '投稿', href: '/upload'})">
+      投稿
+    </Button>
+  </header>
+</template>
 
 <style scoped lang="scss">
 @import "@/assets/main";
@@ -130,7 +156,7 @@ header {
   top: 0;
   left: 0;
   right: 0;
-  height: 3rem;
+  height: 3.5rem;
   padding: 0 1rem;
   display: flex;
   align-items: center;
@@ -150,7 +176,7 @@ header {
   li {
     height: 100%;
     cursor: pointer;
-    padding: .75rem 1rem;
+    padding: 1rem;
     box-sizing: border-box;
     transition: background-color .2s $ease-out-circ;
     &:hover {
@@ -171,39 +197,99 @@ header {
   flex: 1;
   &-container {
     flex: 1;
-
+    display: flex;
+    justify-content: center;
   }
   &-bar {
-    height: 1.75rem;
+    flex: 1;
+    height: 2.5rem;
     min-width: 180px;
     max-width: 500px;
     position: relative;
-    margin: 0 auto;
-    padding: .25rem .5rem;
     background: $color-grey;
     border-radius: .5rem;
     transition: background-color .2s $ease-out-circ;
-    &:focus-within {
-      background: $color-active;
-    }
+    //&:focus-within {
+    //  background: $color-active;
+    //}
 
     form {
       height: 100%;
+      padding: 0 .25rem;
       border-radius: .5rem;
       display: flex;
       flex-direction: row;
       align-items: center;
+      justify-content: space-around;
+      gap: .5rem;
+      background-color: $color-grey;
+      @extend %transition-all-circ;
+      &.focus {
+        background: white;
+        border-radius: .5rem .5rem 0 0;
+        border-left: solid 1px $color-grey-400;
+        border-right: solid 1px $color-grey-400;
+        border-top: solid 1px $color-grey-400;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.08);
+      }
       input {
         flex: 1;
+        line-height: 2rem;
+        border-radius: .25rem;
         width: 100%;
         outline: none;
         border: none;
-        background-color: transparent;
+        background: $color-grey;
+        padding: 0 .5rem;
       }
+      & .search {
+        cursor: pointer;
+        padding: .4rem;
+        margin-right: .25rem;
+        border-radius: .5rem;
+        @extend %click-able;
+      }
+    }
+  }
+
+  &-panel {
+    @extend %transition-all-circ;
+    background: white;
+    border-radius: 0 0 .5rem .5rem;
+    border-left: solid 1px $color-grey-400;
+    border-right: solid 1px $color-grey-400;
+    border-bottom: solid 1px $color-grey-400;
+    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.08);
+  }
+}
+#nav-user {
+  &-avatar {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    transition: transform .2s $ease-out-circ;
+    &:hover {
+      transform: rotate(-360deg);
     }
   }
 }
 .right-entry {
-
+}
+#upload-button {
+  border: none;
+  cursor: pointer;
+  height: 2rem;
+  width: 4.5rem;
+  padding: 0 1rem;
+  border-radius: .5rem;
+  background: $color-primary;
+  color: white;
+  transition: background-color .2s $ease-out-circ;
+  &:hover {
+    background-color: shade-color($color-primary, 5%);
+  }
+  &:active {
+    background-color: shade-color($color-primary, 10%);
+  }
 }
 </style>
