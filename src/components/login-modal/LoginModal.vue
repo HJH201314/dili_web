@@ -34,41 +34,87 @@ defineExpose({
 });
 
 const loginForm = reactive({
+  type: ref<'password'|'sms'>('password'),
   username: ref(''),
+  phone: ref(''),
   password: ref(''),
+  sms: ref(''),
   shake: ref(0),
 });
+const smsTip = ref('获取');
 const emoji = ref('🚀');
 const submitDisabled = ref(false);
 
 function init() {
   emoji.value = '🚀';
   // @ts-ignore
-  typer.value = new EasyTyper(typerObj, ['即刻启航']);
+  typer.value = new EasyTyper(typerObj, ['DILIDILI', 'LAUNCH!']);
 }
-async function handleLoginSubmit() {
-  if (!loginForm.username) {
+async function handleGetSmsCode() {
+  if (!loginForm.phone) {
     loginForm.shake += 1;
-    showToast({ text: '请输入用户名！', position: 'bottom', type: 'warning' });
-    return;
-  } else if (!loginForm.password) {
-    loginForm.shake += 1;
-    showToast({ text: '请输入密码！', position: 'bottom', type: 'warning' });
+    showToast({ text: '请输入手机号！', position: 'bottom', type: 'danger' });
     return;
   } else {
     try {
       submitDisabled.value = true;
-
+      // await api.user.getSmsCode(loginForm.username);
+      showToast({ text: '短信验证码已发送', position: 'bottom', type: 'success' });
+      smsTip.value = '60s后重新获取';
+      let count = 60;
+      const timer = setInterval(() => {
+        count--;
+        smsTip.value = `${count}s后重新获取`;
+        if (count === 0) {
+          clearInterval(timer);
+          smsTip.value = '获取验证码';
+        }
+      }, 1000);
     }
     catch (e) {
       console.error(e);
       loginForm.shake += 1;
-      showToast({ text: '点火失败', position: 'bottom', type: 'danger' });
+      showToast({ text: '获取验证码失败', position: 'bottom', type: 'danger' });
       return;
     }
     finally {
       submitDisabled.value = false;
     }
+  }
+}
+async function handleLoginSubmit() {
+  if (loginForm.type == 'sms' && !loginForm.phone) {
+    loginForm.shake += 1;
+    showToast({ text: '请输入手机号！', position: 'bottom', type: 'danger' });
+    return;
+  }
+  if (loginForm.type == 'sms' && !loginForm.sms) {
+    loginForm.shake += 1;
+    showToast({ text: '请输入验证码！', position: 'bottom', type: 'danger' });
+    return;
+  }
+  if (loginForm.type == 'password' && !loginForm.username) {
+    loginForm.shake += 1;
+    showToast({ text: '请输入用户名！', position: 'bottom', type: 'danger' });
+    return;
+  }
+  if (loginForm.type == 'password' && !loginForm.password) {
+    loginForm.shake += 1;
+    showToast({ text: '请输入密码！', position: 'bottom', type: 'danger' });
+    return;
+  }
+  try {
+    submitDisabled.value = true;
+
+  }
+  catch (e) {
+    console.error(e);
+    loginForm.shake += 1;
+    showToast({ text: '点火失败', position: 'bottom', type: 'danger' });
+    return;
+  }
+  finally {
+    submitDisabled.value = false;
   }
 }
 
@@ -90,8 +136,13 @@ watch(() => userStore.isLogin, (v) => {
     <template #default>
       <div class="login">
         <Close class="login-close" size="20" @click="() => refLoginModal?.close()" />
-        <div class="sidebar-logo sidebar-logo-animation" style="font-size: 32px;">
-          登录
+        <div style="margin-top: .5rem;">
+          <span class="sidebar-logo sidebar-logo-animation">DILIDILI</span>
+          <span class="login-type">
+            <span class="login-type-item" :class="{'active': loginForm.type === 'password'}" @click="loginForm.type = 'password'">密码登录</span>
+            <span>&nbsp;|&nbsp;</span>
+            <span class="login-type-item" :class="{'active': loginForm.type === 'sms'}" @click="loginForm.type = 'sms'">短信登录</span>
+          </span>
         </div>
         <div class="login-top">
           <span class="login-top-emoji transition-all-circ">{{ emoji }}</span>
@@ -100,8 +151,13 @@ watch(() => userStore.isLogin, (v) => {
         </div>
         <div class="login-bottom">
           <div class="login-form">
-            <input class="login-form-input" type="text" name="username" placeholder="请输入用户名（guest）" v-model="loginForm.username" />
-            <input class="login-form-input" type="password" name="password" placeholder="请输入密码（123456）" v-model="loginForm.password" />
+            <input v-if="loginForm.type === 'password'" class="login-form-input" type="text" name="username" placeholder="请输入用户名（guest）" v-model="loginForm.username" />
+            <input v-if="loginForm.type === 'sms'" class="login-form-input" type="text" name="phone" placeholder="请输入手机号" v-model="loginForm.username" />
+            <input v-if="loginForm.type === 'password'" class="login-form-input" type="password" name="password" placeholder="请输入密码（123456）" v-model="loginForm.password" />
+            <div v-if="loginForm.type === 'sms'" style="position: relative;">
+              <input class="login-form-input" type="text" name="sms" placeholder="请输入短信验证码（1234）" v-model="loginForm.sms" />
+              <div class="login-form-get-sms">{{ smsTip }}</div>
+            </div>
           </div>
           <div class="login-form-submit" v-shake="loginForm.shake">
             <button style="outline: none; color: inherit;" :disabled="submitDisabled" @click="handleLoginSubmit">
@@ -132,6 +188,24 @@ watch(() => userStore.isLogin, (v) => {
     padding: .5rem;
     cursor: pointer;
     border-radius: .5rem;
+  }
+
+  &-type {
+    font-size: 1rem;
+    color: #5c5c5c;
+    margin-left: .5rem;
+    vertical-align: center;
+    &-item {
+      transition: all .2s $ease-out-circ;
+      &:not(.active) {
+        @extend %click-able;
+      }
+      padding: .35rem .5rem;
+      border-radius: .5rem;
+      &.active {
+        color: $color-primary;
+      }
+    }
   }
 
   &-top {
@@ -200,6 +274,14 @@ watch(() => userStore.isLogin, (v) => {
         border: 2px solid $color-primary;
       }
     }
+    &-get-sms {
+      @extend %click-able;
+      font-size: 14px;
+      color: $color-grey-500;
+      padding: 0 .5rem;
+      border-radius: .5rem;
+      position: absolute; right: 0; top: 0; bottom: 0; display: flex; place-items: center;
+    }
     &-submit {
       position: relative;
       font-size: 20px;
@@ -218,6 +300,26 @@ watch(() => userStore.isLogin, (v) => {
       &:active {
         background-image: $linear-gradient-primary-3;
       }
+    }
+  }
+}
+.sidebar-logo {
+  flex: 1;
+  font-size: 28px;
+  &-animation {
+    // background-image: linear-gradient(-135deg, #41e0a3, #56d8c0, #dc8bc3, #56d8c0, #41e0a3, #56d8c0, #dc8bc3, #56d8c0, #41e0a3);
+    background-image: linear-gradient(-135deg, #418ae0, #56a0d8, #dc8bc3, #56a0d8, #418ae0, #56a0d8, #dc8bc3, #56a0d8, #418ae0);
+    -webkit-text-fill-color: rgba(0,0,0,0);
+    background-clip: text;
+    background-size: 200% 200%;
+    animation: text-masked-animation 3s infinite linear;
+  }
+  @keyframes text-masked-animation {
+    0% {
+      background-position: 0 -100%;
+    }
+    100% {
+      background-position: -100% 0;
     }
   }
 }

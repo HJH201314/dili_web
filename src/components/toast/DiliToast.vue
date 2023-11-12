@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import type { ToastProps } from './index';
+import variables from "@/assets/variables.module.scss";
 
 const props = withDefaults(defineProps<ToastProps>(), {
   text: '',
   position: 'top-center',
   duration: 'normal',
+  type: 'normal',
 });
 
 const myself = ref<HTMLElement>();
@@ -34,6 +36,21 @@ const toastClass = computed(() => {
   if (className === 'bottom') className = 'bottom-center';
   return ['toast', `toast-${className}`];
 });
+
+const wrapperColor = computed(() => {
+  switch (props.type) {
+    case 'success':
+      return variables.colorSuccess;
+    case 'warning':
+      return variables.colorWarning;
+    case 'danger':
+      return variables.colorDanger;
+    case 'info':
+      return variables.colorInfo;
+    default:
+      return variables.colorPrimary;
+  }
+});
 </script>
 
 <template>
@@ -48,7 +65,7 @@ const toastClass = computed(() => {
 </template>
 
 <style scoped lang="scss">
-@import "@/assets/variables";
+@import "@/assets/variables.module";
 .toast {
   position: absolute;
   z-index: 10000;
@@ -61,8 +78,8 @@ const toastClass = computed(() => {
     align-items: center;
     gap: .5rem;
     color: $color-white;
-    background-color: $color-primary;
-    box-shadow: 0 0 4px $color-primary;
+    background-color: v-bind(wrapperColor);
+    box-shadow: 0 0 4px v-bind(wrapperColor);
     opacity: 0.9;
   }
 
@@ -94,7 +111,7 @@ const toastClass = computed(() => {
     animation: top-left-in .25s $ease-out-circ;;
     @keyframes top-left-in {
       0% {
-        transform: translateX(100%);
+        transform: translateX(-100%);
       }
       100% {
         transform: translateX(0);
@@ -111,7 +128,7 @@ const toastClass = computed(() => {
     animation: top-right-in .25s $ease-out-circ;
     @keyframes top-right-in {
       0% {
-        transform: translateX(-100%);
+        transform: translateX(100%);
       }
       100% {
         transform: translateX(0);
@@ -145,7 +162,7 @@ const toastClass = computed(() => {
     animation: bottom-left-in .25s $ease-out-circ;
     @keyframes bottom-left-in {
       0% {
-        transform: translateX(-100%);
+        transform: translateX(100%);
       }
       100% {
         transform: translateX(0);
@@ -162,7 +179,7 @@ const toastClass = computed(() => {
     animation: bottom-right-in .25s $ease-out-circ;
     @keyframes bottom-right-in {
       0% {
-        transform: translateX(100%);
+        transform: translateX(-100%);
       }
       100% {
         transform: translateX(0);

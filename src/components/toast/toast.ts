@@ -1,8 +1,9 @@
-import type { ToastProps } from "@/components/toast/index";
+import type { ToastProps } from "./index";
 import { createApp, h } from "vue";
-import Toast from "@/components/toast/DiliToast.vue";
+import Toast from "./DiliToast.vue";
 
 let toastDiv: HTMLDivElement;
+let options: ElementCreationOptions;
 function showToast(props: ToastProps) {
   if (!toastDiv) {
     toastDiv = document.createElement('div');
