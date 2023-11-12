@@ -51,7 +51,6 @@ function handleClose() {
 </script>
 
 <template>
-  <!-- TODO: 修复BUG，加了transition后在sidebar的展示慢一步 -->
   <Teleport to="body">
     <Transition name="show">
       <div v-show="showModal" class="modal" :class="{'modal-hide': !showModal}">
@@ -68,7 +67,7 @@ function handleClose() {
 </template>
 
 <style scoped lang="scss">
-@import "@/assets/variables.module";
+@import "@/assets/variables";
 .modal {
   visibility: unset;
   &-hide {
@@ -116,6 +115,7 @@ function handleClose() {
 
 .show-enter-active,
 .show-leave-active {
+  z-index: 999;
   transition: opacity 0.2s $ease-out-circ;
 }
 

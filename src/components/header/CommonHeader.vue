@@ -5,15 +5,15 @@ import { Search } from "@icon-park/vue-next";
 import { useRouter } from "vue-router";
 import showToast from "@/components/toast/toast";
 import useUserStore from "@/stores/useUserStore";
+import CommonModal from "@/components/modal/CommonModal.vue";
+import LoginModal from "@/components/login-modal/LoginModal.vue";
+import type { CommonModalFunc } from "@/components/modal/CommonModal";
 
 const userStore = useUserStore();
 
 /* 页面挂载时初始化 */
 onMounted(() => {
-  /* 初始化搜索框 */
-  searchContainer.value?.addEventListener('focusout', (e) => {
-    isSearching.value = false;
-  });
+  /* TODO: 初始化搜索框 */
 });
 
 /* 定义入口项属性 */
@@ -102,8 +102,10 @@ function handleEntryClick(e: Event, entry: Entry) {
   showToast({text: entry.name, position: 'top'});
 }
 
+const refLoginModal = ref<CommonModalFunc>();
 function handleLoginClick() {
-  userStore.login();
+  // 展示登录模态框
+  refLoginModal.value?.open();
 }
 
 const isSearching = ref(false);
@@ -120,10 +122,10 @@ const form = reactive({
         <span>{{ entry.name }}</span>
       </li>
     </ul>
-    <div class="center-search-container" ref="searchContainer">
+    <div class="center-search-container" ref="searchContainer" @focusout="() => isSearching = false">
       <div class="center-search-bar" :class="{'center-search-bar-focus': isSearching}" @focusin="() => isSearching = true">
         <form :class="{'focus': isSearching}">
-          <input v-model="form.searchVal" @change="e => form.searchVal = e.target.value" type="text" id="nav-search-input" placeholder="搜点什么呢...?" />
+          <input v-model="form.searchVal" type="text" id="nav-search-input" placeholder="搜点什么呢...?" />
           <Search class="search" size="1.25rem" />
         </form>
         <Transition name="opacity-circ">
@@ -133,9 +135,9 @@ const form = reactive({
         </Transition>
       </div>
     </div>
-    <div id="nav-user-container">
+    <div class="nav-user-container">
       <span v-if="!userStore.isLogin" @click="handleLoginClick">登录</span>
-      <img id="user-avatar" v-if="userStore.isLogin" :src="userStore.avatar ?? '/favicon.ico'"  alt="avatar"/>
+      <img class="nav-user-avatar" v-if="userStore.isLogin" :src="userStore.avatar ?? '/favicon.ico'"  alt="avatar"/>
     </div>
     <ul class="right-entry">
       <li v-for="entry in rightEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
@@ -145,6 +147,7 @@ const form = reactive({
     <Button id="upload-button" type="default" @click="e => handleEntryClick(e, {key: 'upload', name: '投稿', href: '/upload'})">
       投稿
     </Button>
+    <LoginModal ref="refLoginModal" />
   </header>
 </template>
 
@@ -174,14 +177,11 @@ header {
     align-items: center;
   }
   li {
+    @extend %click-able;
     height: 100%;
     cursor: pointer;
     padding: 1rem;
     box-sizing: border-box;
-    transition: background-color .2s $ease-out-circ;
-    &:hover {
-      background-color: $color-hover;
-    }
     span {
       a {
         text-decoration: none;
@@ -262,7 +262,7 @@ header {
     box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.08);
   }
 }
-#nav-user {
+.nav-user {
   &-avatar {
     width: 1.75rem;
     height: 1.75rem;
