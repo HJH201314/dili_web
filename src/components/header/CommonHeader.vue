@@ -144,9 +144,9 @@ const form = reactive({
         <span>{{ entry.name }}</span>
       </li>
     </ul>
-    <Button id="upload-button" type="default" @click="e => handleEntryClick(e, {key: 'upload', name: '投稿', href: '/upload'})">
+    <button id="upload-button" type="default" @click="e => handleEntryClick(e, {key: 'upload', name: '投稿', href: '/upload'})">
       投稿
-    </Button>
+    </button>
     <LoginModal ref="refLoginModal" />
   </header>
 </template>

@@ -39,9 +39,10 @@ const loginForm = reactive({
   phone: ref(''),
   password: ref(''),
   sms: ref(''),
+  shakePhone: ref(0),
   shake: ref(0),
 });
-const smsTip = ref('获取');
+const smsTip = ref('获取验证码');
 const emoji = ref('🚀');
 const submitDisabled = ref(false);
 
@@ -52,7 +53,7 @@ function init() {
 }
 async function handleGetSmsCode() {
   if (!loginForm.phone) {
-    loginForm.shake += 1;
+    loginForm.shakePhone += 1;
     showToast({ text: '请输入手机号！', position: 'bottom', type: 'danger' });
     return;
   } else {
@@ -67,7 +68,7 @@ async function handleGetSmsCode() {
         smsTip.value = `${count}s后重新获取`;
         if (count === 0) {
           clearInterval(timer);
-          smsTip.value = '获取验证码';
+          smsTip.value = '重新获取';
         }
       }, 1000);
     }
@@ -105,7 +106,19 @@ async function handleLoginSubmit() {
   }
   try {
     submitDisabled.value = true;
-
+    let principal = '';
+    let credential = '';
+    if (loginForm.type == 'sms') {
+      principal = loginForm.phone;
+      credential = loginForm.sms;
+    } else {
+      principal = loginForm.username;
+      credential = loginForm.password
+    }
+    const result = await userStore.login(loginForm.type, principal, credential);
+    if (!result) {
+      showToast({ text: '登录失败，请重试！', position: 'bottom', type: 'danger' });
+    }
   }
   catch (e) {
     console.error(e);
@@ -118,7 +131,9 @@ async function handleLoginSubmit() {
   }
 }
 
+/* 观测userStore中的登录结果 */
 watch(() => userStore.isLogin, (v) => {
+  // 若登录成功，则提示并关闭模态框
   if (v) {
     emoji.value = '🎉';
     // @ts-ignore
@@ -152,11 +167,11 @@ watch(() => userStore.isLogin, (v) => {
         <div class="login-bottom">
           <div class="login-form">
             <input v-if="loginForm.type === 'password'" class="login-form-input" type="text" name="username" placeholder="请输入用户名（guest）" v-model="loginForm.username" />
-            <input v-if="loginForm.type === 'sms'" class="login-form-input" type="text" name="phone" placeholder="请输入手机号" v-model="loginForm.username" />
+            <input v-if="loginForm.type === 'sms'" class="login-form-input" type="text" name="phone" placeholder="请输入手机号" v-model="loginForm.phone" />
             <input v-if="loginForm.type === 'password'" class="login-form-input" type="password" name="password" placeholder="请输入密码（123456）" v-model="loginForm.password" />
             <div v-if="loginForm.type === 'sms'" style="position: relative;">
               <input class="login-form-input" type="text" name="sms" placeholder="请输入短信验证码（1234）" v-model="loginForm.sms" />
-              <div class="login-form-get-sms">{{ smsTip }}</div>
+              <div class="login-form-get-sms" @click="handleGetSmsCode">{{ smsTip }}</div>
             </div>
           </div>
           <div class="login-form-submit" v-shake="loginForm.shake">
@@ -279,6 +294,7 @@ watch(() => userStore.isLogin, (v) => {
       font-size: 14px;
       color: $color-grey-500;
       padding: 0 .5rem;
+      margin: 2px; // 避开边框
       border-radius: .5rem;
       position: absolute; right: 0; top: 0; bottom: 0; display: flex; place-items: center;
     }

@@ -7,6 +7,7 @@ $color-grey-300: #e0e0e0;
 $color-grey-400: #bdbdbd;
 $color-grey-500: #9e9e9e;
 $color-black: #303030;
+$color-black-lighter: #424242;
 $color-emerald-50: rgb(236, 253, 245);
 $color-emerald-100: rgb(209, 250, 229);
 $color-emerald-200: rgb(167, 243, 208);
@@ -21,6 +22,12 @@ $color-teal-300: #4db6ac;
 $color-teal-400: #26a69a;
 $color-teal-500: #009688;
 
+$color-pink-100: #fff0f6;
+$color-pink-200: #ffd6e7;
+$color-pink-300: #ffadd2;
+$color-pink-400: #ff85c0;
+$color-pink-500: #f759ab;
+
 $color-success: #1dd1a1;
 $color-info: #48dbfb;
 $color-warning: #feca57;
@@ -31,6 +38,9 @@ $color-active: $color-grey-300;
 $color-primary-lighter: $color-teal-200;
 $color-primary: $color-teal-400;
 $color-primary-darker: $color-teal-500;
+$color-secondary-lighter: $color-pink-200;
+$color-secondary: $color-pink-400;
+$color-secondary-darker: $color-pink-500;
 
 $linear-gradient-primary: linear-gradient(180deg, $color-teal-300, $color-primary-darker);
 $linear-gradient-primary-2: linear-gradient(150deg, $color-teal-300, $color-primary-darker);
@@ -60,6 +70,11 @@ $box-shadow: 0px 0px 5px 0 rgba(0, 0, 0, 0.1);
   @extend %hover-able;
   @extend %active-able;
   @extend %transition-all-circ;
+}
+%button-like {
+  cursor: pointer;
+  border-radius: .5rem;
+  padding: .5rem;
 }
 
 :export {

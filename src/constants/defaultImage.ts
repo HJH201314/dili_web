@@ -1,0 +1,1 @@
+export const DEFAULT_USER_AVATAR = 'https://img.yzcdn.cn/vant/cat.jpeg';
