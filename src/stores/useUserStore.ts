@@ -14,7 +14,7 @@ const useUserStore = defineStore('user', () => {
           (type === 'sms' && principal === '11111111111' && credential === '654321')
       ) {
         userId.value = 1;
-        avatar.value = 'https://avatars.githubusercontent.com/u/21263504?v=4';
+        avatar.value = 'https://img.yzcdn.cn/vant/cat.jpeg';
         resolve(true);
       } else {
         resolve(false);

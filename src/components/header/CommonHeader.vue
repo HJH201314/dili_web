@@ -120,6 +120,7 @@ const form = reactive({
     <ul class="left-entry">
       <li v-for="entry in leftEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
         <span>{{ entry.name }}</span>
+        <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
       </li>
     </ul>
     <div class="center-search-container" ref="searchContainer" @focusout="() => isSearching = false">
@@ -142,6 +143,7 @@ const form = reactive({
     <ul class="right-entry">
       <li v-for="entry in rightEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
         <span>{{ entry.name }}</span>
+        <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
       </li>
     </ul>
     <button id="upload-button" type="default" @click="e => handleEntryClick(e, {key: 'upload', name: '投稿', href: '/upload'})">
@@ -178,6 +180,7 @@ header {
   }
   li {
     @extend %click-able;
+    position: relative;
     height: 100%;
     cursor: pointer;
     padding: 1rem;
@@ -187,6 +190,16 @@ header {
         text-decoration: none;
         color: $color-black;
       }
+    }
+
+    .active-underline {
+      position: absolute;
+      content: '';
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: $color-primary;
+      height: 2px;
     }
   }
 }
@@ -242,7 +255,7 @@ header {
         background: $color-grey;
         padding: 0 .5rem;
       }
-      & .search {
+      .search {
         cursor: pointer;
         padding: .4rem;
         margin-right: .25rem;

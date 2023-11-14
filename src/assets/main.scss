@@ -112,6 +112,12 @@ a {
   }
 }
 
+/* 自定义textarea样式 */
+textarea {
+  resize: none;
+  outline: none;
+}
+
 .enable-hover {
   &:hover {
     background: $color-hover;

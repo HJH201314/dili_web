@@ -3,7 +3,8 @@ import useUserStore from "@/stores/useUserStore";
 import { DEFAULT_USER_AVATAR } from "@/constants/defaultImage";
 import { computed, onMounted, reactive, ref } from "vue";
 import { EmotionHappy, Instagram, AtSign, ChartHistogramTwo, Topic, SettingOne } from '@icon-park/vue-next';
-import variables from "@/assets/variables.module.scss";
+import PostItemCard from "@/pages/common/post/components/PostItemCard.vue";
+import type { PostItemCardProps } from "@/pages/common/post/components/PostItemCard";
 
 const userStore = useUserStore();
 
@@ -18,6 +19,35 @@ const publishForm = reactive({
   topic: ref(''),
   content: ref(''),
 });
+
+onMounted(() => {
+  Promise.all([
+    getPosts(),
+  ]);
+});
+
+// TODO: 根据接口调整post类型
+const posts = ref<PostItemCardProps[]>([]);
+
+async function getPosts() {
+  posts.value = [];
+  for (let i = 1; i <= 10; i++) {
+    posts.value.push({
+      type: 'post',
+      postId: i,
+      userId: 1,
+      userName: '测试用户',
+      avatar: DEFAULT_USER_AVATAR,
+      forwardCount: i + 3,
+      commentCount: i * i,
+      likeCount: i * i * i,
+      isLiked: false,
+      createTime: new Date().toLocaleString(),
+      images: [],
+      content: "测试".repeat(100),
+    });
+  }
+}
 </script>
 
 <template>
@@ -56,7 +86,22 @@ const publishForm = reactive({
             <button class="publish">发布</button>
           </div>
         </section>
-        <section class="post-center-posts">动态招租</section>
+        <section class="post-center-posts">
+          <PostItemCard class="post-item" v-for="item in posts"
+                        :type="item.type ?? 'post'"
+                        :post-id="item.postId!"
+                        :user-id="item.userId!"
+                        :user-name="item.userName"
+                        :avatar="item.avatar"
+                        :forward-count="item.forwardCount"
+                        :comment-count="item.commentCount"
+                        :like-count="item.likeCount"
+                        :is-liked="item.isLiked"
+                        :create-time="item.createTime"
+                        :content="item.content"
+                        :images="item.images"
+          />
+        </section>
       </main>
       <aside class="post-right">
         <section class="post-right-notice">通知招租</section>
@@ -110,7 +155,7 @@ const publishForm = reactive({
           margin-bottom: .5rem;
         }
       }
-      & .avatar {
+      .avatar {
         width: 4rem;
         height: 4rem;
         overflow: hidden;
@@ -122,19 +167,19 @@ const publishForm = reactive({
           object-fit: cover;
         }
       }
-      & .username {
+      .username {
         font-size: 1.2rem;
         font-weight: bold;
         color: $color-primary;
       }
-      & .vip {
+      .vip {
         font-size: .7rem;
         color: white;
         padding: .25rem .5rem;
         background-color: $color-primary;
         border-radius: .25rem;
       }
-      & .stats {
+      .stats {
         justify-content: space-around;
         &-item {
           @extend %click-able;
@@ -166,6 +211,7 @@ const publishForm = reactive({
     display: flex;
     flex-direction: column;
     gap: .5rem;
+    overflow: hidden;
     &-publish {
       @extend %card;
       display: flex;
@@ -174,7 +220,7 @@ const publishForm = reactive({
       gap: .35rem;
       position: relative;
 
-      & .topic {
+      .topic {
         @extend %click-able;
         width: fit-content;
         padding: .125rem .35rem;
@@ -183,7 +229,7 @@ const publishForm = reactive({
         background-color: $color-grey-100;
       }
 
-      & .input {
+      .input {
         flex: 1;
         padding: .5rem;
         border-radius: .5rem;
@@ -203,7 +249,7 @@ const publishForm = reactive({
 
       }
 
-      & .actions {
+      .actions {
         position: absolute;
         left: .5rem;
         bottom: .5rem;
@@ -213,26 +259,26 @@ const publishForm = reactive({
         flex-direction: row;
         align-items: center;
         justify-content: flex-start;
-        & .action {
+        .action {
           @extend %click-able;
           @extend %button-like;
           width: 1.75rem;
           height: 1.75rem;
           position: relative;
         }
-        & .icon {
+        .icon {
           position: absolute;
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
         }
-        & .length-tip {
+        .length-tip {
           margin-left: auto;
           margin-right: .25rem;
           font-size: .8rem;
           color: $color-grey-500;
         }
-        & .publish {
+        .publish {
           @extend %transition-all-circ;
           color: white;
           background-color: $color-secondary;
@@ -249,7 +295,12 @@ const publishForm = reactive({
       }
     }
     &-posts {
-      @extend %card;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      .post-item {
+        @extend %card;
+      }
     }
   }
 

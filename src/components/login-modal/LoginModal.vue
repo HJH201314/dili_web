@@ -165,15 +165,15 @@ watch(() => userStore.isLogin, (v) => {
           <span class="typed-cursor login-top-text">|</span>
         </div>
         <div class="login-bottom">
-          <div class="login-form">
-            <input v-if="loginForm.type === 'password'" class="login-form-input" type="text" name="username" placeholder="请输入用户名（guest）" v-model="loginForm.username" />
+          <form class="login-form">
+            <input v-if="loginForm.type === 'password'" class="login-form-input" type="text" name="username" placeholder="请输入用户名（guest）" v-model="loginForm.username" autocomplete="username" />
             <input v-if="loginForm.type === 'sms'" class="login-form-input" type="text" name="phone" placeholder="请输入手机号" v-model="loginForm.phone" />
-            <input v-if="loginForm.type === 'password'" class="login-form-input" type="password" name="password" placeholder="请输入密码（123456）" v-model="loginForm.password" />
+            <input v-if="loginForm.type === 'password'" class="login-form-input" type="password" name="password" placeholder="请输入密码（123456）" v-model="loginForm.password" autocomplete="current-password" />
             <div v-if="loginForm.type === 'sms'" style="position: relative;">
               <input class="login-form-input" type="text" name="sms" placeholder="请输入短信验证码（1234）" v-model="loginForm.sms" />
               <div class="login-form-get-sms" @click="handleGetSmsCode">{{ smsTip }}</div>
             </div>
-          </div>
+          </form>
           <div class="login-form-submit" v-shake="loginForm.shake">
             <button style="outline: none; color: inherit;" :disabled="submitDisabled" @click="handleLoginSubmit">
               <Right size="32" />
