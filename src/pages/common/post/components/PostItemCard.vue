@@ -4,7 +4,7 @@
 import { DEFAULT_USER_AVATAR } from "@/constants/defaultImage";
 import DateFormat from "@/components/date-format/DateFormat.vue";
 import { MoreOne, ShareThree, CommentOne, ThumbsUp } from "@icon-park/vue-next";
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import type { PostItemCardProps } from "@/pages/common/post/components/PostItemCard";
 import CommentView from "@/pages/common/post/components/CommentView.vue";
 
@@ -29,6 +29,14 @@ defineExpose({
   contractPost,
 });
 
+onMounted(() => {
+  window.addEventListener('resize', onResize);
+  onResize();
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', onResize);
+});
+
 const postTypeDesc = computed(() => {
   switch (props.type) {
     case 'post':
@@ -41,6 +49,27 @@ const postTypeDesc = computed(() => {
       return '';
   }
 });
+
+const refContent = ref();
+const needReadMore = ref(false);
+const readingMore = ref(false);
+/* 屏幕大小调整回调函数 */
+function onResize() {
+  if (!refContent.value) {
+    return;
+  }
+  requestAnimationFrame(() => {
+    if (!refContent.value) {
+      return;
+    }
+    const el = refContent.value as HTMLDivElement;
+    needReadMore.value = el.offsetHeight < el.scrollHeight;
+  });
+}
+
+function handleUnfold() {
+  readingMore.value = !readingMore.value;
+}
 
 const expandType = ref('none');
 /* 展开评论详情 */
@@ -75,8 +104,8 @@ function handleLikeClick() {
       <div class="more"><MoreOne theme="outline" size="1.25rem" /></div>
     </div>
     <div class="body">
-      <div v-html="props.content"></div>
-      <div class="unfold">展开</div>
+      <div ref="refContent" class="text-ellipsis" :class="{'content-less': !readingMore}" v-html="props.content"></div>
+      <div v-if="needReadMore" class="unfold" @click="handleUnfold">{{ readingMore ? '收起' : '展开' }}</div>
     </div>
     <div class="actions">
       <div class="action" :class="{'active': expandType == 'forward'}" @click="expandPost('forward')"><ShareThree /> {{ props.forwardCount }}</div>
@@ -135,6 +164,15 @@ function handleLikeClick() {
   .body {
     margin-top: .5rem;
     margin-left: 4rem;
+
+    .content-less {
+      -webkit-line-clamp: 6;
+      // max-height: 6rem;
+      // overflow: hidden;
+    }
+    .content-normal {
+      -webkit-line-clamp: none;
+    }
 
     .unfold {
       cursor: pointer;

@@ -2,6 +2,14 @@
 /* eslint-disable */
 import { request } from './base';
 
+/** 获取当前登录用户信息 GET /scy/current */
+export async function getCurrentUserUsingGET(options?: { [key: string]: any }) {
+  return request<API.CommonResultUser_>('/scy/current', {
+    method: 'GET',
+    ...(options || {}),
+  });
+}
+
 /** login POST /scy/login */
 export async function loginUsingPOST(body: API.LoginDto, options?: { [key: string]: any }) {
   return request<API.CommonResultString_>('/scy/login', {

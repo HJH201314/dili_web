@@ -10,6 +10,17 @@ declare namespace API {
     message?: string;
   };
 
+  type CommonResultUser_ = {
+    code?: number;
+    data?: User;
+    message?: string;
+  };
+
+  type getCurrentUserUsingGETParams = {
+    /** token */
+    token: string;
+  };
+
   type LoginDto = {
     phone?: string;
     pswd?: string;
@@ -27,5 +38,22 @@ declare namespace API {
     pin?: string;
     pswd?: string;
     type?: number;
+  };
+
+  type User = {
+    /** 邮箱 */
+    email?: string;
+    /** uid */
+    id?: number;
+    /** 等级 */
+    level?: number;
+    /** 昵称 */
+    name?: string;
+    /** 密码 */
+    password?: string;
+    /** 手机号 */
+    phone?: string;
+    /** 用户状态 */
+    status?: number;
   };
 }

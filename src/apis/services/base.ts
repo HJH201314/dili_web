@@ -15,6 +15,19 @@ const axiosInstance = axios.create({
   baseURL: "/api",
 });
 
+axiosInstance.interceptors.response.use(
+(response) => {
+  if (response.data.code === 500 && response.data.message === "user not login") {
+    localStorage.removeItem("token");
+    return response;
+  }
+  return response;
+},
+(error) => {
+  console.log(error);
+  return Promise.reject(error);
+});
+
 /**
  * 为解决不同模块的接口调用问题，由各模块的base中的request做第一层处理，调用此处的request
  * @param path 请求相对路径

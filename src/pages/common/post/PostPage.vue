@@ -66,7 +66,7 @@ async function getPosts() {
         <section ref="postLeftUserRef" class="post-left-user">
           <div>
             <div class="avatar"><img :src="userStore.avatar ?? DEFAULT_USER_AVATAR" alt="post-user-avatar" /></div>
-            <div class="right"><span class="username">测试用户</span><br /><span class="vip">超级会员</span></div>
+            <div class="right"><span class="username">{{ userStore.userInfo.name }}</span><br /><span class="vip">超级会员</span></div>
           </div>
           <div class="stats">
             <div id="post-left-user-follow" class="stats-item"><span>111</span><span>关注</span></div>

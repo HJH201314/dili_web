@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { computed, onMounted, ref } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import securityApi from "@/apis/services/video-platform-security";
 import { useLocalStorage } from "@vueuse/core";
 
@@ -9,7 +9,8 @@ const useUserStore = defineStore('user', () => {
   const userId = ref(-1);
   const tokenStorage = useLocalStorage('token', '');
   const token = computed(() => tokenStorage.value);
-  const userInfo = ref({});
+  const userInfoStorage = useLocalStorage<API.User>('user-info', {});
+  const userInfo = computed(() => userInfoStorage.value);
   const isLogin = computed(() => !!token.value);
 
   const login = async (type: 'pwd' | 'pin', principal: string, credential: string) => {
@@ -39,9 +40,20 @@ const useUserStore = defineStore('user', () => {
     return res.data.code === 200;
   }
 
+  watch(isLogin, async (newVal, oldVal) => {
+    // 等一下个tick，不然token可能还没写入storage
+    await nextTick(async() => {
+      if (newVal && !oldVal) {
+        avatar.value = 'https://img.yzcdn.cn/vant/cat.jpeg';
+        const res = await securityApi.LoginController.getCurrentUserUsingGET({token: token.value});
+        userInfoStorage.value = res.data.data ?? {};
+      }
+    });
+  });
+
   return {
     userId,
-    userUUID: token,
+    token,
     avatar,
     userInfo,
     isLogin,

@@ -115,7 +115,7 @@ function changeSortMode(mode: 'hot'|'new') {
         cursor: pointer;
       }
       &.active {
-        color: $color-black-lighter;
+        color: $color-primary;
       }
     }
   }

@@ -135,7 +135,7 @@ watch(() => userStore.isLogin, (v) => {
     emoji.value = '🎉';
     // @ts-ignore
     typer.value = new EasyTyper(typerObj, '欢迎回来');
-    showToast({ text: `登录成功，欢迎回来，UUID:${userStore.userUUID}`, position: 'top' });
+    showToast({ text: `登录成功，欢迎回来，UUID:${userStore.token}`, position: 'top' });
     setTimeout(() => {
       refLoginModal.value?.close();
     }, 1500);
