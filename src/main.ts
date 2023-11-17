@@ -6,6 +6,9 @@ import { createPinia } from 'pinia';
 import App from './App.vue';
 import router from './router';
 import shake from "@/commands/shake";
+import publicRoutes from "@/router/publicRoutes";
+import useUserStore from "@/stores/useUserStore";
+import showToast from "@/components/toast/toast";
 
 const app = createApp(App);
 
@@ -13,6 +16,23 @@ const app = createApp(App);
 app.use(createPinia());
 // 注册路由
 app.use(router);
+
+// 路由拦截
+router.beforeEach((to, from, next) => {
+  if (to.path === from.path) return;
+  console.log('to.path', to.path)
+  if (publicRoutes.indexOf(to.path) !== -1) {
+    next();
+    return;
+  } else {
+    if (!useUserStore().isLogin) {
+      showToast({type: 'danger', text: '请先登录！'});
+      next('/home');
+      return;
+    }
+    next();
+  }
+});
 
 // 自定义指令v-shake
 app.directive('shake', {
