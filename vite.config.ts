@@ -38,5 +38,12 @@ export default defineConfig({
   },
   server: {
     port: 4753,
-  }
+    proxy: {
+      '/api/security': {
+        target: 'http://localhost:8848/',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/security/, ''),
+      }
+    }
+  },
 })

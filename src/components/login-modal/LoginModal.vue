@@ -34,11 +34,11 @@ defineExpose({
 });
 
 const loginForm = reactive({
-  type: ref<'password'|'sms'>('password'),
+  type: ref<'pwd'|'pin'>('pwd'),
   username: ref(''),
   phone: ref(''),
   password: ref(''),
-  sms: ref(''),
+  pin: ref(''),
   shakePhone: ref(0),
   shake: ref(0),
 });
@@ -84,22 +84,22 @@ async function handleGetSmsCode() {
   }
 }
 async function handleLoginSubmit() {
-  if (loginForm.type == 'sms' && !loginForm.phone) {
+  if (loginForm.type == 'pin' && !loginForm.phone) {
     loginForm.shake += 1;
     showToast({ text: '请输入手机号！', position: 'bottom', type: 'danger' });
     return;
   }
-  if (loginForm.type == 'sms' && !loginForm.sms) {
+  if (loginForm.type == 'pin' && !loginForm.pin) {
     loginForm.shake += 1;
     showToast({ text: '请输入验证码！', position: 'bottom', type: 'danger' });
     return;
   }
-  if (loginForm.type == 'password' && !loginForm.username) {
+  if (loginForm.type == 'pwd' && !loginForm.username) {
     loginForm.shake += 1;
     showToast({ text: '请输入用户名！', position: 'bottom', type: 'danger' });
     return;
   }
-  if (loginForm.type == 'password' && !loginForm.password) {
+  if (loginForm.type == 'pwd' && !loginForm.password) {
     loginForm.shake += 1;
     showToast({ text: '请输入密码！', position: 'bottom', type: 'danger' });
     return;
@@ -108,17 +108,14 @@ async function handleLoginSubmit() {
     submitDisabled.value = true;
     let principal = '';
     let credential = '';
-    if (loginForm.type == 'sms') {
+    if (loginForm.type == 'pin') {
       principal = loginForm.phone;
-      credential = loginForm.sms;
+      credential = loginForm.pin;
     } else {
       principal = loginForm.username;
       credential = loginForm.password
     }
     const result = await userStore.login(loginForm.type, principal, credential);
-    if (!result) {
-      showToast({ text: '登录失败，请重试！', position: 'bottom', type: 'danger' });
-    }
   }
   catch (e) {
     console.error(e);
@@ -138,7 +135,7 @@ watch(() => userStore.isLogin, (v) => {
     emoji.value = '🎉';
     // @ts-ignore
     typer.value = new EasyTyper(typerObj, '欢迎回来');
-    showToast({ text: `登录成功，欢迎回来，UID:${userStore.userId}`, position: 'top' });
+    showToast({ text: `登录成功，欢迎回来，UUID:${userStore.userUUID}`, position: 'top' });
     setTimeout(() => {
       refLoginModal.value?.close();
     }, 1500);
@@ -154,9 +151,9 @@ watch(() => userStore.isLogin, (v) => {
         <div style="margin-top: .5rem;">
           <span class="sidebar-logo sidebar-logo-animation">DILIDILI</span>
           <span class="login-type">
-            <span class="login-type-item" :class="{'active': loginForm.type === 'password'}" @click="loginForm.type = 'password'">密码登录</span>
+            <span class="login-type-item" :class="{'active': loginForm.type === 'pwd'}" @click="loginForm.type = 'pwd'">密码登录</span>
             <span>&nbsp;|&nbsp;</span>
-            <span class="login-type-item" :class="{'active': loginForm.type === 'sms'}" @click="loginForm.type = 'sms'">短信登录</span>
+            <span class="login-type-item" :class="{'active': loginForm.type === 'pin'}" @click="loginForm.type = 'pin'">短信登录</span>
           </span>
         </div>
         <div class="login-top">
@@ -164,22 +161,22 @@ watch(() => userStore.isLogin, (v) => {
           <span class="login-top-text">{{ typerObj.output }}</span>
           <span class="typed-cursor login-top-text">|</span>
         </div>
-        <div class="login-bottom">
-          <form class="login-form">
-            <input v-if="loginForm.type === 'password'" class="login-form-input" type="text" name="username" placeholder="请输入用户名（guest）" v-model="loginForm.username" autocomplete="username" />
-            <input v-if="loginForm.type === 'sms'" class="login-form-input" type="text" name="phone" placeholder="请输入手机号" v-model="loginForm.phone" />
-            <input v-if="loginForm.type === 'password'" class="login-form-input" type="password" name="password" placeholder="请输入密码（123456）" v-model="loginForm.password" autocomplete="current-password" />
-            <div v-if="loginForm.type === 'sms'" style="position: relative;">
-              <input class="login-form-input" type="text" name="sms" placeholder="请输入短信验证码（1234）" v-model="loginForm.sms" />
+        <form class="login-bottom">
+          <div class="login-form">
+            <input v-if="loginForm.type === 'pwd'" class="login-form-input" type="text" name="username" placeholder="请输入用户名（guest）" v-model="loginForm.username" autocomplete="username" />
+            <input v-if="loginForm.type === 'pin'" class="login-form-input" type="text" name="phone" placeholder="请输入手机号" v-model="loginForm.phone" />
+            <input v-if="loginForm.type === 'pwd'" class="login-form-input" type="password" name="password" placeholder="请输入密码（123456）" v-model="loginForm.password" autocomplete="current-password" />
+            <div v-if="loginForm.type === 'pin'" style="position: relative;">
+              <input class="login-form-input" type="text" name="sms" placeholder="请输入短信验证码（1234）" v-model="loginForm.pin" />
               <div class="login-form-get-sms" @click="handleGetSmsCode">{{ smsTip }}</div>
             </div>
-          </form>
-          <div class="login-form-submit" v-shake="loginForm.shake">
-            <button style="outline: none; color: inherit;" :disabled="submitDisabled" @click="handleLoginSubmit">
+          </div>
+          <div class="login-form-submit" v-shake="loginForm.shake" @click="handleLoginSubmit">
+            <button style="outline: none; color: inherit;" :disabled="submitDisabled" @submit="handleLoginSubmit">
               <Right size="32" />
             </button>
           </div>
-        </div>
+        </form>
         <div class="login-footer">
           我已阅读并同意<a href="http://localhost">《DiliDili用户协议》</a>
         </div>

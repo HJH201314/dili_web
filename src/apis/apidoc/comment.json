@@ -1,0 +1,535 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "video-platform后台相关接口文档",
+    "version": "0.0.1",
+    "title": "测video-platform后台相关接口文档",
+    "contact": {
+      "name": "origamiwang",
+      "url": "https://github.com/OrigamiWang",
+      "email": "2241375541@qq.com"
+    }
+  },
+  "host": "localhost:8851",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "CommentController",
+      "description": "Comment Controller"
+    }
+  ],
+  "paths": {
+    "/comment/add": {
+      "post": {
+        "tags": [
+          "CommentController"
+        ],
+        "summary": "添加评论",
+        "operationId": "addCommentUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "comment",
+            "description": "要添加的评论（id不用传）",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Comment",
+              "originalRef": "Comment"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/comment/deleteChild/{pid}/{cid}": {
+      "delete": {
+        "tags": [
+          "CommentController"
+        ],
+        "summary": "删除子评论",
+        "operationId": "deleteChildCommentUsingDELETE",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "cid",
+            "in": "path",
+            "description": "要删除的子评论的id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "pid",
+            "in": "path",
+            "description": "要删除的子评论的根评论的id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/comment/deleteRoot/{pid}": {
+      "delete": {
+        "tags": [
+          "CommentController"
+        ],
+        "summary": "删除根评论",
+        "operationId": "deleteRootCommentUsingDELETE",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "path",
+            "description": "要删除的根评论的id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/comment/likeChildren/{flag}/{pid}/{cid}": {
+      "post": {
+        "tags": [
+          "CommentController"
+        ],
+        "summary": "点赞子评论",
+        "operationId": "likeChildrenCommentUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "cid",
+            "in": "path",
+            "description": "点赞的子评论id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "flag",
+            "in": "path",
+            "description": "点赞或取消点赞（1：点赞  -1：取消点赞）",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pid",
+            "in": "path",
+            "description": "点赞的对应的根评论id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/comment/likeRoot/{flag}/{pid}": {
+      "post": {
+        "tags": [
+          "CommentController"
+        ],
+        "summary": "点赞根评论",
+        "operationId": "likeRootCommentUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "flag",
+            "in": "path",
+            "description": "点赞或取消点赞（1：点赞  -1：取消点赞）",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pid",
+            "in": "path",
+            "description": "点赞的根评论的id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/comment/listChildrenComment/{pid}/{page}/{size}": {
+      "get": {
+        "tags": [
+          "CommentController"
+        ],
+        "summary": "分页获取对应根评论下的子评论",
+        "operationId": "listChildrenCommentByPagesUsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "path",
+            "description": "当前页",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pid",
+            "in": "path",
+            "description": "要获取子评论的根评论id",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "size",
+            "in": "path",
+            "description": "每页大小",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«List«Comment»»",
+              "originalRef": "CommonResult«List«Comment»»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/comment/listRootComment/{foreignId}/{page}/{size}": {
+      "get": {
+        "tags": [
+          "CommentController"
+        ],
+        "summary": "分页获取评论",
+        "operationId": "listCommentByPagesUsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "foreignId",
+            "in": "path",
+            "description": "要获取评论的动态id",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page",
+            "in": "path",
+            "description": "当前页",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "size",
+            "in": "path",
+            "description": "每页大小",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«List«Comment»»",
+              "originalRef": "CommonResult«List«Comment»»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/comment/reply/{pid}": {
+      "post": {
+        "tags": [
+          "CommentController"
+        ],
+        "summary": "回复评论",
+        "operationId": "replyCommentUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "comment",
+            "description": "要回复的评论（id不用传）",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Comment",
+              "originalRef": "Comment"
+            }
+          },
+          {
+            "name": "pid",
+            "in": "path",
+            "description": "回复的根评论的id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Comment": {
+      "type": "object",
+      "properties": {
+        "children": {
+          "type": "array",
+          "description": "子评论",
+          "items": {
+            "$ref": "#/definitions/Comment",
+            "originalRef": "Comment"
+          }
+        },
+        "content": {
+          "type": "string",
+          "description": "评论内容"
+        },
+        "createTime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "评论时间"
+        },
+        "foreignId": {
+          "type": "integer",
+          "format": "int32",
+          "description": "评论对象的id"
+        },
+        "id": {
+          "type": "string",
+          "description": "id，主键"
+        },
+        "likeNum": {
+          "type": "integer",
+          "format": "int32",
+          "description": "点赞数量"
+        },
+        "replyNum": {
+          "type": "integer",
+          "format": "int32",
+          "description": "回复数量"
+        },
+        "targetUsername": {
+          "type": "string",
+          "description": "回复的用户"
+        },
+        "userId": {
+          "type": "integer",
+          "format": "int32",
+          "description": "用户id"
+        },
+        "username": {
+          "type": "string",
+          "description": "用户名"
+        }
+      },
+      "title": "Comment"
+    },
+    "CommonResult«List«Comment»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Comment",
+            "originalRef": "Comment"
+          }
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "CommonResult«List«Comment»»"
+    },
+    "CommonResult«string»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "data": {
+          "type": "string",
+          "enum": [
+            "FAILED",
+            "FORBIDDEN",
+            "SUCCESS",
+            "UNAUTHORIZED",
+            "VALIDATE_FAILED"
+          ]
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "CommonResult«string»"
+    }
+  }
+}

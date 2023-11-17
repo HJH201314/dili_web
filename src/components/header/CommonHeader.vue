@@ -8,6 +8,7 @@ import useUserStore from "@/stores/useUserStore";
 import CommonModal from "@/components/modal/CommonModal.vue";
 import LoginModal from "@/components/login-modal/LoginModal.vue";
 import type { CommonModalFunc } from "@/components/modal/CommonModal";
+import DiliTooltip from "@/components/tooltip/DiliTooltip.vue";
 
 const userStore = useUserStore();
 
@@ -107,6 +108,14 @@ function handleLoginClick() {
   // 展示登录模态框
   refLoginModal.value?.open();
 }
+async function handleLogoutClick() {
+  const res = await userStore.logout();
+  if (res) {
+    showToast({text: '登出成功', position: 'top'});
+  } else {
+    showToast({text: '登出请求失败，已强制登出', position: 'top'});
+  }
+}
 
 const isSearching = ref(false);
 const searchContainer = ref<HTMLDivElement>();
@@ -136,10 +145,15 @@ const form = reactive({
         </Transition>
       </div>
     </div>
-    <div class="nav-user-container">
-      <span v-if="!userStore.isLogin" @click="handleLoginClick">登录</span>
-      <img class="nav-user-avatar" v-if="userStore.isLogin" :src="userStore.avatar ?? '/favicon.ico'"  alt="avatar"/>
-    </div>
+    <DiliTooltip position="bottom" :enabled="userStore.isLogin">
+      <div class="nav-user-container">
+        <span v-if="!userStore.isLogin" @click="handleLoginClick">登录</span>
+        <img class="nav-user-avatar" v-if="userStore.isLogin" :src="userStore.avatar ?? '/favicon.ico'"  alt="avatar"/>
+      </div>
+      <template #tip>
+        <div class="nav-user-logout" @click="handleLogoutClick">登出</div>
+      </template>
+    </DiliTooltip>
     <ul class="right-entry">
       <li v-for="entry in rightEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
         <span>{{ entry.name }}</span>
@@ -284,6 +298,12 @@ header {
     &:hover {
       transform: rotate(-360deg);
     }
+  }
+  &-logout {
+    background-color: white;
+    white-space: nowrap;
+    cursor: pointer;
+    font-size: .8rem;
   }
 }
 .right-entry {

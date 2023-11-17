@@ -1,0 +1,443 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "video-platform后台相关接口文档",
+    "version": "0.0.1",
+    "title": "测video-platform后台相关接口文档",
+    "contact": {
+      "name": "origamiwang",
+      "url": "https://github.com/OrigamiWang",
+      "email": "2241375541@qq.com"
+    }
+  },
+  "host": "localhost:8850",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "UpdatesController",
+      "description": "动态管理"
+    }
+  ],
+  "paths": {
+    "/updates/all": {
+      "get": {
+        "tags": [
+          "UpdatesController"
+        ],
+        "summary": "获取所有动态",
+        "operationId": "allUpdatesUsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "Update的List的JSON字符串",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«List«Update»»",
+              "originalRef": "CommonResult«List«Update»»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/updates/byPartition": {
+      "get": {
+        "tags": [
+          "UpdatesController"
+        ],
+        "summary": "获取指定分区的动态",
+        "operationId": "getUpdatesByTypeUsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "pid",
+            "in": "query",
+            "description": "pid",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List<Update>的JSON字符串",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«List«Update»»",
+              "originalRef": "CommonResult«List«Update»»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/updates/delete": {
+      "delete": {
+        "tags": [
+          "UpdatesController"
+        ],
+        "summary": "删除指定动态",
+        "operationId": "deleteByIdUsingDELETE",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "id",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/updates/getImage": {
+      "get": {
+        "tags": [
+          "UpdatesController"
+        ],
+        "summary": "获取指定图片",
+        "operationId": "getImagesUsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "url",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "所求图片的byte[]",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«Array«byte»»",
+              "originalRef": "CommonResult«Array«byte»»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/updates/publish": {
+      "post": {
+        "tags": [
+          "UpdatesController"
+        ],
+        "summary": "发布动态",
+        "operationId": "publishUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "content",
+            "in": "query",
+            "description": "动态的正文，长度1~1024",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "images",
+            "description": "动态所附带的图片，最大9张；理论上，可以存视频吧",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "file"
+              }
+            }
+          },
+          {
+            "name": "pid",
+            "in": "query",
+            "description": "动态的分区，未分区的动态的pid=1",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "动态的标题,长度1~40",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "动态的类型，截至11.13日，只有图文，类型编号为0",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "uid",
+            "in": "query",
+            "description": "发布动态的用户id",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "发布成功",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/updates/update": {
+      "post": {
+        "tags": [
+          "UpdatesController"
+        ],
+        "summary": "修改动态",
+        "operationId": "updateUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "content",
+            "in": "query",
+            "description": "动态的正文，长度1~1024",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "目标修改动态的id",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "body",
+            "name": "images",
+            "description": "动态所附带的图片，最大9张；",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "file"
+              }
+            }
+          },
+          {
+            "name": "pid",
+            "in": "query",
+            "description": "动态的分区，未分区的动态的pid=1",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "动态的标题,长度1~40",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "CommonResult«Array«byte»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "data": {
+          "type": "string",
+          "format": "byte"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "CommonResult«Array«byte»»"
+    },
+    "CommonResult«List«Update»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Update",
+            "originalRef": "Update"
+          }
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "CommonResult«List«Update»»"
+    },
+    "CommonResult«string»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "data": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "CommonResult«string»"
+    },
+    "Update": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "description": "正文"
+        },
+        "datetime": {
+          "type": "string",
+          "format": "date-time",
+          "description": "时间"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32",
+          "description": "动态id"
+        },
+        "pid": {
+          "type": "integer",
+          "format": "int32",
+          "description": "分区id"
+        },
+        "status": {
+          "type": "integer",
+          "format": "int32",
+          "description": "状态码"
+        },
+        "title": {
+          "type": "string",
+          "description": "标题"
+        },
+        "type": {
+          "type": "integer",
+          "format": "int32",
+          "description": "动态类型"
+        },
+        "uid": {
+          "type": "integer",
+          "format": "int32",
+          "description": "发布者的用户id"
+        },
+        "urls": {
+          "type": "string",
+          "description": "多媒体urls的json"
+        }
+      },
+      "title": "Update"
+    }
+  }
+}

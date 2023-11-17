@@ -1,0 +1,29 @@
+{
+  "outputFolder": "src/apis",
+  "requestCreateLib": "./createRequest",
+  "requestCreateMethod": "createRequest",
+  "timeout": 180000,
+  "apiSpecsPaths": [
+    {
+      "path": "src/apis/apidoc/security.json",
+      "name": "security"
+    },
+    {
+      "path": "src/apis/apidoc/manage.json",
+      "name": "manage"
+    },
+    {
+      "path": "src/apis/apidoc/comment.json",
+      "name": "comment"
+    },
+    {
+      "path": "src/apis/apidoc/admin.json",
+      "name": "admin"
+    }
+  ],
+  "options": {
+    "withComments": true,
+    "typeWithPrefix": true,
+    "backwardCompatible": false
+  }
+}

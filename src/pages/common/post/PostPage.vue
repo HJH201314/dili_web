@@ -5,6 +5,8 @@ import { computed, onMounted, reactive, ref } from "vue";
 import { EmotionHappy, Instagram, AtSign, ChartHistogramTwo, Topic, SettingOne } from '@icon-park/vue-next';
 import PostItemCard from "@/pages/common/post/components/PostItemCard.vue";
 import type { PostItemCardProps } from "@/pages/common/post/components/PostItemCard";
+import { useRouter } from "vue-router";
+import showToast from "@/components/toast/toast";
 
 const userStore = useUserStore();
 
@@ -20,7 +22,14 @@ const publishForm = reactive({
   content: ref(''),
 });
 
+const router = useRouter();
+
 onMounted(() => {
+  // if (!userStore.isLogin) {
+  //   // 未登录则跳转到登录页
+  //   showToast({ type: 'danger', text: '请先登录' });
+  //   router.replace({ name: 'home' });
+  // }
   Promise.all([
     getPosts(),
   ]);

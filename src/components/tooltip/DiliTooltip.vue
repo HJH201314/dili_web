@@ -5,10 +5,12 @@ import { ref, nextTick } from "vue";
 type TooltipProps = {
   text: string;
   position?: 'top' | 'bottom' | 'left' | 'right';
+  enabled?: boolean;
 };
 const props = withDefaults(defineProps<TooltipProps>(), {
   text: '',
   position: 'right',
+  enabled: true,
 });
 
 const refTrigger = ref<HTMLDivElement>();
@@ -18,6 +20,7 @@ const refPopover = ref<HTMLSpanElement>();
 const showTip = ref(false);
 
 function show() {
+  if (!props.enabled) return;
   // 先切换show再设置位置，否则由于tooltip元素不存在，导致位置计算错误
   showTip.value = true;
   nextTick(() => {
@@ -65,8 +68,9 @@ function hide(e: MouseEvent) {
       <slot />
     </span>
     <Transition>
-      <div v-show="showTip" class="tooltip-info" ref="refPopover" role="tooltip">
-        <span class="tooltip-info-text">{{ props.text }}</span>
+      <div v-show="showTip" :class="{'tooltip-info': text, 'tooltip-slot': !text}" ref="refPopover" role="tooltip">
+        <span v-if="text" class="tooltip-info-text">{{ props.text }}</span>
+        <div v-else><slot name="tip" /></div>
       </div>
     </Transition>
   </div>
@@ -89,6 +93,16 @@ function hide(e: MouseEvent) {
       white-space: nowrap;
       color: $color-white;
     }
+  }
+  &-slot {
+    position: absolute;
+    padding: .25rem .5rem;
+    border-radius: .5rem;
+    background-color: white;
+    box-shadow: $box-shadow;
+    z-index: 999;
+    opacity: 0.9;
+    box-sizing: border-box;
   }
 }
 .v-enter-active,

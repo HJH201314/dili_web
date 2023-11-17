@@ -1,0 +1,1459 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "video-platform后台相关接口文档",
+    "version": "0.0.1",
+    "title": "测video-platform后台相关接口文档",
+    "contact": {
+      "name": "origamiwang",
+      "url": "https://github.com/OrigamiWang",
+      "email": "2241375541@qq.com"
+    }
+  },
+  "host": "localhost:8849",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "FileController",
+      "description": "文件上传控制器"
+    },
+    {
+      "name": "LoginController",
+      "description": "Login Controller"
+    },
+    {
+      "name": "RoleController",
+      "description": "权限管理"
+    },
+    {
+      "name": "UserController",
+      "description": "用户管理"
+    },
+    {
+      "name": "VisitController",
+      "description": "访问量管理"
+    }
+  ],
+  "paths": {
+    "/file/upload": {
+      "post": {
+        "tags": [
+          "FileController"
+        ],
+        "summary": "文件上传，上传时固定key=file，返回值为文件存储的路径",
+        "operationId": "uploadUsingPOST",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "file",
+            "description": "file",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/mg/role/add": {
+      "post": {
+        "tags": [
+          "RoleController"
+        ],
+        "summary": "添加角色信息",
+        "operationId": "addRoleUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "role",
+            "description": "传入需要添加的角色",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Role",
+              "originalRef": "Role"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/mg/role/delete": {
+      "delete": {
+        "tags": [
+          "RoleController"
+        ],
+        "summary": "删除角色信息",
+        "operationId": "deleteRoleUsingDELETE",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "roleName",
+            "in": "query",
+            "description": "角色名称",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/mg/role/list": {
+      "get": {
+        "tags": [
+          "RoleController"
+        ],
+        "summary": "查询所有角色信息",
+        "operationId": "getRoleListUsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«List«Role»»",
+              "originalRef": "CommonResult«List«Role»»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/mg/role/permission/add": {
+      "post": {
+        "tags": [
+          "RoleController"
+        ],
+        "summary": "增加权限",
+        "operationId": "addPermissionUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "permission",
+            "in": "query",
+            "description": "权限名称",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/mg/role/permission/delete": {
+      "delete": {
+        "tags": [
+          "RoleController"
+        ],
+        "summary": "删除权限",
+        "operationId": "deletePermissionUsingDELETE",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "permission",
+            "in": "query",
+            "description": "权限名称",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/mg/role/permission/list": {
+      "get": {
+        "tags": [
+          "RoleController"
+        ],
+        "summary": "查询所有权限信息",
+        "operationId": "getPermissionListUsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«List«Permission»»",
+              "originalRef": "CommonResult«List«Permission»»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/mg/role/update": {
+      "post": {
+        "tags": [
+          "RoleController"
+        ],
+        "summary": "修改oldRole为newRole",
+        "operationId": "updateRoleUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "newRole",
+            "in": "query",
+            "description": "新角色名称",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "oldRole",
+            "in": "query",
+            "description": "旧角色名称",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/mg/user/add": {
+      "post": {
+        "tags": [
+          "UserController"
+        ],
+        "summary": "新增用户，同时新增关联的默认detail、statistics、role信息",
+        "operationId": "addUserUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user",
+            "description": "传递的用户对象json",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User",
+              "originalRef": "User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/mg/user/addrole/{userId}/{roleId}": {
+      "post": {
+        "tags": [
+          "UserController"
+        ],
+        "summary": "根据用户id、角色id增加角色",
+        "operationId": "addRoleByIdUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "roleId",
+            "in": "path",
+            "description": "角色id",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "用户id",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/mg/user/delete/{id}": {
+      "delete": {
+        "tags": [
+          "UserController"
+        ],
+        "summary": "根据id删除用户，同时删除与之关联的detail、statistics、role信息",
+        "operationId": "deleteUserByIdUsingDELETE",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "用户id",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/mg/user/deleterole/{userId}/{roleId}": {
+      "delete": {
+        "tags": [
+          "UserController"
+        ],
+        "summary": "根据用户id。权限id删除权限",
+        "operationId": "deleteRoleByIdUsingDELETE",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "roleId",
+            "in": "path",
+            "description": "角色id",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "用户id",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/mg/user/list": {
+      "get": {
+        "tags": [
+          "UserController"
+        ],
+        "summary": "获取所有用户（仅user表）",
+        "operationId": "getAllUserUsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«object»",
+              "originalRef": "CommonResult«object»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/mg/user/update": {
+      "put": {
+        "tags": [
+          "UserController"
+        ],
+        "summary": "根据用户id修改用户（仅user）",
+        "operationId": "updateUserUsingPUT",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "user",
+            "description": "传递的用户对象json",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User",
+              "originalRef": "User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/mg/user/updatedetail": {
+      "put": {
+        "tags": [
+          "UserController"
+        ],
+        "summary": "根据uid更新detail表信息",
+        "operationId": "updateDetailByIdUsingPUT",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "userDetail",
+            "description": "传递的UserDetail信息",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserDetail",
+              "originalRef": "UserDetail"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/mg/user/updatestatistics": {
+      "put": {
+        "tags": [
+          "UserController"
+        ],
+        "summary": "根据uid更新statistics表信息",
+        "operationId": "updateStatisticsByIdUsingPUT",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "userStatistics",
+            "description": "传递的UserStatistics信息",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserStatistics",
+              "originalRef": "UserStatistics"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/scy/login": {
+      "post": {
+        "tags": [
+          "LoginController"
+        ],
+        "summary": "login",
+        "operationId": "loginUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "loginDto",
+            "description": "loginDto",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginDto",
+              "originalRef": "LoginDto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/scy/logout": {
+      "get": {
+        "tags": [
+          "LoginController"
+        ],
+        "summary": "logout",
+        "operationId": "logoutUsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "header",
+            "description": "token",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/scy/p1": {
+      "get": {
+        "tags": [
+          "LoginController"
+        ],
+        "summary": "p1",
+        "operationId": "p1UsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/scy/p6": {
+      "get": {
+        "tags": [
+          "LoginController"
+        ],
+        "summary": "p6",
+        "operationId": "p6UsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/scy/pin": {
+      "post": {
+        "tags": [
+          "LoginController"
+        ],
+        "summary": "getPin",
+        "operationId": "getPinUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "authDto",
+            "description": "authDto",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AuthDto",
+              "originalRef": "AuthDto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/scy/register": {
+      "post": {
+        "tags": [
+          "LoginController"
+        ],
+        "summary": "register",
+        "operationId": "registerUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "registerDto",
+            "description": "registerDto",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RegisterDto",
+              "originalRef": "RegisterDto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«string»",
+              "originalRef": "CommonResult«string»"
+            }
+          },
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/visit/day/{timeId}": {
+      "get": {
+        "tags": [
+          "VisitController"
+        ],
+        "summary": "查找某一天的访问量",
+        "operationId": "getVisByDayUsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "timeId",
+            "in": "path",
+            "description": "timeId",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«List«Visit»»",
+              "originalRef": "CommonResult«List«Visit»»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/visit/today": {
+      "get": {
+        "tags": [
+          "VisitController"
+        ],
+        "summary": "获取今日的访问量",
+        "operationId": "getTodayVisUsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«Map«object,object»»",
+              "originalRef": "CommonResult«Map«object,object»»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/visit/year/{year}/mon/{mon}": {
+      "get": {
+        "tags": [
+          "VisitController"
+        ],
+        "summary": "根据特定的年月查询总的访问量",
+        "operationId": "getVisByMonUsingGET",
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "mon",
+            "in": "path",
+            "description": "mon",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "year",
+            "in": "path",
+            "description": "year",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CommonResult«List«VisitMonTotal»»",
+              "originalRef": "CommonResult«List«VisitMonTotal»»"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "AuthDto": {
+      "type": "object",
+      "properties": {
+        "auth": {
+          "type": "string"
+        },
+        "type": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "AuthDto"
+    },
+    "CommonResult«List«Permission»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Permission",
+            "originalRef": "Permission"
+          }
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "CommonResult«List«Permission»»"
+    },
+    "CommonResult«List«Role»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Role",
+            "originalRef": "Role"
+          }
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "CommonResult«List«Role»»"
+    },
+    "CommonResult«List«VisitMonTotal»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VisitMonTotal",
+            "originalRef": "VisitMonTotal"
+          }
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "CommonResult«List«VisitMonTotal»»"
+    },
+    "CommonResult«List«Visit»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Visit",
+            "originalRef": "Visit"
+          }
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "CommonResult«List«Visit»»"
+    },
+    "CommonResult«Map«object,object»»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "data": {
+          "type": "object"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "CommonResult«Map«object,object»»"
+    },
+    "CommonResult«object»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "data": {
+          "type": "object"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "CommonResult«object»"
+    },
+    "CommonResult«string»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "data": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "title": "CommonResult«string»"
+    },
+    "LoginDto": {
+      "type": "object",
+      "properties": {
+        "phone": {
+          "type": "string"
+        },
+        "pswd": {
+          "type": "string"
+        }
+      },
+      "title": "LoginDto"
+    },
+    "Permission": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int32",
+          "description": "权限id"
+        },
+        "name": {
+          "type": "string",
+          "description": "权限名称"
+        }
+      },
+      "title": "Permission"
+    },
+    "RegisterDto": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "pin": {
+          "type": "string"
+        },
+        "pswd": {
+          "type": "string"
+        },
+        "type": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "RegisterDto"
+    },
+    "Role": {
+      "type": "object",
+      "properties": {
+        "describe": {
+          "type": "string",
+          "description": "角色权限描述"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32",
+          "description": "rid"
+        },
+        "name": {
+          "type": "string",
+          "description": "角色名称"
+        }
+      },
+      "title": "Role"
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "邮箱"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32",
+          "description": "uid"
+        },
+        "level": {
+          "type": "integer",
+          "format": "int32",
+          "description": "等级"
+        },
+        "name": {
+          "type": "string",
+          "description": "昵称"
+        },
+        "password": {
+          "type": "string",
+          "description": "密码"
+        },
+        "phone": {
+          "type": "string",
+          "description": "手机号"
+        },
+        "status": {
+          "type": "integer",
+          "format": "int32",
+          "description": "用户状态"
+        }
+      },
+      "title": "User"
+    },
+    "UserDetail": {
+      "type": "object",
+      "properties": {
+        "exp": {
+          "type": "integer",
+          "format": "int32",
+          "description": "经验值"
+        },
+        "gender": {
+          "type": "string",
+          "format": "byte",
+          "description": "性别"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32",
+          "description": "id"
+        },
+        "info": {
+          "type": "string",
+          "description": "自我介绍"
+        },
+        "ip": {
+          "type": "string",
+          "description": "ip属地"
+        },
+        "uid": {
+          "type": "integer",
+          "format": "int32",
+          "description": "用户id"
+        }
+      },
+      "title": "UserDetail"
+    },
+    "UserStatistics": {
+      "type": "object",
+      "properties": {
+        "fan": {
+          "type": "integer",
+          "format": "int32",
+          "description": "粉丝数量"
+        },
+        "follow": {
+          "type": "integer",
+          "format": "int32",
+          "description": "关注数量"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "like": {
+          "type": "integer",
+          "format": "int32",
+          "description": "获赞数量"
+        },
+        "uid": {
+          "type": "integer",
+          "format": "int32",
+          "description": "用户id"
+        }
+      },
+      "title": "UserStatistics"
+    },
+    "Visit": {
+      "type": "object",
+      "properties": {
+        "api": {
+          "type": "string",
+          "description": "访问接口，all为所有接口的总和"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int32",
+          "description": "id"
+        },
+        "lastUpdate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "上次更新时间"
+        },
+        "timeId": {
+          "type": "string",
+          "description": "yyyy-mm-dd的时间id"
+        },
+        "visits": {
+          "type": "integer",
+          "format": "int32",
+          "description": "访问量"
+        }
+      },
+      "title": "Visit"
+    },
+    "VisitMonTotal": {
+      "type": "object",
+      "properties": {
+        "api": {
+          "type": "string",
+          "description": "访问接口，all为总量"
+        },
+        "mon": {
+          "type": "string",
+          "description": "月份"
+        },
+        "visits": {
+          "type": "integer",
+          "format": "int32",
+          "description": "访问量"
+        },
+        "year": {
+          "type": "string",
+          "description": "年份"
+        }
+      },
+      "title": "VisitMonTotal"
+    }
+  }
+}
