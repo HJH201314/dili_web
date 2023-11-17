@@ -45,11 +45,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-body, html {
-  height: 100%;
-  // background: linear-gradient(90deg, #e1eec307, #f0505307);
-}
-
 /* 滚动条 */
 ::-webkit-scrollbar {
   --bar-width: 5px;
@@ -76,26 +71,19 @@ body, html {
   color: $color-white;
 }
 
+body, html {
+  height: 100%;
+  // background: linear-gradient(90deg, #e1eec307, #f0505307);
+}
+
 #app {
   flex: 1;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow: auto;
   //padding: 24px;
   box-sizing: border-box;
   position: relative;
-}
-
-@media screen and (max-width: $screen-sm) {
-  #app {
-    flex: 1;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    //padding: 12px;
-    box-sizing: border-box;
-    position: relative;
-  }
 }
 
 *, ::before, ::after {

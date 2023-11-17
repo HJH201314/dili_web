@@ -124,8 +124,6 @@ async function getPosts() {
 @import "@/assets/variables.module";
 @import "@/assets/functions";
 .post {
-  height: 100%;
-  background-image: url("@/assets/img/bg.png");
 
   &-container {
     position: relative;
@@ -145,6 +143,8 @@ async function getPosts() {
   }
 
   &-left {
+    position: sticky;
+    top: 4.5rem;
     width: 20%;
     height: 100%;
     display: flex;
@@ -314,6 +314,8 @@ async function getPosts() {
   }
 
   &-right {
+    position: sticky;
+    top: 4.5rem;
     width: 20%;
     height: 100%;
     display: flex;

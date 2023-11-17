@@ -160,22 +160,24 @@ const form = reactive({
         <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
       </li>
     </ul>
-    <button id="upload-button" type="default" @click="e => handleEntryClick(e, {key: 'upload', name: '投稿', href: '/upload'})">
+    <button id="upload-button" @click="e => handleEntryClick(e, {key: 'upload', name: '投稿', href: '/upload'})">
       投稿
     </button>
     <LoginModal ref="refLoginModal" />
   </header>
+  <div class="header-placeholder" style="height: 3.5rem;"></div>
 </template>
 
 <style scoped lang="scss">
 @import "@/assets/main";
 
 header {
-  position: sticky;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   height: 3.5rem;
+  background-color: white;
   padding: 0 1rem;
   display: flex;
   align-items: center;
