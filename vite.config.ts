@@ -43,6 +43,21 @@ export default defineConfig({
         target: 'http://localhost:8848/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/security/, ''),
+      },
+      '/api/manage': {
+        target: 'http://localhost:8849/',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/manage/, ''),
+      },
+      '/api/admin': {
+        target: 'http://localhost:8850/',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/admin/, ''),
+      },
+      '/api/comment': {
+        target: 'http://localhost:8851/',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/comment/, ''),
       }
     }
   },
