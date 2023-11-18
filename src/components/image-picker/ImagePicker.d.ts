@@ -2,7 +2,8 @@ export type ImagePickerFunc = {
   selectImage: () => void;
 };
 
-export type ImagePickerModel = {
+export type ImagePickerModelItem = {
   file: File;
-  url: string;
-}[];
+  path: string;
+};
+export type ImagePickerModel = ImagePickerModelItem[];
