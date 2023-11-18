@@ -7,6 +7,11 @@ import PostItemCard from "@/pages/common/post/components/PostItemCard.vue";
 import type { PostItemCardProps } from "@/pages/common/post/components/PostItemCard";
 import { useRouter } from "vue-router";
 import showToast from "@/components/toast/toast";
+import ImagePicker from "@/components/image-picker/ImagePicker.vue";
+import type { ImagePickerFunc, ImagePickerModel } from "@/components/image-picker/ImagePicker";
+import adminApi from "@/apis/services/video-platform-admin";
+import { delay } from "@/utils/delay";
+import Spinning from "@/components/spinning/Spinning.vue";
 
 const userStore = useUserStore();
 
@@ -17,9 +22,19 @@ const postLeftUserHeight = computed(() => {
   return (postLeftUserRef.value?.offsetHeight ?? 0) + 'px';
 });
 
+/* 图片选择组件实例 */
+const imagePickerRef = ref<ImagePickerFunc>();
+
+function handleImageSelect() {
+  imagePickerRef.value?.selectImage();
+}
+
 const publishForm = reactive({
+  pid: ref(1),
   topic: ref(''),
+  title: ref(''),
   content: ref(''),
+  images: ref<ImagePickerModel>([]),
 });
 
 const router = useRouter();
@@ -57,6 +72,55 @@ async function getPosts() {
     });
   }
 }
+
+const uploading = ref(false);
+
+async function handlePublishPost() {
+  if (!publishForm.content) {
+    showToast({ type: 'danger', text: '请输入内容' });
+    return;
+  }
+  uploading.value = true;
+  try {
+    if (!userStore.isLogin || !userStore.userInfo?.id) {
+      // 未登录则跳转到登录页
+      showToast({ type: 'danger', text: '请先登录' });
+      await router.replace({name: 'home'});
+      return;
+    }
+    await delay(1000);
+    // 创建 FormData 对象
+    const formData = new FormData();
+    publishForm.images.forEach(image => {
+      formData.append('images', image.file);
+    });
+    const res = await adminApi.UpdatesControllerFix.publishUsingPOST({
+      content: publishForm.content,
+      pid: publishForm.pid,
+      title: publishForm.title ? publishForm.title : '[DEFAULT_TITLE]',
+      type: 0,
+      uid: userStore.userInfo?.id,
+    }, formData);
+    if (res.data?.code == 200) {
+      showToast({ type: 'success', text: '发布成功' });
+      clearInput();
+    } else {
+      showToast({ type: 'danger', text: '发布失败' });
+    }
+  } catch (e) {
+    showToast({ type: 'danger', text: '发布失败' });
+  } finally {
+    uploading.value = false;
+  }
+}
+
+function clearInput() {
+  publishForm.pid = 1;
+  publishForm.topic = '';
+  publishForm.title = '';
+  publishForm.content = '';
+  publishForm.images = [];
+}
 </script>
 
 <template>
@@ -78,21 +142,28 @@ async function getPosts() {
       </aside>
       <main class="post-center">
         <section class="post-center-publish" :style="{'min-height': postLeftUserHeight}">
-          <div class="topic">
-            <topic theme="outline" size="1rem"/>
-            <span>选择话题</span>
+          <div class="header">
+            <div class="topic">
+              <topic theme="outline" size="1rem"/>
+              <span>选择话题</span>
+            </div>
+            <div v-show="publishForm.content" class="title">
+              <input type="text" placeholder="标题（选填）" v-model="publishForm.title" />
+            </div>
           </div>
           <div class="input">
             <textarea placeholder="来分享点什么吧?" v-model="publishForm.content" />
-          </div>
-          <div class="actions">
-            <div class="action"><span class="icon"><emotion-happy theme="outline"/></span></div>
-            <div class="action"><span class="icon"><instagram theme="outline"/></span></div>
-            <div class="action"><span class="icon"><at-sign theme="outline"/></span></div>
-            <div class="action"><span class="icon"><chart-histogram-two theme="outline"/></span></div>
-            <span class="length-tip">{{ publishForm.content.length }} / 1000</span>
-            <div class="action"><span class="icon"><setting-one theme="outline"/></span></div>
-            <button class="publish">发布</button>
+            <ImagePicker ref="imagePickerRef" :show-select-on-empty="false" show-select-not-empty v-model="publishForm.images" />
+            <div class="actions-placeholder"></div>
+            <div class="actions">
+              <div class="action"><span class="icon"><emotion-happy theme="outline"/></span></div>
+              <div class="action" @click="handleImageSelect"><span class="icon"><instagram theme="outline"/></span></div>
+              <div class="action"><span class="icon"><at-sign theme="outline"/></span></div>
+              <div class="action"><span class="icon"><chart-histogram-two theme="outline"/></span></div>
+              <span class="length-tip">{{ publishForm.content.length }} / 1000</span>
+              <div class="action"><span class="icon"><setting-one theme="outline"/></span></div>
+              <button class="publish" @click="handlePublishPost" :disabled="uploading"><Spinning :show="uploading" />发布</button>
+            </div>
           </div>
         </section>
         <section class="post-center-posts">
@@ -229,13 +300,23 @@ async function getPosts() {
       gap: .35rem;
       position: relative;
 
-      .topic {
-        @extend %click-able;
-        width: fit-content;
-        padding: .125rem .35rem;
-        border-radius: .5rem;
-        color: $color-grey-500;
-        background-color: $color-grey-100;
+      .header {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+
+        .topic {
+          @extend %click-able;
+          width: fit-content;
+          padding: .125rem .35rem;
+          border-radius: .5rem;
+          color: $color-grey-500;
+          background-color: $color-grey-100;
+        }
+
+        .title {
+          flex: 1;
+        }
       }
 
       .input {
@@ -260,14 +341,17 @@ async function getPosts() {
 
       .actions {
         position: absolute;
-        left: .5rem;
-        bottom: .5rem;
-        right: .5rem;
-        padding-left: .25rem;
+        left: .25rem;
+        bottom: 0;
+        right: .25rem;
         display: flex;
         flex-direction: row;
         align-items: center;
         justify-content: flex-start;
+        &-placeholder {
+          height: 1.75rem;
+          width: 100%;
+        }
         .action {
           @extend %click-able;
           @extend %button-like;
@@ -294,6 +378,9 @@ async function getPosts() {
           border-radius: .5rem;
           padding: .25rem 1rem;
           margin: 0 .25rem .25rem .5rem;
+          display: flex;
+          align-items: center;
+          gap: .5rem;
           &:hover {
             background-color: shade-color($color-secondary, 3%);
           }

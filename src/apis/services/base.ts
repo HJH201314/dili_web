@@ -17,10 +17,12 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
 (config) => {
-  console.log(config);
-  Object.keys(config.params).forEach(key => {
-    config.params[key] = encodeURIComponent(config.params[key]);
-  });
+  // console.log(config);
+  if (config.params) {
+    Object.keys(config.params).forEach(key => {
+      config.params[key] = encodeURIComponent(config.params[key]);
+    });
+  }
   // config.url = config.url?.split('?')[0] + '?' + Object.keys(config.params).map(key => `${key}=${encodeURIComponent(config.params[key])}`).join('&');
   return config;
 },

@@ -101,10 +101,11 @@ a {
   }
 }
 
-/* 自定义textarea样式 */
-textarea {
+/* 自定义textarea, input样式 */
+textarea, input {
   resize: none;
   outline: none;
+  width: 100%;
 }
 
 .enable-hover {

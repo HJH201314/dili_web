@@ -3,7 +3,7 @@ import { friendlyDate } from './date-format';
 import { computed, ref, watch } from "vue";
 
 type DateFormatProps = {
-  date?: string | number | Date; // 时间
+  date: string | number | Date; // 时间
   locale?: 'zh' | 'en'; // 语言
   threshold?: [number, number]; // 友好转化阈值
   format?: string; // 格式，默认为 yyyy/MM/dd hh:mm:ss
@@ -13,7 +13,6 @@ type DateFormatProps = {
 const props = withDefaults(defineProps<DateFormatProps>(), {
   date: '-',
   locale: 'zh',
-  threshold: () => [0, 0],
   format: 'yyyy/MM/dd hh:mm:ss',
   refreshRate: 0,
 });
