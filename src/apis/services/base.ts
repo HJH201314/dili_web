@@ -15,6 +15,21 @@ const axiosInstance = axios.create({
   baseURL: "/api",
 });
 
+axiosInstance.interceptors.request.use(
+(config) => {
+  console.log(config);
+  Object.keys(config.params).forEach(key => {
+    config.params[key] = encodeURIComponent(config.params[key]);
+  });
+  // config.url = config.url?.split('?')[0] + '?' + Object.keys(config.params).map(key => `${key}=${encodeURIComponent(config.params[key])}`).join('&');
+  return config;
+},
+(error) => {
+  console.log(error);
+  return Promise.reject(error);
+},
+);
+
 axiosInstance.interceptors.response.use(
 (response) => {
   if (response.data.code === 500 && response.data.message === "user not login") {
