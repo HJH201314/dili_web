@@ -10,9 +10,10 @@
 
 import axios from "axios";
 import type { AxiosResponse, AxiosRequestConfig } from "axios";
+import { SERVER_API_URL } from "@/apis/services/constants";
 
 const axiosInstance = axios.create({
-  baseURL: "/api",
+  baseURL: SERVER_API_URL,
 });
 
 axiosInstance.interceptors.request.use(
@@ -34,9 +35,17 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
 (response) => {
+  // 处理登录失效
   if (response.data.code === 500 && response.data.message === "user not login") {
     localStorage.removeItem("token");
     return response;
+  }
+  // 对结果url解码
+  if (response.data.data && typeof response.data.data === "object") {
+    // console.log(response.data.data)
+    // Object.keys(response.data.data).forEach(key => {
+    //   response.data.data[key] = decodeURIComponent(response.data.data[key]);
+    // });
   }
   return response;
 },

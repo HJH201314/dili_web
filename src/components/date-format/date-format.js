@@ -125,7 +125,7 @@ export function friendlyDate(time, {
       ago: '前',
       later: '后',
       justNow: '刚刚',
-      soon: '马上',
+      soon: '刚刚', // TODO: Fix this.
       template: '{num}{unit}{suffix}'
     },
     en: {

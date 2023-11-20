@@ -2,6 +2,7 @@ import '@/assets/main.scss';
 
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
+import { VueQueryPlugin } from "@tanstack/vue-query";
 
 import App from './App.vue';
 import router from './router';
@@ -16,6 +17,8 @@ const app = createApp(App);
 app.use(createPinia());
 // 注册路由
 app.use(router);
+// VueQuery
+app.use(VueQueryPlugin);
 
 // 路由拦截
 router.beforeEach((to, from, next) => {

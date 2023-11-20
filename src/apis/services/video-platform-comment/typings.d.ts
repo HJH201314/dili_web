@@ -22,9 +22,9 @@ declare namespace API {
     username?: string;
   };
 
-  type CommonResultListComment_ = {
+  type CommonResultListResultComment_ = {
     code?: number;
-    data?: Comment[];
+    data?: ListResultComment_;
     message?: string;
   };
 
@@ -78,6 +78,13 @@ declare namespace API {
     page: number;
     /** 每页大小 */
     size: number;
+    /** 排序字段 */
+    sortBy: string;
+  };
+
+  type ListResultComment_ = {
+    list?: Comment[];
+    total?: number;
   };
 
   type replyCommentUsingPOSTParams = {

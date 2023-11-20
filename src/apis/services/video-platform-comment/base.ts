@@ -1,8 +1,7 @@
 import type { AxiosRequestConfig } from "axios";
 import { request as baseRequest } from "@/apis/services/base";
-
-const SERVICE_PATH = "/comment";
+import { COMMENT_SERVICE_PATH } from "@/apis/services/constants";
 
 export const request = <TRes>(path: string, args: AxiosRequestConfig) => {
-  return baseRequest<TRes>(`${SERVICE_PATH}${path}`, args);
+  return baseRequest<TRes>(`${COMMENT_SERVICE_PATH}${path}`, args);
 }

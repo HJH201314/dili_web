@@ -70,7 +70,7 @@ function onFileChange(e: Event) {
 
 /* 接收modelValue更新 */
 watch(() => props.modelValue, (value) => {
-  if (!value || !value.length) {
+  if (!value) {
     return;
   }
   form.files = value.map(item => item.file);

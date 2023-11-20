@@ -3,10 +3,15 @@
 
 import { DEFAULT_USER_AVATAR } from "@/constants/defaultImage";
 import DateFormat from "@/components/date-format/DateFormat.vue";
-import { MoreOne, ShareThree, CommentOne, ThumbsUp } from "@icon-park/vue-next";
+import { MoreOne, ShareThree, CommentOne, ThumbsUp, DeleteOne } from "@icon-park/vue-next";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import type { PostItemCardProps } from "@/pages/common/post/components/PostItemCard";
 import CommentView from "@/pages/common/post/components/CommentView.vue";
+import { convertPostImage } from "@/pages/common/post/utils/image";
+import adminApi from "@/apis/services/video-platform-admin";
+import showToast from "@/components/toast/toast";
+import useUserStore from "@/stores/useUserStore";
+import ImagePreview from "@/components/image-preview/ImagePreview.vue";
 
 const props = withDefaults(defineProps<PostItemCardProps>(), {
   type: 'post',
@@ -23,6 +28,10 @@ const props = withDefaults(defineProps<PostItemCardProps>(), {
   images: () => [],
 });
 
+const emit = defineEmits<{
+  (event: 'delete-post', id: number): void;
+}>();
+
 /* 暴露 */
 defineExpose({
   expandPost,
@@ -36,6 +45,8 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', onResize);
 });
+
+const userStore = useUserStore();
 
 const postTypeDesc = computed(() => {
   switch (props.type) {
@@ -71,6 +82,21 @@ function handleUnfold() {
   readingMore.value = !readingMore.value;
 }
 
+function handleDeletePost() {
+  if (props.userId != userStore.userInfo.id) {
+    showToast({ text: '别删别人的啊', type: 'danger' });
+    return;
+  }
+  adminApi.UpdatesController.deleteByIdUsingDELETE({
+    id: props.postId,
+  }).then(res => {
+    if (res.data.code == 200) {
+      showToast({ text: '删除成功', type: 'success' });
+    }
+  }).catch();
+  emit('delete-post', props.postId);
+}
+
 const expandType = ref('none');
 /* 展开评论详情 */
 function expandPost(type: 'none' | 'forward' | 'comment') {
@@ -87,35 +113,59 @@ function contractPost() {
   expandPost('none');
 }
 
-function handleLikeClick() {
+const showMore = ref(false);
+function toggleMore() {
+  showMore.value = !showMore.value;
+}
 
+const likeClicked = ref(false);
+const likeCount = ref(props.likeCount);
+function handleLikeClick() {
+  likeClicked.value = !likeClicked.value;
+  likeCount.value += likeClicked.value ? 1 : -1;
+}
+
+const previewingImage = ref('');
+function handlePreviewImage(image: string) {
+  previewingImage.value = convertPostImage(image);
 }
 
 </script>
 
 <template>
   <div class="post-list-item">
-    <div class="avatar">
+    <div class="post-list-item-avatar">
       <img :src="props.avatar" alt="avatar">
     </div>
-    <div class="header">
+    <div class="post-list-item-header">
       <div class="username">{{ props.userName }}</div>
       <div class="desc"><DateFormat :date="props.createTime" /> · {{ postTypeDesc }}</div>
-      <div class="more"><MoreOne theme="outline" size="1.25rem" /></div>
+      <transition name="opacity-circ">
+        <div class="more-actions" v-if="showMore">
+          <div class="delete" @click="handleDeletePost"><DeleteOne theme="outline" size="1.25rem" /></div>
+        </div>
+      </transition>
+      <div class="more" @click="toggleMore"><MoreOne theme="outline" size="1.25rem" /></div>
     </div>
-    <div class="body">
+    <div class="post-list-item-body">
       <div ref="refContent" class="text-ellipsis" :class="{'content-less': !readingMore}" v-html="props.content"></div>
       <div v-if="needReadMore" class="unfold" @click="handleUnfold">{{ readingMore ? '收起' : '展开' }}</div>
+      <div class="image-grid">
+        <div class="image-item" v-for="image in props.images" :key="image" @click="handlePreviewImage(image)">
+          <img :src="convertPostImage(image)" alt="image">
+        </div>
+      </div>
     </div>
-    <div class="actions">
+    <div class="post-list-item-actions">
       <div class="action" :class="{'active': expandType == 'forward'}" @click="expandPost('forward')"><ShareThree /> {{ props.forwardCount }}</div>
       <div class="action" :class="{'active': expandType == 'comment'}" @click="expandPost('comment')"><CommentOne :theme="expandType == 'comment' ? 'filled' : 'outline' " /> {{ props.commentCount }}</div>
-      <div class="action" :class="{'active': props.isLiked}" @click="handleLikeClick"><ThumbsUp :theme="props.isLiked ? 'filled' : 'outline'" /> {{ props.likeCount }}</div>
+      <div class="action" :class="{'active': props.isLiked || likeClicked}" @click="handleLikeClick"><ThumbsUp :theme="props.isLiked || likeClicked ? 'filled' : 'outline'" /> {{ likeCount }}</div>
     </div>
     <div class="expand-content" v-if="expandType != 'none'">
       <hr style="margin: .5rem;" />
-      <CommentView v-if="expandType == 'comment'" />
+      <CommentView v-if="expandType == 'comment'" :post-id="props.postId" />
     </div>
+    <ImagePreview v-model="previewingImage" />
   </div>
 </template>
 
@@ -123,7 +173,7 @@ function handleLikeClick() {
 @import "@/assets/main";
 .post-list-item {
   position: relative;
-  .avatar {
+  &-avatar {
     position: absolute;
     top: .5rem;
     left: .5rem;
@@ -135,17 +185,41 @@ function handleLikeClick() {
       border-radius: 50%;
     }
   }
-  .header {
+  &-header {
     margin-left: 4rem;
 
     .username {
       font-size: 1rem;
       font-weight: bold;
+      color: $color-primary;
     }
 
     .desc {
       font-size: .8rem;
       color: $color-grey-500;
+    }
+
+    .more-actions {
+      height: 1.75rem;
+      position: absolute;
+      top: .5rem;
+      right: 2.5rem;
+      border-radius: .5rem;
+      align-items: center;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      display: flex;
+
+      .delete {
+        height: 100%;
+        aspect-ratio: 1;
+        span {
+          @extend %click-able;
+          @extend %button-like;
+          color: #ff7875;
+          padding: .25rem;
+          vertical-align: center;
+        }
+      }
     }
 
     .more {
@@ -161,30 +235,48 @@ function handleLikeClick() {
     }
   }
 
-  .body {
-    margin-top: .5rem;
+  &-body {
     margin-left: 4rem;
 
-    .content-less {
+    > .content-less {
       -webkit-line-clamp: 6;
       // max-height: 6rem;
       // overflow: hidden;
     }
-    .content-normal {
+    > .content-normal {
       -webkit-line-clamp: none;
     }
 
-    .unfold {
+    > .unfold {
       cursor: pointer;
       color: $color-primary;
     }
+
+    > .image-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+
+      .image-item {
+        cursor: pointer;
+        width: 5rem;
+        height: 5rem;
+        box-sizing: border-box;
+        & img {
+          width: 100%;
+          border-radius: .25rem;
+          object-fit: cover;
+        }
+      }
+    }
   }
 
-  .actions {
+  &-actions {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
     color: $color-grey-500;
+    margin-top: .5rem;
 
     .action {
       cursor: pointer;

@@ -1,4 +1,11 @@
 declare namespace API {
+  type allUpdatesUsingGETParams = {
+    /** pageNum */
+    pageNum: number;
+    /** pageSize */
+    pageSize: number;
+  };
+
   type CommonResultArrayByte_ = {
     code?: number;
     data?: string;
@@ -17,6 +24,12 @@ declare namespace API {
     message?: string;
   };
 
+  type CommonResultUserInfo_ = {
+    code?: number;
+    data?: UserInfo;
+    message?: string;
+  };
+
   type deleteByIdUsingDELETEParams = {
     /** id */
     id: number;
@@ -30,6 +43,11 @@ declare namespace API {
   type getUpdatesByTypeUsingGETParams = {
     /** pid */
     pid: number;
+  };
+
+  type getUserInfoByUidUsingGETParams = {
+    /** uid */
+    uid: number;
   };
 
   type publishUsingPOSTParams = {
@@ -75,5 +93,26 @@ declare namespace API {
     pid?: number;
     /** 动态的标题,长度1~40 */
     title?: string;
+  };
+
+  type UserInfo = {
+    /** 粉丝数量 */
+    fan?: number;
+    /** 关注数量 */
+    follow?: number;
+    /** 性别 */
+    gender?: string;
+    /** uid */
+    id?: number;
+    /** 自我介绍 */
+    info?: string;
+    /** ip属地 */
+    ip?: string;
+    /** 等级 */
+    level?: number;
+    /** 获赞数量 */
+    like?: number;
+    /** 昵称 */
+    name?: string;
   };
 }

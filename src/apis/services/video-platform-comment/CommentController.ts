@@ -77,7 +77,7 @@ export async function listChildrenCommentByPagesUsingGET(
   options?: { [key: string]: any },
 ) {
   const { page: param0, pid: param1, size: param2, ...queryParams } = params;
-  return request<API.CommonResultListComment_>(
+  return request<API.CommonResultListResultComment_>(
     `/comment/listChildrenComment/${param1}/${param0}/${param2}`,
     {
       method: 'GET',
@@ -94,11 +94,13 @@ export async function listCommentByPagesUsingGET(
   options?: { [key: string]: any },
 ) {
   const { foreignId: param0, page: param1, size: param2, ...queryParams } = params;
-  return request<API.CommonResultListComment_>(
+  return request<API.CommonResultListResultComment_>(
     `/comment/listRootComment/${param0}/${param1}/${param2}`,
     {
       method: 'GET',
-      params: { ...queryParams },
+      params: {
+        ...queryParams,
+      },
       ...(options || {}),
     },
   );

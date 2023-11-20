@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import useUserStore from "@/stores/useUserStore";
 import { DEFAULT_USER_AVATAR } from "@/constants/defaultImage";
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch, watchEffect } from "vue";
 import { EmotionHappy, Instagram, AtSign, ChartHistogramTwo, Topic, SettingOne } from '@icon-park/vue-next';
 import PostItemCard from "@/pages/common/post/components/PostItemCard.vue";
 import type { PostItemCardProps } from "@/pages/common/post/components/PostItemCard";
@@ -12,6 +12,8 @@ import type { ImagePickerFunc, ImagePickerModel } from "@/components/image-picke
 import adminApi from "@/apis/services/video-platform-admin";
 import { delay } from "@/utils/delay";
 import Spinning from "@/components/spinning/Spinning.vue";
+import { useQuery } from "@tanstack/vue-query";
+import { getUserInfo } from "@/stores/publicUserInfo";
 
 const userStore = useUserStore();
 
@@ -45,32 +47,76 @@ onMounted(() => {
   //   showToast({ type: 'danger', text: '请先登录' });
   //   router.replace({ name: 'home' });
   // }
-  Promise.all([
-    getPosts(),
-  ]);
+  // Promise.all([
+  //   getPosts(),
+  // ]);
 });
 
 // TODO: 根据接口调整post类型
 const posts = ref<PostItemCardProps[]>([]);
+const currentPage = ref(1);
+const hasNoMore = ref(false);
+const reachBottom = ref(false);
 
-async function getPosts() {
-  posts.value = [];
-  for (let i = 1; i <= 10; i++) {
+const { data: postResult, status: postQueryStatus, refetch: refetchPosts } = useQuery({
+  queryKey: ['posts', currentPage.value],
+  queryFn: getPosts,
+});
+
+watchEffect(async () => {
+  if (postQueryStatus.value != 'success') return;
+  if (!postResult.value) return;
+  for (let item of postResult.value) {
+    const userInfo = await getUserInfo(item.uid ?? -1);
     posts.value.push({
       type: 'post',
-      postId: i,
-      userId: 1,
-      userName: '测试用户',
+      postId: item.id ?? -1,
+      userId: item.uid ?? -1,
+      userName: userInfo.name ?? '测试用户',
       avatar: DEFAULT_USER_AVATAR,
-      forwardCount: i + 3,
-      commentCount: i * i,
-      likeCount: i * i * i,
+      forwardCount: 0,
+      commentCount: 0,
+      likeCount: 0,
       isLiked: false,
-      createTime: new Date().toLocaleString(),
-      images: [],
-      content: "测试".repeat(100),
+      createTime: item.datetime ? new Date(item.datetime).toLocaleString() : new Date().toLocaleString(),
+      images: JSON.parse(item.urls ?? '[]'),
+      content: item.content ? decodeURIComponent(item.content) : '',
     });
   }
+});
+
+async function getPosts() {
+  try {
+    const res = await adminApi.UpdatesController.allUpdatesUsingGET({
+      pageNum: currentPage.value,
+      pageSize: 10,
+    });
+    if (res.data.data?.length == 0) {
+      showToast({ type: 'info', text: '没有更多啦' });
+      hasNoMore.value = true;
+    }
+    return res.data.data;
+  } catch (e) {
+    return [];
+  } finally {
+
+  }
+  // for (let i = 1; i <= 10; i++) {
+  //   posts.value.push({
+  //     type: 'post',
+  //     postId: i,
+  //     userId: 1,
+  //     userName: '测试用户',
+  //     avatar: DEFAULT_USER_AVATAR,
+  //     forwardCount: i + 3,
+  //     commentCount: i * i,
+  //     likeCount: i * i * i,
+  //     isLiked: false,
+  //     createTime: new Date().toLocaleString(),
+  //     images: [],
+  //     content: "测试".repeat(100),
+  //   });
+  // }
 }
 
 const uploading = ref(false);
@@ -104,6 +150,7 @@ async function handlePublishPost() {
     if (res.data?.code == 200) {
       showToast({ type: 'success', text: '发布成功' });
       clearInput();
+      refetchPosts();
     } else {
       showToast({ type: 'danger', text: '发布失败' });
     }
@@ -114,12 +161,27 @@ async function handlePublishPost() {
   }
 }
 
+function handlePostDeleted(id: number) {
+  posts.value.forEach((item, index) => {
+    if (item.postId == id) {
+      posts.value.splice(index, 1);
+    }
+  });
+}
+
+function handleLoadMore() {
+  currentPage.value++;
+  refetchPosts();
+}
+
 function clearInput() {
   publishForm.pid = 1;
   publishForm.topic = '';
   publishForm.title = '';
   publishForm.content = '';
   publishForm.images = [];
+  currentPage.value = 1;
+  posts.value = [];
 }
 </script>
 
@@ -180,7 +242,10 @@ function clearInput() {
                         :create-time="item.createTime"
                         :content="item.content"
                         :images="item.images"
+                        @delete-post="(id) => handlePostDeleted(id)"
           />
+          <div class="post-loading" v-if="postQueryStatus == 'pending'">加载中...</div>
+          <div class="load-more" v-if="!hasNoMore" @click="handleLoadMore">加载更多...</div>
         </section>
       </main>
       <aside class="post-right">
@@ -396,6 +461,18 @@ function clearInput() {
       gap: .5rem;
       .post-item {
         @extend %card;
+      }
+      .post-loading {
+        @extend %card;
+        display: flex;
+        justify-content: center;
+      }
+      .load-more {
+        @extend %card;
+        @extend %click-able;
+        @extend %button-like;
+        display: flex;
+        justify-content: center;
       }
     }
   }

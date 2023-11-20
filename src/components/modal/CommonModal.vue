@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { Close } from "@icon-park/vue-next";
-import { ref, watch } from "vue";
+import { CSSProperties, ref, watch } from "vue";
 
 interface CommonModalProps {
-  showClose: boolean;
-  visible: boolean;
+  showClose?: boolean;
+  visible?: boolean;
+  modalStyle?: CSSProperties;
 }
 
 const props = withDefaults(defineProps<CommonModalProps>(),{
@@ -55,8 +56,8 @@ function handleClose() {
     <Transition name="show">
       <div v-show="showModal" class="modal" :class="{'modal-hide': !showModal}">
         <div class="modal-mask"></div>
-        <div class="modal-body">
-          <Close v-if="showClose" class="modal-body-close transition-all-circ enable-hover enable-active" size="20" @click="handleClose" />
+        <div class="modal-body" :style="props.modalStyle">
+          <Close v-if="showClose" class="modal-body-close" size="20" @click="handleClose" />
           <div class="modal-body-content">
             <slot></slot>
           </div>
@@ -97,6 +98,8 @@ function handleClose() {
     box-shadow: 2px 2px 10px 0 rgba(0, 0, 0, .1);
 
     &-close {
+      @extend %click-able;
+      @extend %transition-all-circ;
       position: absolute;
       top: 0;
       right: 0;

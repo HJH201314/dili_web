@@ -3,9 +3,16 @@
 import { request } from './base';
 
 /** 获取所有动态 GET /updates/all */
-export async function allUpdatesUsingGET(options?: { [key: string]: any }) {
+export async function allUpdatesUsingGET(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.allUpdatesUsingGETParams,
+  options?: { [key: string]: any },
+) {
   return request<API.CommonResultListUpdate_>('/updates/all', {
     method: 'GET',
+    params: {
+      ...params,
+    },
     ...(options || {}),
   });
 }
@@ -59,13 +66,13 @@ export async function getImagesUsingGET(
 export async function publishUsingPOST(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.publishUsingPOSTParams,
-  body: FormData,
+  body: string[],
   options?: { [key: string]: any },
 ) {
   return request<API.CommonResultString_>('/updates/publish', {
     method: 'POST',
     headers: {
-      'Content-Type': 'multipart/form-data',
+      'Content-Type': 'application/json',
     },
     params: {
       ...params,

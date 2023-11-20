@@ -49,7 +49,7 @@ const submitDisabled = ref(false);
 function init() {
   emoji.value = '🚀';
   // @ts-ignore
-  typer.value = new EasyTyper(typerObj, ['DILIDILI', 'LAUNCH!']);
+  typer.value = new EasyTyper(typerObj, ['DILIDILI']);
 }
 async function handleGetSmsCode() {
   if (!loginForm.phone) {
