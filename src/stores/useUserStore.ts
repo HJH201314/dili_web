@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import securityApi from "@/apis/services/video-platform-security";
 import { useLocalStorage } from "@vueuse/core";
 
@@ -13,9 +13,14 @@ const useUserStore = defineStore('user', () => {
   const userInfo = computed(() => userInfoStorage.value);
   const isLogin = computed(() => !!token.value);
 
-  const login = async (type: 'pwd' | 'pin', principal: string, credential: string) => {
-    const res = await securityApi.LoginController.loginUsingPOST({phone: principal, pswd: credential});
-    if (res.data.code === 200) {
+  const login = async (type: 'phone' | 'email', principal: string, credential: string) => {
+    let res;
+    if (type == 'phone') {
+      res = await securityApi.LoginController.loginUsingPOST({phone: principal, pswd: credential, type: 0});
+    } else if (type == 'email') {
+      res = await securityApi.LoginController.loginUsingPOST({email: principal, pin: credential, type: 1});
+    }
+    if (res?.data.code === 200) {
       tokenStorage.value = res.data.data ?? '';
       return true;
     } else {
@@ -34,10 +39,34 @@ const useUserStore = defineStore('user', () => {
     // }, 1000);
   };
 
-  const logout = async () => {
-    const res = await securityApi.LoginController.logoutUsingGET({token: token.value});
-    tokenStorage.value = '';
+  const sendPin = async (type: 'phone' | 'email', principal: string) => {
+    const res = await securityApi.LoginController.getPinUsingPOST({auth: principal, type: type == 'email' ? 0 : 1});
     return res.data.code === 200;
+  }
+
+  const register = async (type: 'phone' | 'email', principal: string, credential: string) => {
+    const param: API.RegisterDto = {
+      name: `匿名用户${principal.slice(0, 3)}`,
+      email: type === 'email' ? principal : undefined,
+      phone: type === 'phone' ? principal : undefined,
+      pswd: type === 'phone' ? credential : undefined,
+      pin: type === 'email' ? credential : undefined,
+      type: type === 'phone' ? 1 : 2,
+    }
+    const res = await securityApi.LoginController.registerUsingPOST(param);
+    return res?.data.code === 200;
+  }
+
+  const logout = async () => {
+    if (token.value) {
+      const res = await securityApi.LoginController.logoutUsingGET({token: token.value});
+      if (res?.data.code === 200) {
+        tokenStorage.value = '';
+        return true;
+      }
+    }
+    tokenStorage.value = '';
+    return false;
   }
 
   watch(isLogin, async (newVal, oldVal) => {
@@ -59,6 +88,8 @@ const useUserStore = defineStore('user', () => {
     isLogin,
     login,
     logout,
+    sendPin,
+    register,
   }
 });
 

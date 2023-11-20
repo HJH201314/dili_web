@@ -12,6 +12,8 @@ import adminApi from "@/apis/services/video-platform-admin";
 import showToast from "@/components/toast/toast";
 import useUserStore from "@/stores/useUserStore";
 import ImagePreview from "@/components/image-preview/ImagePreview.vue";
+import commentApi from "@/apis/services/video-platform-comment";
+import { countCommentsByForeignIdUsingGET } from "@/apis/services/video-platform-comment/CommentController";
 
 const props = withDefaults(defineProps<PostItemCardProps>(), {
   type: 'post',
@@ -41,10 +43,21 @@ defineExpose({
 onMounted(() => {
   window.addEventListener('resize', onResize);
   onResize();
+  getCommentNum();
 });
 onBeforeUnmount(() => {
   window.removeEventListener('resize', onResize);
 });
+
+function getCommentNum() {
+  commentApi.CommentController.countCommentsByForeignIdUsingGET({
+    foreignId: props.postId,
+  }).then(res => {
+    if (res.data.code == 200) {
+      commentCount.value = res.data.data;
+    }
+  }).catch();
+}
 
 const userStore = useUserStore();
 
@@ -113,6 +126,8 @@ function contractPost() {
   expandPost('none');
 }
 
+const commentCount = ref(props.commentCount);
+
 const showMore = ref(false);
 function toggleMore() {
   showMore.value = !showMore.value;
@@ -158,12 +173,12 @@ function handlePreviewImage(image: string) {
     </div>
     <div class="post-list-item-actions">
       <div class="action" :class="{'active': expandType == 'forward'}" @click="expandPost('forward')"><ShareThree /> {{ props.forwardCount }}</div>
-      <div class="action" :class="{'active': expandType == 'comment'}" @click="expandPost('comment')"><CommentOne :theme="expandType == 'comment' ? 'filled' : 'outline' " /> {{ props.commentCount }}</div>
+      <div class="action" :class="{'active': expandType == 'comment'}" @click="expandPost('comment')"><CommentOne :theme="expandType == 'comment' ? 'filled' : 'outline' " /> {{ commentCount }}</div>
       <div class="action" :class="{'active': props.isLiked || likeClicked}" @click="handleLikeClick"><ThumbsUp :theme="props.isLiked || likeClicked ? 'filled' : 'outline'" /> {{ likeCount }}</div>
     </div>
     <div class="expand-content" v-if="expandType != 'none'">
       <hr style="margin: .5rem;" />
-      <CommentView v-if="expandType == 'comment'" :post-id="props.postId" />
+      <CommentView v-if="expandType == 'comment'" :post-id="props.postId" @update-comment-num="n => commentCount = n" />
     </div>
     <ImagePreview v-model="previewingImage" />
   </div>
@@ -264,6 +279,7 @@ function handlePreviewImage(image: string) {
         box-sizing: border-box;
         & img {
           width: 100%;
+          height: 100%;
           border-radius: .25rem;
           object-fit: cover;
         }

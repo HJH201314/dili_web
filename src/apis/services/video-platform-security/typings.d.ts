@@ -22,8 +22,11 @@ declare namespace API {
   };
 
   type LoginDto = {
+    email?: string;
     phone?: string;
+    pin?: string;
     pswd?: string;
+    type?: number;
   };
 
   type logoutUsingGETParams = {

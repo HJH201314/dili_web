@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import EasyTyper from 'easy-typer-js';
-import { reactive, ref, watch } from "vue";
-import { Close, Right } from "@icon-park/vue-next";
+import { nextTick, reactive, ref, watch } from "vue";
+import { Close, Right, Switch } from "@icon-park/vue-next";
 import CommonModal from "@/components/modal/CommonModal.vue";
 import type { CommonModalFunc } from "@/components/modal/CommonModal";
 import useUserStore from "@/stores/useUserStore";
 import showToast from "@/components/toast/toast";
+import Spinning from "@/components/spinning/Spinning.vue";
+import { delay } from "@/utils/delay";
 
 const userStore = useUserStore();
 const refLoginModal = ref<CommonModalFunc>();
@@ -13,7 +15,7 @@ const refLoginModal = ref<CommonModalFunc>();
 const typerObj = reactive({
   output: '',
   isEnd: false,
-  speed: 150,
+  speed: 100,
   singleBack: false,
   sleep: 1000,
   type: 'normal',
@@ -23,52 +25,85 @@ const typerObj = reactive({
 
 const typer = ref<EasyTyper>();
 
+const show = ref(false);
 defineExpose({
   open: () => {
-    refLoginModal.value?.open();
-    init();
+    // show=true时创建CommonModal实例
+    show.value = true;
+    // 创建完成后，下一刻再打开模态框
+    nextTick(() => {
+      refLoginModal.value?.open();
+      init();
+    });
   },
   close: () => {
+    // 关闭模态框
     refLoginModal.value?.close();
+    // 关闭模态框后，下一刻再销毁CommonModal实例
+    nextTick(() => {
+      show.value = false;
+    });
   },
 });
 
 const loginForm = reactive({
-  type: ref<'pwd'|'pin'>('pwd'),
-  username: ref(''),
+  mode: ref<'login'|'register'>('login'), // 登陆还是注册
+  type: ref<'phone'|'email'>('phone'),
   phone: ref(''),
+  email: ref(''),
   password: ref(''),
+  retypePwd: ref(''),
   pin: ref(''),
   shakePhone: ref(0),
   shake: ref(0),
 });
 const smsTip = ref('获取验证码');
 const emoji = ref('🚀');
-const submitDisabled = ref(false);
 
 function init() {
   emoji.value = '🚀';
   // @ts-ignore
   typer.value = new EasyTyper(typerObj, ['DILIDILI']);
 }
+
+function handleChangeMode() {
+  loginForm.mode = (loginForm.mode == 'login' ? 'register' : 'login');
+  if (loginForm.mode == 'login') {
+    // @ts-ignore
+    typer.value = new EasyTyper(typerObj, 'DILIDILI');
+  } else {
+    // @ts-ignore
+    typer.value = new EasyTyper(typerObj, '注册DILI');
+  }
+}
+
+const smsLoading = ref(false);
+const refetchPinTimer = ref<NodeJS.Timeout>();
 async function handleGetSmsCode() {
-  if (!loginForm.phone) {
+  if (smsLoading.value || smsTip.value.endsWith('s')) {
+    showToast({ text: '现在点不得！', position: 'bottom', type: 'warning' })
+    return;
+  }
+  if (!loginForm.email || !loginForm.email.match(/.+@.+\..+/)) {
     loginForm.shakePhone += 1;
-    showToast({ text: '请输入手机号！', position: 'bottom', type: 'danger' });
+    showToast({ text: '请正确输入邮箱！', position: 'bottom', type: 'danger' });
     return;
   } else {
     try {
-      submitDisabled.value = true;
-      // await api.user.getSmsCode(loginForm.username);
-      showToast({ text: '短信验证码已发送', position: 'bottom', type: 'success' });
-      smsTip.value = '60s后重新获取';
+      smsLoading.value = true;
+      const res = await userStore.sendPin('email', loginForm.email);
+      if (!res) {
+        throw new Error();
+      }
+      showToast({ text: '验证码已发送，请检查邮箱！', position: 'bottom', type: 'success' });
+      setGetPinAvailable(); // 先清空计时器
+      smsTip.value = '60s';
       let count = 60;
-      const timer = setInterval(() => {
+      refetchPinTimer.value = setInterval(() => {
         count--;
-        smsTip.value = `${count}s后重新获取`;
+        smsTip.value = `${count}s`;
         if (count === 0) {
-          clearInterval(timer);
-          smsTip.value = '重新获取';
+          setGetPinAvailable();
         }
       }, 1000);
     }
@@ -79,43 +114,69 @@ async function handleGetSmsCode() {
       return;
     }
     finally {
-      submitDisabled.value = false;
+      smsLoading.value = false;
     }
   }
 }
+function setGetPinAvailable() {
+  clearInterval(refetchPinTimer.value);
+  smsTip.value = '获取验证码';
+}
+
+const submitLoading = ref(false);
 async function handleLoginSubmit() {
-  if (loginForm.type == 'pin' && !loginForm.phone) {
+  if (loginForm.type == 'email' && (!loginForm.email || !loginForm.email.match(/.+@.+\..+/))) {
     loginForm.shake += 1;
-    showToast({ text: '请输入手机号！', position: 'bottom', type: 'danger' });
+    showToast({ text: '请正确输入邮箱！', position: 'bottom', type: 'danger' });
     return;
   }
-  if (loginForm.type == 'pin' && !loginForm.pin) {
+  if (loginForm.type == 'phone' && (!loginForm.phone || !loginForm.phone.match(/^1[3456789]\d{9}$/))) {
     loginForm.shake += 1;
-    showToast({ text: '请输入验证码！', position: 'bottom', type: 'danger' });
+    showToast({ text: '请正确输入手机号！', position: 'bottom', type: 'danger' });
     return;
   }
-  if (loginForm.type == 'pwd' && !loginForm.username) {
-    loginForm.shake += 1;
-    showToast({ text: '请输入用户名！', position: 'bottom', type: 'danger' });
-    return;
-  }
-  if (loginForm.type == 'pwd' && !loginForm.password) {
+  if (loginForm.type == 'phone' && !loginForm.password) {
     loginForm.shake += 1;
     showToast({ text: '请输入密码！', position: 'bottom', type: 'danger' });
     return;
   }
+  if (loginForm.mode == 'register' && loginForm.type == 'phone' && loginForm.retypePwd != loginForm.password) {
+    loginForm.shake += 1;
+    showToast({ text: '重复输入密码错误！', position: 'bottom', type: 'danger' });
+    return;
+  }
+  if (loginForm.type == 'email' && !loginForm.pin) {
+    loginForm.shake += 1;
+    showToast({ text: '请输入验证码！', position: 'bottom', type: 'danger' });
+    return;
+  }
   try {
-    submitDisabled.value = true;
+    submitLoading.value = true;
     let principal = '';
     let credential = '';
-    if (loginForm.type == 'pin') {
-      principal = loginForm.phone;
+    if (loginForm.type == 'email') {
+      principal = loginForm.email;
       credential = loginForm.pin;
     } else {
-      principal = loginForm.username;
+      principal = loginForm.phone;
       credential = loginForm.password
     }
-    const result = await userStore.login(loginForm.type, principal, credential);
+    if (loginForm.mode == 'login') {
+      const result = await userStore.login(loginForm.type, principal, credential);
+      if (!result) {
+        throw new Error();
+      }
+    } else if (loginForm.mode == 'register') {
+      const result = await userStore.register(loginForm.type, principal, credential);
+      if (result) {
+        showToast({ text: '注册成功', position: 'bottom', type: 'success' });
+        loginForm.mode = 'login';
+        setGetPinAvailable();
+      } else {
+        throw new Error();
+      }
+    }
+    await delay(1000);
   }
   catch (e) {
     console.error(e);
@@ -124,7 +185,7 @@ async function handleLoginSubmit() {
     return;
   }
   finally {
-    submitDisabled.value = false;
+    submitLoading.value = false;
   }
 }
 
@@ -144,16 +205,17 @@ watch(() => userStore.isLogin, (v) => {
 </script>
 
 <template>
-  <CommonModal ref="refLoginModal" :show-close="false" style="padding-bottom: 100px;">
+  <CommonModal ref="refLoginModal" :show-close="false" style="padding-bottom: 100px;" v-if="show">
     <template #default>
       <div class="login">
         <Close class="login-close" size="20" @click="() => refLoginModal?.close()" />
         <div style="margin-top: .5rem;">
           <span class="sidebar-logo sidebar-logo-animation">DILIDILI</span>
           <span class="login-type">
-            <span class="login-type-item" :class="{'active': loginForm.type === 'pwd'}" @click="loginForm.type = 'pwd'">密码登录</span>
+            <span class="login-type-item" :class="{'active': loginForm.type === 'phone'}" @click="loginForm.type = 'phone'">手机号{{ loginForm.mode == 'register' ? '注册' : '登录' }}</span>
             <span>&nbsp;|&nbsp;</span>
-            <span class="login-type-item" :class="{'active': loginForm.type === 'pin'}" @click="loginForm.type = 'pin'">短信登录</span>
+            <span class="login-type-item" :class="{'active': loginForm.type === 'email'}" @click="loginForm.type = 'email'">邮箱{{ loginForm.mode == 'register' ? '注册' : '登录' }}</span>
+            <span class="login-mode" @click="handleChangeMode"><Switch />切换{{ loginForm.mode == 'login' ? '注册' : '登录' }}</span>
           </span>
         </div>
         <div class="login-top">
@@ -161,19 +223,21 @@ watch(() => userStore.isLogin, (v) => {
           <span class="login-top-text">{{ typerObj.output }}</span>
           <span class="typed-cursor login-top-text">|</span>
         </div>
-        <form class="login-bottom">
+        <form class="login-bottom" @submit.prevent>
           <div class="login-form">
-            <input v-if="loginForm.type === 'pwd'" class="login-form-input" type="text" name="username" placeholder="请输入用户名（guest）" v-model="loginForm.username" autocomplete="username" />
-            <input v-if="loginForm.type === 'pin'" class="login-form-input" type="text" name="phone" placeholder="请输入手机号" v-model="loginForm.phone" />
-            <input v-if="loginForm.type === 'pwd'" class="login-form-input" type="password" name="password" placeholder="请输入密码（123456）" v-model="loginForm.password" autocomplete="current-password" />
-            <div v-if="loginForm.type === 'pin'" style="position: relative;">
-              <input class="login-form-input" type="text" name="sms" placeholder="请输入短信验证码（1234）" v-model="loginForm.pin" />
-              <div class="login-form-get-sms" @click="handleGetSmsCode">{{ smsTip }}</div>
+            <input v-if="loginForm.type === 'phone'" class="login-form-input" type="text" name="username" placeholder="请输入用户名/手机号" v-model="loginForm.phone" autocomplete="username" />
+            <input v-if="loginForm.type === 'email'" class="login-form-input" type="text" name="email" placeholder="请输入邮箱" v-model="loginForm.email" autocomplete="none" />
+            <input v-if="loginForm.type === 'phone'" class="login-form-input" type="password" name="password" placeholder="请输入密码" v-model="loginForm.password" autocomplete="current-password" />
+            <input v-if="loginForm.type === 'phone' && loginForm.mode == 'register'" class="login-form-input" type="password" name="retype" placeholder="请再次输入密码" v-model="loginForm.retypePwd" autocomplete="new-password" />
+            <div v-if="loginForm.type === 'email'" style="position: relative;">
+              <input class="login-form-input" type="text" name="sms" placeholder="请输入验证码" v-model="loginForm.pin" />
+              <div class="login-form-get-sms" @click="handleGetSmsCode"><Spinning style="margin-right: .5rem;" :show="smsLoading" color="#9e9e9e" />{{ smsTip }}</div>
             </div>
           </div>
           <div class="login-form-submit" v-shake="loginForm.shake" @click="handleLoginSubmit">
-            <button style="outline: none; color: inherit;" :disabled="submitDisabled" @submit="handleLoginSubmit">
-              <Right size="32" />
+            <button style="outline: none; color: inherit;" :disabled="submitLoading" @submit.prevent="handleLoginSubmit">
+              <Right v-show="!submitLoading" size="32" />
+              <spinning :show="submitLoading" size="2rem" thickness="4px" />
             </button>
           </div>
         </form>
@@ -218,6 +282,15 @@ watch(() => userStore.isLogin, (v) => {
         color: $color-primary;
       }
     }
+  }
+  &-mode {
+    @extend %click-able;
+    margin-left: 2rem;
+    padding: .35rem .5rem;
+    border-radius: .5rem;
+    font-size: 1rem;
+    color: $color-primary;
+    vertical-align: center;
   }
 
   &-top {

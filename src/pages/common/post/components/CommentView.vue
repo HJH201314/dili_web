@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch, watchEffect } from "vue";
+import { computed, onMounted, reactive, ref, watchEffect } from "vue";
 import useUserStore from "@/stores/useUserStore";
 import DateFormat from "@/components/date-format/DateFormat.vue";
-import { ThumbsUp, ThumbsDown } from "@icon-park/vue-next";
+import { ThumbsUp, ThumbsDown, Left, Right } from "@icon-park/vue-next";
 import { DEFAULT_USER_AVATAR } from "@/constants/defaultImage";
 import { useQuery } from "@tanstack/vue-query";
 import commentApi from "@/apis/services/video-platform-comment";
 import showToast from "@/components/toast/toast";
-import { getUserInfo } from "@/stores/publicUserInfo";
 import useLikeCacheStore from "@/stores/useLikeCacheStore";
 
 const props = withDefaults(defineProps<{
@@ -15,6 +14,10 @@ const props = withDefaults(defineProps<{
 }>(), {
   postId: 0,
 });
+
+const emit = defineEmits<{
+  (event: 'update-comment-num', num: number): void;
+}>();
 
 const userStore = useUserStore();
 
@@ -105,6 +108,7 @@ async function getComments() {
       sortBy: sortMode.value === 'hot' ? 'likeNum' : 'createTime',
     });
     commentCount.value = result.data?.data?.total ?? 0;
+    emit('update-comment-num', commentCount.value);
     return result.data?.data;
   } catch (e) {
   }
@@ -139,6 +143,7 @@ async function getComments() {
 function changeSortMode(mode: 'hot'|'new') {
   if (mode === sortMode.value) return;
   sortMode.value = mode;
+  currentPage.value = MINIMUM_PAGE;
   refetchComments();
 }
 
@@ -153,7 +158,7 @@ async function handleCommentPublish() {
       content: form.comment,
       targetUsername: '',
       userId: userStore.userId ?? 0,
-      username: userStore.userInfo.name ?? '',
+      phone: userStore.userInfo.name ?? '',
     });
     if (res.data.code == 200) {
       showToast({position: 'top', text: '评论成功'});
@@ -281,9 +286,11 @@ function clearInput() {
         </div>
       </div>
       <div class="pagination" v-if="commentCount > comments.length">
+        <button class="button" :disabled="currentPage - 1 < MINIMUM_PAGE" @click="handleChangePage(currentPage - MINIMUM_PAGE)"><Left class="button" size="1rem" /></button>
         <div v-for="i in commentPageNums" :class="{'active': currentPage - MINIMUM_PAGE + 1 == i}" @click="handleChangePage(i)">
           <span>{{ i }}</span>
         </div>
+        <button class="button" :disabled="currentPage - MINIMUM_PAGE + 2 > commentPageNums.length" @click="handleChangePage(currentPage - MINIMUM_PAGE + 2)"><Right class="button" size="1rem" /></button>
       </div>
     </div>
   </div>
@@ -479,6 +486,27 @@ function clearInput() {
         &.active {
           background-color: $color-primary;
           color: white;
+        }
+      }
+
+      > .button {
+        &:disabled {
+          cursor: default;
+        }
+        &:not(&:disabled) {
+          @extend %click-able;
+        }
+        background-color: $color-grey-100;
+        color: darken($color-grey-500, 50%);
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: .5rem;
+        position: relative;
+        span {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
         }
       }
     }

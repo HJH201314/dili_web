@@ -28,10 +28,21 @@ declare namespace API {
     message?: string;
   };
 
+  type CommonResultLong_ = {
+    code?: number;
+    data?: number;
+    message?: string;
+  };
+
   type CommonResultString_ = {
     code?: number;
     data?: 'FAILED' | 'FORBIDDEN' | 'SUCCESS' | 'UNAUTHORIZED' | 'VALIDATE_FAILED';
     message?: string;
+  };
+
+  type countCommentsByForeignIdUsingGETParams = {
+    /** foreignId */
+    foreignId?: number;
   };
 
   type deleteChildCommentUsingDELETEParams = {

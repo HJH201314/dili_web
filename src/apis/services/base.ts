@@ -12,9 +12,13 @@ import axios from "axios";
 import type { AxiosResponse, AxiosRequestConfig } from "axios";
 import { SERVER_API_URL } from "@/apis/services/constants";
 
-const axiosInstance = axios.create({
+const defaultConfig: AxiosRequestConfig = {
+  timeout: 10000,
   baseURL: SERVER_API_URL,
-});
+}
+
+const axiosInstance = axios.create(defaultConfig);
+
 
 axiosInstance.interceptors.request.use(
 (config) => {

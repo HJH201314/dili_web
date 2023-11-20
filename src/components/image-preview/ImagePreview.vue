@@ -2,6 +2,7 @@
 
 import CommonModal from "@/components/modal/CommonModal.vue";
 import { computed, ref, watch } from "vue";
+import type { CSSProperties } from "vue";
 import type { CommonModalFunc } from "@/components/modal/CommonModal";
 
 type ImagePreviewProps = {
@@ -18,11 +19,17 @@ const emit = defineEmits<{
 const refImagePreviewModal = ref<CommonModalFunc>();
 const refImage = ref<HTMLImageElement>();
 const imageWidth = ref(0);
+const imageHeight = ref(0);
 const modalStyle = computed(() => {
-  if (!imageWidth.value) return {};
-  return {
-    width: `${imageWidth.value}px`,
-  };
+  let style: CSSProperties = {};
+  style.backgroundColor = '#0000001F';
+  if (imageWidth.value) {
+    style.width = `${imageWidth.value}px`;
+  }
+  if (imageHeight.value) {
+    style.width = `${imageHeight.value}px`;
+  }
+  return style;
 });
 watch(() => props.modelValue, (v) => {
   if (v) {
@@ -32,6 +39,7 @@ watch(() => props.modelValue, (v) => {
     imgObj.src = v;
     imgObj.onload = () => {
       imageWidth.value = imgObj.width;
+      imageHeight.value = imgObj.height;
     };
   }
 });
@@ -46,6 +54,9 @@ function handleClose() {
     <div ref="refImage" class="image-preview">
       <img :src="props.modelValue" alt="预览图片" />
     </div>
+    <div class="image-control">
+
+    </div>
   </CommonModal>
 </template>
 
@@ -53,5 +64,12 @@ function handleClose() {
 .image-preview {
   border-radius: .5rem;
   overflow: hidden;
+  max-width: 90vw;
+  img {
+    object-fit: cover;
+  }
+}
+.image-control {
+
 }
 </style>

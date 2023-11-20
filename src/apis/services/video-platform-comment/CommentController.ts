@@ -14,6 +14,22 @@ export async function addCommentUsingPOST(body: API.Comment, options?: { [key: s
   });
 }
 
+/** 根据foreignId获取评论总数 GET /comment/count/${param0} */
+export async function countCommentsByForeignIdUsingGET(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.countCommentsByForeignIdUsingGETParams,
+  options?: { [key: string]: any },
+) {
+  const { foreignId: param0, ...queryParams } = params;
+  return request<API.CommonResultLong_>(`/comment/count/${param0}`, {
+    method: 'GET',
+    params: {
+      ...queryParams,
+    },
+    ...(options || {}),
+  });
+}
+
 /** 删除子评论 DELETE /comment/deleteChild/${param1}/${param0} */
 export async function deleteChildCommentUsingDELETE(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)

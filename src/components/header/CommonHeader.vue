@@ -145,16 +145,16 @@ const form = reactive({
         </Transition>
       </div>
     </div>
-    <DiliTooltip position="bottom" :enabled="userStore.isLogin">
-      <div class="nav-user-container">
-        <span v-if="!userStore.isLogin" @click="handleLoginClick">登录</span>
-        <img class="nav-user-avatar" v-if="userStore.isLogin" :src="userStore.avatar ?? '/favicon.ico'"  alt="avatar"/>
-      </div>
-      <template #tip>
-        <div class="nav-user-logout" @click="handleLogoutClick">登出</div>
-      </template>
-    </DiliTooltip>
     <ul class="right-entry">
+      <DiliTooltip position="bottom" :enabled="userStore.isLogin">
+        <div class="nav-user-container">
+          <span v-if="!userStore.isLogin" @click="handleLoginClick">登录</span>
+          <img class="nav-user-avatar" v-if="userStore.isLogin" :src="userStore.avatar ?? '/favicon.ico'"  alt="avatar"/>
+        </div>
+        <template #tip>
+          <div class="nav-user-logout" @click="handleLogoutClick">登出</div>
+        </template>
+      </DiliTooltip>
       <li v-for="entry in rightEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
         <span>{{ entry.name }}</span>
         <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
@@ -292,6 +292,13 @@ header {
   }
 }
 .nav-user {
+  &-container {
+    @extend %click-able;
+    height: 100%;
+    padding: 1rem;
+    cursor: pointer;
+    box-sizing: border-box;
+  }
   &-avatar {
     width: 1.75rem;
     height: 1.75rem;
