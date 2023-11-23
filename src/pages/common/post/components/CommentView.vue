@@ -278,11 +278,12 @@ const replyingCommentSub = ref<CommentItem>(); // 正在回复的子评论
 function changeReplyingComment(comment: CommentItem, subComment: CommentItem | undefined = undefined) {
   if (!subComment) {
     // 如果是要回复根评论
-    if (replyingComment.value?.id == comment.id) {
-      replyingComment.value = undefined;
-    } else {
+    if (replyingComment.value?.id != comment.id || replyingCommentSub.value) {
       replyingComment.value = comment;
+    } else {
+      replyingComment.value = undefined;
     }
+    replyingCommentSub.value = undefined;
   } else {
     // 如果是要回复子评论
     if (replyingCommentSub.value?.id == subComment.id) {
@@ -418,7 +419,7 @@ function getCommentContentHtml(comment: CommentItem) {
                 </div>
               </div>
             </div>
-            <DiliPagination v-if="comment.totalSubCommentCnt ?? 0 > 3" :page-count="Math.ceil((comment.totalSubCommentCnt ?? 0) / 3)" @change="page => handleSubChangePage(comment, page)" />
+            <DiliPagination v-if="(comment.totalSubCommentCnt ?? 0) > 3" :page-count="Math.ceil((comment.totalSubCommentCnt ?? 0) / 3)" @change="page => handleSubChangePage(comment, page)" />
           </div>
           <hr style="margin-right: 5rem;" />
         </div>
