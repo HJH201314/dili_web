@@ -6,7 +6,6 @@ import { useLocalStorage } from "@vueuse/core";
 const useUserStore = defineStore('user', () => {
 
   const avatar = ref<string|undefined>();
-  const userId = ref(-1);
   const tokenStorage = useLocalStorage('token', '');
   const token = computed(() => tokenStorage.value);
   const userInfoStorage = useLocalStorage<API.User>('user-info', {});
@@ -58,15 +57,19 @@ const useUserStore = defineStore('user', () => {
   }
 
   const logout = async () => {
-    if (token.value) {
-      const res = await securityApi.LoginController.logoutUsingGET({token: token.value});
-      if (res?.data.code === 200) {
-        tokenStorage.value = '';
-        return true;
+    try {
+      if (token.value) {
+        const res = await securityApi.LoginController.logoutUsingGET({token: token.value});
+        if (res?.data.code === 200) {
+          return true;
+        }
       }
+      return false;
+    } finally {
+      // 无论如何，都清空token和用户信息
+      tokenStorage.value = '';
+      userInfoStorage.value = {}
     }
-    tokenStorage.value = '';
-    return false;
   }
 
   watch(isLogin, async (newVal, oldVal) => {
@@ -81,7 +84,6 @@ const useUserStore = defineStore('user', () => {
   });
 
   return {
-    userId,
     token,
     avatar,
     userInfo,

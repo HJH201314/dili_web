@@ -14,18 +14,30 @@ export async function addCommentUsingPOST(body: API.Comment, options?: { [key: s
   });
 }
 
-/** 根据foreignId获取评论总数 GET /comment/count/${param0} */
+/** 根据foreignId获取评论总数 GET /comment/countRootComment/${param0} */
 export async function countCommentsByForeignIdUsingGET(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.countCommentsByForeignIdUsingGETParams,
   options?: { [key: string]: any },
 ) {
   const { foreignId: param0, ...queryParams } = params;
-  return request<API.CommonResultLong_>(`/comment/count/${param0}`, {
+  return request<API.CommonResultLong_>(`/comment/countRootComment/${param0}`, {
     method: 'GET',
-    params: {
-      ...queryParams,
-    },
+    params: { ...queryParams },
+    ...(options || {}),
+  });
+}
+
+/** 根据foreignId获取评论总数 GET /comment/countSubComment/${param0} */
+export async function countSubCommentByPidUsingGET(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.countSubCommentByPidUsingGETParams,
+  options?: { [key: string]: any },
+) {
+  const { pid: param0, ...queryParams } = params;
+  return request<API.CommonResultLong_>(`/comment/countSubComment/${param0}`, {
+    method: 'GET',
+    params: { ...queryParams },
     ...(options || {}),
   });
 }
@@ -97,7 +109,9 @@ export async function listChildrenCommentByPagesUsingGET(
     `/comment/listChildrenComment/${param1}/${param0}/${param2}`,
     {
       method: 'GET',
-      params: { ...queryParams },
+      params: {
+        ...queryParams,
+      },
       ...(options || {}),
     },
   );

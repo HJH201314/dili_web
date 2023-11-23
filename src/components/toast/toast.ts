@@ -21,4 +21,8 @@ function showToast(props: ToastProps) {
   app.mount(toastDiv);
 }
 
+export function quickToast(text: string) {
+  showToast({text, position: 'top'});
+}
+
 export default showToast;

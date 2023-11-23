@@ -6,8 +6,10 @@ import { ThumbsUp, ThumbsDown, Left, Right } from "@icon-park/vue-next";
 import { DEFAULT_USER_AVATAR } from "@/constants/defaultImage";
 import { useQuery } from "@tanstack/vue-query";
 import commentApi from "@/apis/services/video-platform-comment";
-import showToast from "@/components/toast/toast";
+import showToast, { quickToast } from "@/components/toast/toast";
 import useLikeCacheStore from "@/stores/useLikeCacheStore";
+import Spinning from "@/components/spinning/Spinning.vue";
+import DiliPagination from "@/components/pagination/DiliPagination.vue";
 
 const props = withDefaults(defineProps<{
   postId: number; // 动态id
@@ -29,10 +31,13 @@ type CommentItem = {
   userName: string;
   userLevel?: number;
   content: string;
+  targetUsername?: string;
   likeCount: number;
   isLiked: boolean;
   createTime: string;
   subComments: CommentItem[];
+  totalSubCommentCnt?: number;
+  currentPage?: number;
 };
 
 onMounted(() => {
@@ -66,38 +71,58 @@ watchEffect(async () => {
   for (const item of commentsResult.value.list) {
     const subComments: CommentItem[] = [];
     for (const subItem of item.children ?? []) {
-      subComments.push({
-        id: subItem.id ?? '',
-        userAvatar: DEFAULT_USER_AVATAR,
-        userName: subItem.username ?? '未知用户',
-        userLevel: 1,
-        content: subItem.content ?? '',
-        likeCount: subItem.likeNum ?? 0,
-        isLiked: false,
-        createTime: subItem.createTime ?? '',
-        subComments: [],
-      })
+      subComments.push(convertCommentVOToCommentItem(subItem, 'sub'));
+    }
+    let totalSubComments = 0;
+    // 如果有子评论，那么获取子评论的总数
+    if (subComments.length > 0) {
+      const res = await commentApi.CommentController.countSubCommentByPidUsingGET({
+        pid: item.id ?? '',
+      });
+      if (res.data.code == 200) {
+        totalSubComments = res.data.data ?? 0;
+      }
     }
     comments.value.push({
       id: item.id ?? '',
       userAvatar: DEFAULT_USER_AVATAR,
       userName: item.username ?? '未知用户',
       userLevel: 1,
+      targetUsername: item.targetUsername,
       content: item.content ?? '',
       likeCount: item.likeNum ?? 0,
       isLiked: false,
       createTime: item.createTime ?? '',
       subComments: subComments,
+      totalSubCommentCnt: totalSubComments,
     })
   }
 })
 
 const form = reactive({
   comment: '',
+  reply: '',
 });
 
+function convertCommentVOToCommentItem(item: API.Comment, type: 'sub'): CommentItem {
+  if (type == 'sub') {
+    return {
+      id: item.id ?? '',
+      userAvatar: DEFAULT_USER_AVATAR,
+      userName: item.username ?? '未知用户',
+      userLevel: 1,
+      content: item.content ?? '',
+      targetUsername: item.targetUsername,
+      likeCount: item.likeNum ?? 0,
+      isLiked: false,
+      createTime: item.createTime ?? '',
+      subComments: [],
+    }
+  }
+  return {} as CommentItem;
+}
+
 async function getComments() {
-  console.log(props.postId)
   if (!props.postId || props.postId <= 0) return;
 
   try {
@@ -112,32 +137,29 @@ async function getComments() {
     return result.data?.data;
   } catch (e) {
   }
+}
 
-  // const subComments: Comment[] = [];
-  // for (let i = 1; i < 3; i++) {
-  //   subComments.push({
-  //     userAvatar: userStore.avatar ?? '',
-  //     userName: '测试用户',
-  //     userLevel: 1,
-  //     content: '测试'.repeat(20),
-  //     likeCount: i * i,
-  //     isLiked: false,
-  //     createTime: new Date().toLocaleString(),
-  //     subComments: [],
-  //   });
-  // }
-  // for (let i = 1; i < 10; i++) {
-  //   comments.value.push({
-  //     userAvatar: userStore.avatar ?? '',
-  //     userName: '测试用户',
-  //     userLevel: 1,
-  //     content: '测试'.repeat(2) + '回答',
-  //     likeCount: i * i,
-  //     isLiked: false,
-  //     createTime: new Date().toLocaleString(),
-  //     subComments: subComments,
-  //   });
-  // }
+async function getSubComments(comment: CommentItem) {
+  try {
+    const res = await commentApi.CommentController.listChildrenCommentByPagesUsingGET({
+      pid: comment.id,
+      page: comment.currentPage ?? 0,
+      size: 3,
+      sortBy: 'createTime',
+    });
+    if (res.data.code == 200) {
+      comments.value.forEach((item, index) => {
+        if (item.id == comment.id) {
+          // 将获取到的列表转换为展示的列表
+          comments.value[index].totalSubCommentCnt = res.data.data?.total;
+          comments.value[index].subComments = res.data.data?.list?.map((item) => {
+            return convertCommentVOToCommentItem(item, 'sub');
+          }) ?? [];
+        }
+      });
+    }
+  } catch (e) {
+  }
 }
 
 function changeSortMode(mode: 'hot'|'new') {
@@ -157,12 +179,12 @@ async function handleCommentPublish() {
       foreignId: props.postId,
       content: form.comment,
       targetUsername: '',
-      userId: userStore.userId ?? 0,
-      phone: userStore.userInfo.name ?? '',
+      userId: userStore.userInfo.id ?? 0,
+      username: userStore.userInfo.name ?? '',
     });
     if (res.data.code == 200) {
       showToast({position: 'top', text: '评论成功'});
-      clearInput();
+      clearCommentInput();
       refetchComments();
     } else {
       showToast({position: 'top', text: '评论失败'});
@@ -173,44 +195,58 @@ async function handleCommentPublish() {
 }
 
 const likeCacheStore = useLikeCacheStore();
-async function handleLike(pid: string, isChild: boolean) {
+async function handleLike(pid: string, isChild: boolean, cid: string = '') {
   try {
+    const flag = likeCacheStore.isLiked(isChild ? cid : pid) ? -1 : 1;
+    let res;
     if (!isChild) {
-      const flag = likeCacheStore.isLiked(pid) ? -1 : 1;
-      const res = await commentApi.CommentController.likeRootCommentUsingPOST({
+      res = await commentApi.CommentController.likeRootCommentUsingPOST({
         pid: pid,
         flag: flag,
       });
-      if (res.data.code == 200) {
-        likeCacheStore.like(pid);
-        comments.value.forEach((item) => {
-          if (item.id === pid) {
+    } else {
+      if (cid == '') return;
+      res = await commentApi.CommentController.likeChildrenCommentUsingPOST({
+        cid: cid,
+        flag: flag,
+        pid: pid,
+      });
+    }
+    if (res.data.code == 200) {
+      likeCacheStore.like(isChild ? cid : pid);
+      comments.value.forEach((item) => {
+        if (item.id === pid) {
+          if (!isChild) {
+            // 如果是根评论，更新根评论的点赞数
             item.likeCount += flag;
             item.isLiked = true;
+          } else {
+            // 如果是子评论，更新子评论的点赞数
+            item.subComments.forEach((subItem) => {
+              if (subItem.id == cid) {
+                subItem.likeCount += flag;
+                subItem.isLiked = true;
+              }
+            })
           }
-        });
-        showToast({position: 'top', text: (flag < 0 ? '取消' : '') + '点赞成功'});
-      } else {
-        showToast({position: 'top', text: '点赞失败'});
-      }
+        }
+      });
+      showToast({position: 'top', text: (flag < 0 ? '取消' : '') + '点赞成功'});
     } else {
-
+      showToast({position: 'top', text: '点赞失败'});
     }
   } finally {
 
   }
 }
-async function handleDislike(pid: string, isChild: boolean) {
+async function handleDislike(pid: string, isChild: boolean, cid: string = '') {
   try {
-    if (!isChild) {
-      if (likeCacheStore.isLiked(pid)) {
-        await handleLike(pid, false);
-      }
-      likeCacheStore.dislike(pid);
-      showToast({position: 'top', text: '点踩成功'});
-    } else {
-
+    const id = isChild ? cid : pid;
+    if (likeCacheStore.isLiked(id)) {
+      await handleLike(pid, isChild, cid);
     }
+    likeCacheStore.dislike(id);
+    showToast({position: 'top', text: '点踩成功'});
   } finally {
 
   }
@@ -221,10 +257,91 @@ function handleChangePage(paginationPage: number) {
   refetchComments();
 }
 
-function clearInput() {
+function handleSubChangePage(comment: CommentItem, page: number) {
+  comments.value.forEach((item) => {
+    if (item.id == comment.id) {
+      item.currentPage = page - 1;
+      getSubComments(comment);
+    }
+  });
+}
+
+function clearCommentInput() {
   form.comment = '';
   currentPage.value = MINIMUM_PAGE;
 }
+
+// ========== 回复相关 ==========
+const replyingComment = ref<CommentItem>(); // 正在回复的评论
+const replyingCommentSub = ref<CommentItem>(); // 正在回复的子评论
+
+function changeReplyingComment(comment: CommentItem, subComment: CommentItem | undefined = undefined) {
+  if (!subComment) {
+    // 如果是要回复根评论
+    if (replyingComment.value?.id == comment.id) {
+      replyingComment.value = undefined;
+    } else {
+      replyingComment.value = comment;
+    }
+  } else {
+    // 如果是要回复子评论
+    if (replyingCommentSub.value?.id == subComment.id) {
+      replyingComment.value = undefined;
+      replyingCommentSub.value = undefined;
+    } else {
+      replyingComment.value = comment;
+      replyingCommentSub.value = subComment;
+    }
+  }
+}
+
+const replyPublishing = ref(false); // 正在上传回复
+async function handleReplyPublish() {
+  replyPublishing.value = true;
+  try {
+    let res;
+    if (!replyingCommentSub.value) {
+      // 回复的是根评论
+      res = await commentApi.CommentController.replyCommentUsingPOST({
+        pid: replyingComment.value?.id ?? '',
+      }, {
+        foreignId: props.postId,
+        content: form.reply,
+        targetUsername: '',
+        userId: userStore.userInfo.id ?? 0,
+        username: userStore.userInfo.name ?? '',
+      });
+    } else {
+      // 回复的是子评论
+      res = await commentApi.CommentController.replyCommentUsingPOST({
+        pid: replyingComment.value?.id ?? '',
+      }, {
+        foreignId: props.postId,
+        content: form.reply,
+        targetUsername: replyingCommentSub.value?.userName,
+        userId: userStore.userInfo.id ?? 0,
+        username: userStore.userInfo.name ?? '',
+      });
+    }
+    if (res.data.code == 200) {
+      quickToast("回复成功！");
+      handleSubChangePage(replyingComment.value!, 1);
+    }
+  } finally {
+    replyPublishing.value = false;
+    form.reply = '';
+    replyingComment.value = undefined;
+  }
+}
+
+function getCommentContentHtml(comment: CommentItem) {
+  let html = comment.content;
+  if (comment.targetUsername) {
+    html = `<a class="comment-content-a">@${comment.targetUsername}</a> ` + html;
+  }
+  return html;
+}
+
 </script>
 
 <template>
@@ -249,7 +366,7 @@ function clearInput() {
     </div>
     <div class="comment-list">
       <div class="item" v-for="comment in comments">
-        <div class="avatar"><img :src="comment.userAvatar || DEFAULT_USER_AVATAR" /></div>
+        <div class="avatar"><img :src="comment.userAvatar || DEFAULT_USER_AVATAR" alt="avatar" /></div>
         <div class="body">
           <div class="header user-info">
             <span class="name">{{ comment.userName }}</span>
@@ -260,27 +377,48 @@ function clearInput() {
             <DateFormat :date="comment.createTime" class="time" />
             <span class="like" :class="{'active': likeCacheStore.isLiked(comment.id)}" @click="handleLike(comment.id, false)"><thumbs-up theme="outline" size="1rem"/>{{ comment.likeCount }}</span>
             <span class="dislike" :class="{'active': likeCacheStore.isDisliked(comment.id)}" @click="handleDislike(comment.id, false)"><thumbs-down theme="outline" size="1rem"/></span>
-            <span class="reply">回复</span>
+            <span class="reply" @click="changeReplyingComment(comment)">回复</span>
+          </div>
+          <!-- 根评论回复 -->
+          <div v-if="replyingComment?.id == comment.id && !replyingCommentSub" class="comment-publish">
+            <div class="input">
+              <textarea :placeholder="'回复 @'+comment.userName" v-model="form.reply" />
+            </div>
+            <button class="publish" :class="{'enable': form.reply.length > 0}" @click="handleReplyPublish" :disabled="!form.reply.length">
+              <span v-if="!replyPublishing">发布</span>
+              <Spinning v-if="replyPublishing" />
+            </button>
           </div>
           <div class="sub-comment-list">
             <div class="item" v-for="subComment in comment.subComments">
-              <div class="avatar-small"><img :src="subComment.userAvatar || DEFAULT_USER_AVATAR" /></div>
+              <div class="avatar-small"><img :src="subComment.userAvatar || DEFAULT_USER_AVATAR"  alt="avatar-small"/></div>
               <div class="body">
                 <div class="header">
                   <div class="user-info">
                     <span class="name">{{ subComment.userName }}</span>
                     <span class="level" v-if="subComment.userLevel">Lv.{{ subComment.userLevel }}</span>
                   </div>
-                  <span class="content">{{ subComment.content }}</span>
+                  <span class="content" v-html="getCommentContentHtml(subComment)"></span>
                 </div>
                 <div class="footer">
                   <DateFormat :date="subComment.createTime" class="time" />
-                  <span class="like"><thumbs-up theme="outline" size="1rem"/>{{ subComment.likeCount }}</span>
-                  <span class="dislike"><thumbs-down theme="outline" size="1rem"/></span>
-                  <span class="reply">回复</span>
+                  <span class="like" :class="{'active': likeCacheStore.isLiked(subComment.id)}" @click="handleLike(comment.id, true, subComment.id)"><thumbs-up theme="outline" size="1rem"/>{{ subComment.likeCount }}</span>
+                  <span class="dislike" :class="{'active': likeCacheStore.isDisliked(subComment.id)}" @click="handleDislike(comment.id, true, subComment.id)"><thumbs-down theme="outline" size="1rem"/></span>
+                  <span class="reply" @click="changeReplyingComment(comment, subComment)">回复</span>
+                </div>
+                <!-- 子评论回复 -->
+                <div v-if="replyingCommentSub?.id == subComment.id" class="comment-publish">
+                  <div class="input">
+                    <textarea :placeholder="'回复 @'+subComment.userName" v-model="form.reply" />
+                  </div>
+                  <button class="publish" :class="{'enable': form.reply.length > 0}" @click="handleReplyPublish" :disabled="!form.reply.length">
+                    <span v-if="!replyPublishing">发布</span>
+                    <Spinning v-if="replyPublishing" />
+                  </button>
                 </div>
               </div>
             </div>
+            <DiliPagination v-if="comment.totalSubCommentCnt ?? 0 > 3" :page-count="Math.ceil((comment.totalSubCommentCnt ?? 0) / 3)" @change="page => handleSubChangePage(comment, page)" />
           </div>
           <hr style="margin-right: 5rem;" />
         </div>
@@ -323,12 +461,12 @@ function clearInput() {
       }
     }
   }
-  > .comment-publish {
-    margin-left: 1.5rem;
+  .comment-publish {
     display: flex;
     gap: .5rem;
 
     > .avatar {
+      margin-left: 1.5rem;
       width: 3rem;
       height: 3rem;
       > img {
@@ -452,12 +590,18 @@ function clearInput() {
             }
           }
           .reply {
+            cursor: pointer;
             font-size: .75rem;
             color: $color-grey-500;
           }
         }
-        > .sub-comment-list {
+        .sub-comment-list {
           margin-top: .5rem;
+        }
+        .sub-comment-more {
+          cursor: pointer;
+          color: $color-grey-500;
+          font-size: .9rem;
         }
       }
     }
@@ -511,6 +655,21 @@ function clearInput() {
       }
     }
   }
+}
+</style>
 
+<!--单独一个没有scoped的css让v-html中的类选择器也能被识别 -->
+<style lang="scss">
+@import "@/assets/variables.module";
+.comment-content-a {
+  cursor: pointer;
+  text-decoration: none;
+  color: $color-primary;
+  &:hover {
+    color: darken($color-primary, 10%);
+  }
+  &:active {
+    color: darken($color-primary, 20%);
+  }
 }
 </style>

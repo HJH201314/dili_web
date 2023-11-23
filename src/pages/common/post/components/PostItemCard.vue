@@ -13,7 +13,6 @@ import showToast from "@/components/toast/toast";
 import useUserStore from "@/stores/useUserStore";
 import ImagePreview from "@/components/image-preview/ImagePreview.vue";
 import commentApi from "@/apis/services/video-platform-comment";
-import { countCommentsByForeignIdUsingGET } from "@/apis/services/video-platform-comment/CommentController";
 
 const props = withDefaults(defineProps<PostItemCardProps>(), {
   type: 'post',
@@ -140,8 +139,14 @@ function handleLikeClick() {
   likeCount.value += likeClicked.value ? 1 : -1;
 }
 
-const previewingImage = ref('');
+const largeImage = ref(''); // 放大查看的image
+const previewingImage = ref(''); // modal预览的image
 function handlePreviewImage(image: string) {
+  // if (largeImage.value == image) {
+  //   largeImage.value = '';
+  // } else {
+  //   largeImage.value = image;
+  // }
   previewingImage.value = convertPostImage(image);
 }
 
@@ -166,7 +171,7 @@ function handlePreviewImage(image: string) {
       <div ref="refContent" class="text-ellipsis" :class="{'content-less': !readingMore}" v-html="props.content"></div>
       <div v-if="needReadMore" class="unfold" @click="handleUnfold">{{ readingMore ? '收起' : '展开' }}</div>
       <div class="image-grid">
-        <div class="image-item" v-for="image in props.images" :key="image" @click="handlePreviewImage(image)">
+        <div class="image-item" :class="{'unlimited': largeImage == image}" v-for="image in props.images" :key="image" @click="handlePreviewImage(image)">
           <img :src="convertPostImage(image)" alt="image">
         </div>
       </div>
@@ -277,6 +282,10 @@ function handlePreviewImage(image: string) {
         width: 5rem;
         height: 5rem;
         box-sizing: border-box;
+        &.unlimited {
+          width: 100%;
+          height: auto;
+        }
         & img {
           width: 100%;
           height: 100%;

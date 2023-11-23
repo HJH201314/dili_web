@@ -5,7 +5,6 @@ import { Search } from "@icon-park/vue-next";
 import { useRouter } from "vue-router";
 import showToast from "@/components/toast/toast";
 import useUserStore from "@/stores/useUserStore";
-import CommonModal from "@/components/modal/CommonModal.vue";
 import LoginModal from "@/components/login-modal/LoginModal.vue";
 import type { CommonModalFunc } from "@/components/modal/CommonModal";
 import DiliTooltip from "@/components/tooltip/DiliTooltip.vue";
@@ -147,12 +146,12 @@ const form = reactive({
     </div>
     <ul class="right-entry">
       <DiliTooltip position="bottom" :enabled="userStore.isLogin">
-        <div class="nav-user-container">
-          <span v-if="!userStore.isLogin" @click="handleLoginClick">登录</span>
+        <div class="nav-user-container" @click="showToast({text: userStore.userInfo, position: 'top', duration: 'long'})">
+          <span v-if="!userStore.isLogin" @click="handleLoginClick">登录/注册</span>
           <img class="nav-user-avatar" v-if="userStore.isLogin" :src="userStore.avatar ?? '/favicon.ico'"  alt="avatar"/>
         </div>
         <template #tip>
-          <div class="nav-user-logout" @click="handleLogoutClick">登出</div>
+          <div class="nav-user-logout" @click="handleLogoutClick">点我登出</div>
         </template>
       </DiliTooltip>
       <li v-for="entry in rightEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">

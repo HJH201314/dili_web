@@ -14,6 +14,7 @@ const props = withDefaults(defineProps<DateFormatProps>(), {
   date: '-',
   locale: 'zh',
   format: 'yyyy/MM/dd hh:mm:ss',
+  threshold: () => [0, 604800000],
   refreshRate: 0,
 });
 

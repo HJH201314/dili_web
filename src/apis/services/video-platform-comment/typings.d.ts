@@ -42,7 +42,12 @@ declare namespace API {
 
   type countCommentsByForeignIdUsingGETParams = {
     /** foreignId */
-    foreignId?: number;
+    foreignId: number;
+  };
+
+  type countSubCommentByPidUsingGETParams = {
+    /** pid */
+    pid: string;
   };
 
   type deleteChildCommentUsingDELETEParams = {
@@ -80,6 +85,8 @@ declare namespace API {
     pid: string;
     /** 每页大小 */
     size: number;
+    /** 排序字段 */
+    sortBy: string;
   };
 
   type listCommentByPagesUsingGETParams = {
