@@ -20,6 +20,7 @@
     "autoprefixer": "^10.4.16",
     "axios": "^1.6.1",
     "easy-typer-js": "^2.1.0",
+    "element-plus": "^2.4.2",
     "pinia": "^2.1.7",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.5",

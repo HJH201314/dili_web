@@ -16,7 +16,12 @@ const router = createRouter({
     {
       path: '/post',
       name: 'post',
-      component: () => import('@/pages/common/post/PostPage.vue')
+      component: () => import('@/pages/common/post/PostPage.vue'),
+    },
+    {
+      path: '/post/detail',
+      name: 'post-detail',
+      component: () => import('@/pages/common/post/PostDetail.vue'),
     }
   ]
 })

@@ -68,6 +68,7 @@ export const request = <TRes>(path: string, args: AxiosRequestConfig) => {
   return axiosInstance.request<any, AxiosResponse<TRes>>({
     headers: {
       "token": localStorage.getItem("token") ?? "",
+      "Authorization": localStorage.getItem("token") ?? "",
     },
     url: path,
     ...args,
