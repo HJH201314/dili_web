@@ -11,7 +11,8 @@ const router = createRouter({
     {
       path: '/home',
       name: 'home',
-      component: HomePage
+      component: HomePage,
+      meta: { showCommonHeader: false }
     },
     {
       path: '/post',

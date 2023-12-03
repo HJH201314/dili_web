@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
 import CommonHeader from "@/components/header/CommonHeader.vue";
-import PostItemCard from "@/pages/common/post/components/PostItemCard.vue";
+
 </script>
 
 <template>
   <div class="background"></div>
-  <CommonHeader />
-  <RouterView v-slot="{ Component }">
+  <RouterView v-slot="{ Component, route }">
     <Transition name="slide-fade">
-      <component  class="child-view" :is="Component" />
+      <div>
+        <CommonHeader v-if="route.meta.showCommonHeader == undefined || route.meta.showCommonHeader" />
+        <component class="child-view" :is="Component" />
+      </div>
     </Transition>
   </RouterView>
 </template>
@@ -22,7 +24,7 @@ import PostItemCard from "@/pages/common/post/components/PostItemCard.vue";
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 0;
+  z-index: -1;
   background-image: url("@/assets/img/bg.png");
 }
 .child-view {
