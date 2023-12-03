@@ -12,6 +12,7 @@ const router = createRouter({
       path: '/home',
       name: 'home',
       component: HomePage,
+      // 使用showCommonHeader: false来关闭CommonHeader的显示
       meta: { showCommonHeader: false }
     },
     {

@@ -8,6 +8,8 @@ import useUserStore from "@/stores/useUserStore";
 import LoginModal from "@/components/login-modal/LoginModal.vue";
 import type { CommonModalFunc } from "@/components/modal/CommonModal";
 import DiliTooltip from "@/components/tooltip/DiliTooltip.vue";
+import DiliPopover from "@/components/popover/DiliPopover.vue";
+import HistorySpinner from "@/components/header/HistorySpinner.vue";
 
 const userStore = useUserStore();
 
@@ -157,8 +159,15 @@ const form = reactive({
           </template>
         </DiliTooltip>
         <li v-for="entry in rightEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
-          <span>{{ entry.name }}</span>
-          <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
+          <DiliPopover position="bottom">
+            <span>{{ entry.name }}</span>
+            <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
+            <template #body>
+              <div v-if="entry.key == 'history'">
+                <HistorySpinner />
+              </div>
+            </template>
+          </DiliPopover>
         </li>
       </ul>
       <button id="upload-button" @click="e => handleEntryClick(e, {key: 'upload', name: '投稿', href: '/upload'})">
