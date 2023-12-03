@@ -10,6 +10,9 @@ import shake from "@/commands/shake";
 import publicRoutes from "@/router/publicRoutes";
 import useUserStore from "@/stores/useUserStore";
 import showToast from "@/components/toast/toast";
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
 
 const app = createApp(App);
 
@@ -19,6 +22,12 @@ app.use(createPinia());
 app.use(router);
 // VueQuery
 app.use(VueQueryPlugin);
+// Element-Plus
+app.use(ElementPlus);
+// Element-Plus 图标
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+  app.component(key, component);
+}
 
 // 路由拦截
 router.beforeEach((to, from, next) => {
