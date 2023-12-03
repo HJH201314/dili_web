@@ -99,24 +99,23 @@ async function getPosts() {
   } catch (e) {
     return [];
   } finally {
-
+    // for (let i = 1; i <= 10; i++) {
+    //   posts.value.push({
+    //     type: 'post',
+    //     postId: i,
+    //     userId: 1,
+    //     userName: '测试用户',
+    //     avatar: DEFAULT_USER_AVATAR,
+    //     forwardCount: i + 3,
+    //     commentCount: i * i,
+    //     likeCount: i * i * i,
+    //     isLiked: false,
+    //     createTime: new Date().toLocaleString(),
+    //     images: [],
+    //     content: "测试".repeat(100),
+    //   });
+    // }
   }
-  // for (let i = 1; i <= 10; i++) {
-  //   posts.value.push({
-  //     type: 'post',
-  //     postId: i,
-  //     userId: 1,
-  //     userName: '测试用户',
-  //     avatar: DEFAULT_USER_AVATAR,
-  //     forwardCount: i + 3,
-  //     commentCount: i * i,
-  //     likeCount: i * i * i,
-  //     isLiked: false,
-  //     createTime: new Date().toLocaleString(),
-  //     images: [],
-  //     content: "测试".repeat(100),
-  //   });
-  // }
 }
 
 const uploading = ref(false);

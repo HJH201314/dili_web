@@ -8,7 +8,7 @@ import CommonHeader from "@/components/header/CommonHeader.vue";
   <div class="background"></div>
   <RouterView v-slot="{ Component, route }">
     <Transition name="slide-fade">
-      <div>
+      <div style="display: flex; flex-direction: column; height: 100%;">
         <CommonHeader v-if="route.meta.showCommonHeader == undefined || route.meta.showCommonHeader" />
         <component class="child-view" :is="Component" />
       </div>
@@ -29,5 +29,6 @@ import CommonHeader from "@/components/header/CommonHeader.vue";
 }
 .child-view {
   transition: all .2s cubic-bezier(.55, 0, .1, 1);
+  flex: 1;
 }
 </style>

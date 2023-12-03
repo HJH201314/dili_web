@@ -124,47 +124,49 @@ const form = reactive({
 </script>
 
 <template>
-  <header>
-    <ul class="left-entry">
-      <li v-for="entry in leftEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
-        <span>{{ entry.name }}</span>
-        <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
-      </li>
-    </ul>
-    <div class="center-search-container" ref="searchContainer" @focusout="() => isSearching = false">
-      <div class="center-search-bar" :class="{'center-search-bar-focus': isSearching}" @focusin="() => isSearching = true">
-        <form :class="{'focus': isSearching}">
-          <input v-model="form.searchVal" type="text" id="nav-search-input" placeholder="搜点什么呢...?" />
-          <Search class="search" size="1.25rem" />
-        </form>
-        <Transition name="opacity-circ">
-          <div v-if="isSearching" class="center-search-panel">
-            123<br>123<br>123<br>123<br>123<br>123<br>123<br>123<br>123<br>123<br>
-          </div>
-        </Transition>
-      </div>
-    </div>
-    <ul class="right-entry">
-      <DiliTooltip position="bottom" :enabled="userStore.isLogin">
-        <div class="nav-user-container" @click="showToast({text: userStore.userInfo, position: 'top', duration: 'long'})">
-          <span v-if="!userStore.isLogin" @click="handleLoginClick">登录/注册</span>
-          <img class="nav-user-avatar" v-if="userStore.isLogin" :src="userStore.avatar ?? '/favicon.ico'"  alt="avatar"/>
+  <div class="common-header">
+    <div class="header-placeholder" style="height: 3.5rem;"></div>
+    <header>
+      <ul class="left-entry">
+        <li v-for="entry in leftEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
+          <span>{{ entry.name }}</span>
+          <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
+        </li>
+      </ul>
+      <div class="center-search-container" ref="searchContainer" @focusout="() => isSearching = false">
+        <div class="center-search-bar" :class="{'center-search-bar-focus': isSearching}" @focusin="() => isSearching = true">
+          <form :class="{'focus': isSearching}">
+            <input v-model="form.searchVal" type="text" id="nav-search-input" placeholder="搜点什么呢...?" />
+            <Search class="search" size="1.25rem" />
+          </form>
+          <Transition name="opacity-circ">
+            <div v-if="isSearching" class="center-search-panel">
+              123<br>123<br>123<br>123<br>123<br>123<br>123<br>123<br>123<br>123<br>
+            </div>
+          </Transition>
         </div>
-        <template #tip>
-          <div class="nav-user-logout" @click="handleLogoutClick">点我登出</div>
-        </template>
-      </DiliTooltip>
-      <li v-for="entry in rightEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
-        <span>{{ entry.name }}</span>
-        <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
-      </li>
-    </ul>
-    <button id="upload-button" @click="e => handleEntryClick(e, {key: 'upload', name: '投稿', href: '/upload'})">
-      投稿
-    </button>
-    <LoginModal ref="refLoginModal" />
-  </header>
-  <div class="header-placeholder" style="height: 3.5rem;"></div>
+      </div>
+      <ul class="right-entry">
+        <DiliTooltip position="bottom" :enabled="userStore.isLogin">
+          <div class="nav-user-container" @click="showToast({text: userStore.userInfo, position: 'top', duration: 'long'})">
+            <span v-if="!userStore.isLogin" @click="handleLoginClick">登录/注册</span>
+            <img class="nav-user-avatar" v-if="userStore.isLogin" :src="userStore.avatar ?? '/favicon.ico'"  alt="avatar"/>
+          </div>
+          <template #tip>
+            <div class="nav-user-logout" @click="handleLogoutClick">点我登出</div>
+          </template>
+        </DiliTooltip>
+        <li v-for="entry in rightEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
+          <span>{{ entry.name }}</span>
+          <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
+        </li>
+      </ul>
+      <button id="upload-button" @click="e => handleEntryClick(e, {key: 'upload', name: '投稿', href: '/upload'})">
+        投稿
+      </button>
+      <LoginModal ref="refLoginModal" />
+    </header>
+  </div>
 </template>
 
 <style scoped lang="scss">
