@@ -118,6 +118,13 @@ async function handleLogoutClick() {
   }
 }
 
+function handleMeClick() {
+  showToast({text: userStore.userInfo, position: 'top', duration: 'long'});
+  if (userStore.isLogin) {
+    router.push('/space/me');
+  }
+}
+
 const isSearching = ref(false);
 const searchContainer = ref<HTMLDivElement>();
 const form = reactive({
@@ -150,7 +157,7 @@ const form = reactive({
       </div>
       <ul class="right-entry">
         <DiliTooltip position="bottom" :enabled="userStore.isLogin">
-          <div class="nav-user-container" @click="showToast({text: userStore.userInfo, position: 'top', duration: 'long'})">
+          <div class="nav-user-container" @click="handleMeClick">
             <span v-if="!userStore.isLogin" @click="handleLoginClick">登录/注册</span>
             <img class="nav-user-avatar" v-if="userStore.isLogin" :src="userStore.avatar ?? '/favicon.ico'"  alt="avatar"/>
           </div>
