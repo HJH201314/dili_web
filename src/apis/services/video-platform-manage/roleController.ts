@@ -3,7 +3,7 @@
 import { request } from './base';
 
 /** 添加角色信息 POST /mg/role/add */
-export async function addRoleUsingPOST(body: API.Role, options?: { [key: string]: any }) {
+export async function addRoleUsingPost(body: API.Role, options?: { [key: string]: any }) {
   return request<API.CommonResultString_>('/mg/role/add', {
     method: 'POST',
     headers: {
@@ -15,7 +15,7 @@ export async function addRoleUsingPOST(body: API.Role, options?: { [key: string]
 }
 
 /** 删除角色信息 DELETE /mg/role/delete */
-export async function deleteRoleUsingDELETE(
+export async function deleteRoleUsingDelete(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.deleteRoleUsingDELETEParams,
   options?: { [key: string]: any },
@@ -30,7 +30,7 @@ export async function deleteRoleUsingDELETE(
 }
 
 /** 查询所有角色信息 GET /mg/role/list */
-export async function getRoleListUsingGET(options?: { [key: string]: any }) {
+export async function getRoleListUsingGet(options?: { [key: string]: any }) {
   return request<API.CommonResultListRole_>('/mg/role/list', {
     method: 'GET',
     ...(options || {}),
@@ -38,7 +38,7 @@ export async function getRoleListUsingGET(options?: { [key: string]: any }) {
 }
 
 /** 增加权限 POST /mg/role/permission/add */
-export async function addPermissionUsingPOST(
+export async function addPermissionUsingPost(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.addPermissionUsingPOSTParams,
   options?: { [key: string]: any },
@@ -53,7 +53,7 @@ export async function addPermissionUsingPOST(
 }
 
 /** 删除权限 DELETE /mg/role/permission/delete */
-export async function deletePermissionUsingDELETE(
+export async function deletePermissionUsingDelete(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.deletePermissionUsingDELETEParams,
   options?: { [key: string]: any },
@@ -68,7 +68,7 @@ export async function deletePermissionUsingDELETE(
 }
 
 /** 查询所有权限信息 GET /mg/role/permission/list */
-export async function getPermissionListUsingGET(options?: { [key: string]: any }) {
+export async function getPermissionListUsingGet(options?: { [key: string]: any }) {
   return request<API.CommonResultListPermission_>('/mg/role/permission/list', {
     method: 'GET',
     ...(options || {}),
@@ -76,7 +76,7 @@ export async function getPermissionListUsingGET(options?: { [key: string]: any }
 }
 
 /** 修改oldRole为newRole POST /mg/role/update */
-export async function updateRoleUsingPOST(
+export async function updateRoleUsingPost(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.updateRoleUsingPOSTParams,
   options?: { [key: string]: any },

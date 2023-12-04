@@ -1,4 +1,11 @@
 declare namespace API {
+  type addStarUsingPOSTParams = {
+    /** 收藏夹名称 */
+    starName: string;
+    /** 当前登录用户id */
+    uid: number;
+  };
+
   type AuthDto = {
     auth?: string;
     type?: number;
@@ -19,6 +26,24 @@ declare namespace API {
   type CommonResultListResult_ = {
     code?: number;
     data?: ListResult;
+    message?: string;
+  };
+
+  type CommonResultListResultStar_ = {
+    code?: number;
+    data?: ListResultStar_;
+    message?: string;
+  };
+
+  type CommonResultListResultStarVo_ = {
+    code?: number;
+    data?: ListResultStarVo_;
+    message?: string;
+  };
+
+  type CommonResultListResultString_ = {
+    code?: number;
+    data?: ListResultString_;
     message?: string;
   };
 
@@ -162,9 +187,45 @@ declare namespace API {
     total?: string;
   };
 
+  type ListResultStar_ = {
+    list?: Star[];
+    total?: string;
+  };
+
+  type ListResultStarVo_ = {
+    list?: StarVo[];
+    total?: string;
+  };
+
+  type ListResultString_ = {
+    list?: string[];
+    total?: string;
+  };
+
   type ListResultVo_ = {
     list?: Vo3[];
     total?: string;
+  };
+
+  type listStarByUidUsingGETParams = {
+    /** 当前登录的用户的id */
+    uid: number;
+  };
+
+  type listStarContentBySidByPageUsingGETParams = {
+    /** 当前页 */
+    page: number;
+    /** 收藏夹id */
+    sid: string;
+    /** 每页大小 */
+    size: number;
+  };
+
+  type listStaredUsingGETParams = {
+    /** 当前登录的用户的id */
+    uid: number;
+    /** 当前观看视频的动态id */
+    updateId: number;
   };
 
   type LoginDto = {
@@ -205,6 +266,18 @@ declare namespace API {
     type?: number;
   };
 
+  type removeStarUsingDELETEParams = {
+    /** 收藏夹id */
+    sid: string;
+  };
+
+  type removeStarVideoUsingDELETEParams = {
+    /** 收藏夹id */
+    sid: string;
+    /** 要删除的视频的动态id */
+    updateId: number;
+  };
+
   type searchUsingGETParams = {
     /** classificationId，0表示搜索视频，1表示搜索用户，默认0 */
     classificationId?: number;
@@ -220,6 +293,46 @@ declare namespace API {
     sortBy?: number;
     /** time，默认0，不作区分，1-10分钟以内，2-10到30分钟，3-30到60分钟，4-60分钟以上 */
     time?: number;
+  };
+
+  type Star = {
+    /** 主键id */
+    id?: string;
+    /** 收藏夹名称 */
+    starName?: string;
+    /** 收藏数量 */
+    starNum?: number;
+    /** 收藏的视频的id列表 */
+    starVideos?: StarVideo[];
+    /** 用户id */
+    uid?: number;
+  };
+
+  type StarVideo = {
+    starDate?: string;
+    updateId?: number;
+  };
+
+  type starVideoUsingPOSTParams = {
+    /** 要收藏的视频id */
+    updateId: number;
+  };
+
+  type StarVo = {
+    /** 视频播放量 */
+    playNum?: number;
+    /** 收藏时间 */
+    starDate?: string;
+    /** 视频收藏数量 */
+    starNum?: number;
+    /** 视频标题 */
+    title?: string;
+    /** 视频作者名称 */
+    upName?: string;
+    /** 视频上传时间 */
+    uploadTime?: string;
+    /** 视频id */
+    vid?: number;
   };
 
   type suggestUsingGETParams = {

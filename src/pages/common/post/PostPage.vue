@@ -87,7 +87,7 @@ watchEffect(async () => {
 
 async function getPosts() {
   try {
-    const res = await adminApi.UpdatesController.allUpdatesUsingGET({
+    const res = await adminApi.updatesController.allEssayUsingGet({
       pageNum: currentPage.value,
       pageSize: 10,
     });
@@ -139,12 +139,8 @@ async function handlePublishPost() {
     publishForm.images.forEach(image => {
       formData.append('images', image.file);
     });
-    const res = await adminApi.UpdatesControllerFix.publishUsingPOST({
+    const res = await adminApi.updatesControllerFix.publishUsingPost({
       content: publishForm.content,
-      pid: publishForm.pid,
-      title: publishForm.title ? publishForm.title : '[DEFAULT_TITLE]',
-      type: 0,
-      uid: userStore.userInfo?.id,
     }, formData);
     if (res.data?.code == 200) {
       showToast({ type: 'success', text: '发布成功' });
