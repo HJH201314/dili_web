@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
-import { computed, CSSProperties, onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
+import type { CSSProperties } from "vue";
 
 type CollectionItem = {
   name: string;
@@ -17,12 +18,12 @@ onMounted(() => {
 
 const starTabRef = ref<HTMLDivElement>();
 
-const computedStyle = computed((): CSSProperties => {
+function getComputedStyle() {
   const styles: CSSProperties = {};
-  // console.log(starTabRef.value?.offsetTop)
-  // styles.height = `calc(100vh - ${starTabRef.value?.offsetTop}px)`;
+  console.log(starTabRef.value?.offsetHeight, starTabRef.value?.offsetTop);
+  styles.height = `calc(100vh - ${starTabRef.value?.offsetTop}px - 5.5rem)`;
   return styles;
-});
+}
 
 async function getCollections() {
   try {
@@ -40,14 +41,14 @@ async function getCollections() {
 </script>
 
 <template>
-  <div ref="starTabRef" class="space-tab-star" :style="computedStyle">
-    <section class="collection-list">
+  <div ref="starTabRef" class="space-tab-star" :style="getComputedStyle()">
+    <section class="collection-list" ref="collectionListRef">
       <div class="collection-list-item" v-for="item in collections">
         <div class="collection-list-item__name">{{ item.name }}</div>
         <div class="collection-list-item__count">{{ item.count }}</div>
       </div>
     </section>
-    <hr style="width: 1px; height: 100vh; background-color: #9E9E9E7F; margin: 0;" />
+    <hr style="width: 1px; height: 100%; background-color: #9E9E9E7F; margin: 0;" />
     <section class="video-list">
 
     </section>
@@ -68,6 +69,7 @@ async function getCollections() {
     flex: 2;
     display: flex;
     flex-direction: column;
+    overflow: auto;
     &-item {
       @extend %click-able;
       @extend %button-like;

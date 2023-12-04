@@ -91,7 +91,7 @@ function handleTabChange(tabName: string) {
       </section>
       <div style="height: .5rem;"></div>
       <!-- 切换页面子组件 -->
-      <section class="main" style="display: contents; ">
+      <section class="main" style="display: contents;">
         <Transition name="slide-fade"><!-- TODO: 让这个动画生效 -->
           <SpaceHomeTab v-if="subPage == 'home'" />
           <SpacePostTab v-else-if="subPage == 'post'" />
@@ -120,8 +120,11 @@ function handleTabChange(tabName: string) {
 }
 .space {
   &-container {
+    position: relative;
     max-width: 80%;
     margin: 1rem auto;
+    display: flex;
+    flex-direction: column;
   }
   &-header {
     position: relative;
