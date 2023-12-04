@@ -16,22 +16,12 @@ declare namespace API {
     message?: string;
   };
 
-  type getCurrentUserUsingGETParams = {
-    /** token */
-    token: string;
-  };
-
   type LoginDto = {
     email?: string;
     phone?: string;
     pin?: string;
     pswd?: string;
     type?: number;
-  };
-
-  type logoutUsingGETParams = {
-    /** token */
-    token: string;
   };
 
   type RegisterDto = {

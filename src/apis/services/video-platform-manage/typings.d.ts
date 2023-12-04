@@ -86,11 +86,6 @@ declare namespace API {
     id: number;
   };
 
-  type getCurrentUserUsingGETParams = {
-    /** token */
-    token: string;
-  };
-
   type getVisByDayUsingGETParams = {
     /** timeId */
     timeId: string;
@@ -109,11 +104,6 @@ declare namespace API {
     pin?: string;
     pswd?: string;
     type?: number;
-  };
-
-  type logoutUsingGETParams = {
-    /** token */
-    token: string;
   };
 
   type Permission = {
@@ -190,6 +180,10 @@ declare namespace API {
     like?: number;
     /** 用户id */
     uid?: number;
+    /** 投稿视频数量 */
+    videoNum?: number;
+    /** 视频总播放量 */
+    videoTotalPlay?: number;
   };
 
   type Visit = {
