@@ -181,21 +181,23 @@ const form = reactive({
 <style scoped lang="scss">
 @import "@/assets/main";
 
+.common-header {
+  background-color: white;
+  box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.1);
+}
+
 header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   height: 3.5rem;
-  background-color: white;
   padding: 0 1rem;
   display: flex;
   align-items: center;
   flex-direction: row;
   gap: 1em;
   z-index: 1;
-
-  box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.1);
 
   ul {
     height: 100%;
