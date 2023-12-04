@@ -5,19 +5,19 @@ import CommonHeader from "@/components/header/CommonHeader.vue";
 const currentSlideIndex = ref(0);
 const slides = ref([
   {
-    imageSrc: "",
+    imageSrc: "https://cdn.fcraft.cn/image/dilidili/cover.jpg",
   },
   {
-    imageSrc: "https://i0.hdslb.com/bfs/archive/6b9b7b7b6b7b7b7b7b7b7b7b7b7b7b7b7b7b7b/0.jpg",
+    imageSrc: "https://cdn.fcraft.cn/image/dilidili/cover.jpg",
   },
   {
-    imageSrc: "https://i0.hdslb.com/bfs/archive/6b9b7b7b6b7b7b7b7b7b7b7b7b7b7b7b7b7b7b/0.jpg",
+    imageSrc: "https://cdn.fcraft.cn/image/dilidili/cover.jpg",
   },
   {
-    imageSrc: "https://i0.hdslb.com/bfs/archive/6b9b7b7b6b7b7b7b7b7b7b7b7b7b7b7b7b7b7b/0.jpg",
+    imageSrc: "https://cdn.fcraft.cn/image/dilidili/cover.jpg",
   },
   {
-    imageSrc: "https://i0.hdslb.com/bfs/archive/6b9b7b7b6b7b7b7b7b7b7b7b7b7b7b7b7b7b7b/0.jpg",
+    imageSrc: "https://cdn.fcraft.cn/image/dilidili/cover.jpg",
   },
 ]);
 
@@ -181,42 +181,56 @@ const feeds = ref<Feed[]>([
   {
     id: 1,
     title: "【独家】《鬼灭之刃》第二季PV",
-    coverSrc: "https://i0.hdslb.com/bfs/archive/6b9b7b7b6b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7/0.jpg",
+    coverSrc: "https://cdn.fcraft.cn/image/dilidili/cover.jpg",
     author: "哔哩哔哩动画",
     publishTime: "2021-04-01",
   },
   {
     id: 2,
     title: "【独家】《鬼灭之刃》第二季PV",
-    coverSrc: "https://i0.hdslb.com/bfs/archive/6b9b7b7b6b7b7b7b7b7b7b7b7b7b7b7b7b7b7b/0.jpg",
+    coverSrc: "https://cdn.fcraft.cn/image/dilidili/cover.jpg",
     author: "哔哩哔哩动画",
     publishTime: "2021-04-01",
   },
   {
     id: 3,
     title: "【独家】《鬼灭之刃》第二季PV",
-    coverSrc: "https://i0.hdslb.com/bfs/archive/6b9b7b7b6b7b7b7b7b7b7b7b7b7b7b7b7b7b7b/0.jpg",
+    coverSrc: "https://cdn.fcraft.cn/image/dilidili/cover.jpg",
     author: "哔哩哔哩动画",
     publishTime: "2021-04-01",
   },
   {
     id: 4,
     title: "【独家】《鬼灭之刃》第二季PV",
-    coverSrc: "https://i0.hdslb.com/bfs/archive/6b9b7b7b6b7b7b7b7b7b7b7b7b7b7b7b7b7b7b/0.jpg",
+    coverSrc: "https://cdn.fcraft.cn/image/dilidili/cover.jpg",
     author: "哔哩哔哩动画",
     publishTime: "2021-04-01",
   },
   {
     id: 5,
     title: "【独家】《鬼灭之刃》第二季PV",
-    coverSrc: "https://i0.hdslb.com/bfs/archive/6b9b7b7b6b7b7b7b7b7b7b7b7b7b7b7b7b7b7b/0.jpg",
+    coverSrc: "https://cdn.fcraft.cn/image/dilidili/cover.jpg",
     author: "哔哩哔哩动画",
     publishTime: "2021-04-01",
   },
   {
     id: 6,
     title: "【独家】《鬼灭之刃》第二季PV",
-    coverSrc: "https://i0.hdslb.com/bfs/archive/6b9b7b7b6b7b7b7b7b7b7b7b7b7b7b7b7b7b7b/0.jpg",
+    coverSrc: "https://cdn.fcraft.cn/image/dilidili/cover.jpg",
+    author: "哔哩哔哩动画",
+    publishTime: "2021-04-01",
+  },
+  {
+    id: 7,
+    title: "【独家】《鬼灭之刃》第二季PV",
+    coverSrc: "https://cdn.fcraft.cn/image/dilidili/cover.jpg",
+    author: "哔哩哔哩动画",
+    publishTime: "2021-04-01",
+  },
+  {
+    id: 8,
+    title: "【独家】《鬼灭之刃》第二季PV",
+    coverSrc: "https://cdn.fcraft.cn/image/dilidili/cover.jpg",
     author: "哔哩哔哩动画",
     publishTime: "2021-04-01",
   }
@@ -262,21 +276,26 @@ const feeds = ref<Feed[]>([
 
     <div class="homepage-feed">
       <div class="feed-container">
-        <div class="recommended-swiper">
-          <div class="slider-container">
-              <div class="slide" v-for="(slide, index) in slides" :key="index"
-                   :style="{ transform: `translateX(-${index * 100}%)` }">
-                <img :src="slide.imageSrc" alt="Slide Image">
-              </div>
-          </div>
-          <div class="controls">
-            <button @click="prevSlide">Previous</button>
-            <button @click="nextSlide">Next</button>
-          </div>
-        </div>
+        <el-carousel style="grid-column: span 2; grid-row: span 1;" indicator-position="none">
+          <el-carousel-item v-for="(slide, index) in slides" :key="index">
+            <img :src="slide.imageSrc" alt="Slide Image">
+          </el-carousel-item>
+        </el-carousel>
+<!--        <div class="recommended-swiper">-->
+<!--          <div class="slider-container">-->
+<!--              <div class="slide" v-for="(slide, index) in slides" :key="index"-->
+<!--                   :style="{ transform: `translateX(-${index * 100}%)` }">-->
+<!--                <img :src="slide.imageSrc" alt="Slide Image">-->
+<!--              </div>-->
+<!--          </div>-->
+<!--          <div class="controls">-->
+<!--            <button @click="prevSlide">Previous</button>-->
+<!--            <button @click="nextSlide">Next</button>-->
+<!--          </div>-->
+<!--        </div>-->
         <div class="feed-card" v-for="feed in feeds" :key="feed.id">
           <div class="card-image">
-            <img :src="feed.coverSrc" alt="Cover Image" />
+            <img style="object-fit: cover;" :src="feed.coverSrc" alt="Cover Image" />
           </div>
           <div class="card-info">
             <h3>{{ feed.title }}</h3>
@@ -297,7 +316,7 @@ const feeds = ref<Feed[]>([
 }
 .homepage {
   width: 100%;
-  min-height: 100vh;
+  // min-height: 100vh;
   background-color: #f5f5f5;
   display: flex;
   flex-direction: column;
@@ -426,8 +445,8 @@ const feeds = ref<Feed[]>([
   margin-right: auto;
 }
 .recommended-swiper {
-  grid-column: 1 / 3;
-  grid-row: 1 / 4;
+  grid-column: span 2;
+  grid-row: span 1;
   background-color: #fff;
   border-radius: 4px;
 }
@@ -455,6 +474,7 @@ const feeds = ref<Feed[]>([
   transition: transform 0.3s ease-in-out;
 }
 .feed-card {
+  height: 300px;
   grid-column: span 1;
   grid-row: span 1;
   background-color: #fff;
@@ -468,7 +488,6 @@ const feeds = ref<Feed[]>([
 }
 .card-image {
   width: 100%;
-  height: 60%;
   overflow: hidden;
 }
 .card-info {
