@@ -168,7 +168,7 @@ function handlePreviewImage(image: string) {
       <div class="more" @click="toggleMore"><MoreOne theme="outline" size="1.25rem" /></div>
     </div>
     <div class="post-list-item-body">
-      <div ref="refContent" class="text-ellipsis" :class="{'content-less': !readingMore}" v-html="props.content"></div>
+      <div ref="refContent" class="dili-text-ellipsis" :class="{'content-less': !readingMore}" v-html="props.content"></div>
       <div v-if="needReadMore" class="unfold" @click="handleUnfold">{{ readingMore ? '收起' : '展开' }}</div>
       <div class="image-grid">
         <div class="image-item" :class="{'unlimited': largeImage == image}" v-for="image in props.images" :key="image" @click="handlePreviewImage(image)">
