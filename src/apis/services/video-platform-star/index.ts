@@ -4,15 +4,15 @@
 // API 唯一标识：
 import * as historyController from './historyController';
 import * as loginController from './loginController';
+import * as shoucang from './shoucang';
 import * as updatesController from './updatesController';
-import * as updatesControllerFix from './updatesControllerFix';
 import * as userInfoController from './userInfoController';
 import * as videoController from './videoController';
 export default {
   historyController,
   loginController,
+  shoucang,
   updatesController,
-  updatesControllerFix,
   userInfoController,
   videoController,
 };

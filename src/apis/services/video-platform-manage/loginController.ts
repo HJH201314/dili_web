@@ -3,7 +3,7 @@
 import { request } from './base';
 
 /** 获取当前登录用户信息 GET /scy/current */
-export async function getCurrentUserUsingGET(options?: { [key: string]: any }) {
+export async function getCurrentUserUsingGet(options?: { [key: string]: any }) {
   return request<API.CommonResultUser_>('/scy/current', {
     method: 'GET',
     ...(options || {}),
@@ -11,7 +11,7 @@ export async function getCurrentUserUsingGET(options?: { [key: string]: any }) {
 }
 
 /** login POST /scy/login */
-export async function loginUsingPOST(body: API.LoginDto, options?: { [key: string]: any }) {
+export async function loginUsingPost(body: API.LoginDto, options?: { [key: string]: any }) {
   return request<API.CommonResultString_>('/scy/login', {
     method: 'POST',
     headers: {
@@ -23,7 +23,7 @@ export async function loginUsingPOST(body: API.LoginDto, options?: { [key: strin
 }
 
 /** logout GET /scy/logout */
-export async function logoutUsingGET(options?: { [key: string]: any }) {
+export async function logoutUsingGet(options?: { [key: string]: any }) {
   return request<API.CommonResultString_>('/scy/logout', {
     method: 'GET',
     ...(options || {}),
@@ -31,7 +31,7 @@ export async function logoutUsingGET(options?: { [key: string]: any }) {
 }
 
 /** p1 GET /scy/p1 */
-export async function p1UsingGET(options?: { [key: string]: any }) {
+export async function p1UsingGet(options?: { [key: string]: any }) {
   return request<API.CommonResultString_>('/scy/p1', {
     method: 'GET',
     ...(options || {}),
@@ -39,7 +39,7 @@ export async function p1UsingGET(options?: { [key: string]: any }) {
 }
 
 /** p6 GET /scy/p6 */
-export async function p6UsingGET(options?: { [key: string]: any }) {
+export async function p6UsingGet(options?: { [key: string]: any }) {
   return request<API.CommonResultString_>('/scy/p6', {
     method: 'GET',
     ...(options || {}),
@@ -47,7 +47,7 @@ export async function p6UsingGET(options?: { [key: string]: any }) {
 }
 
 /** getPin POST /scy/pin */
-export async function getPinUsingPOST(body: API.AuthDto, options?: { [key: string]: any }) {
+export async function getPinUsingPost(body: API.AuthDto, options?: { [key: string]: any }) {
   return request<API.CommonResultString_>('/scy/pin', {
     method: 'POST',
     headers: {
@@ -59,7 +59,7 @@ export async function getPinUsingPOST(body: API.AuthDto, options?: { [key: strin
 }
 
 /** register POST /scy/register */
-export async function registerUsingPOST(body: API.RegisterDto, options?: { [key: string]: any }) {
+export async function registerUsingPost(body: API.RegisterDto, options?: { [key: string]: any }) {
   return request<API.CommonResultString_>('/scy/register', {
     method: 'POST',
     headers: {

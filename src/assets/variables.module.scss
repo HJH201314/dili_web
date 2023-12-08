@@ -54,12 +54,12 @@ $box-shadow: 0px 0px 5px 0 rgba(0, 0, 0, 0.1);
 
 %hover-able {
   &:hover {
-    background: transparentize($color-hover, 0.2);
+    background: transparentize($color-hover, 0.5);
   }
 }
 %active-able {
   &:active {
-    background: transparentize($color-active, 0.2);
+    background: transparentize($color-active, 0.5);
   }
 }
 %transition-all-circ {

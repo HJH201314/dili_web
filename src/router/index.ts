@@ -24,7 +24,13 @@ const router = createRouter({
       path: '/post/detail',
       name: 'post-detail',
       component: () => import('@/pages/common/post/PostDetail.vue'),
-    }
+    },
+    {
+      path: '/space/:pathId',
+      name: 'space',
+      component: () => import('@/pages/personal/space/SpacePage.vue'),
+      props: true, // 将路由参数传为prop
+    },
   ]
 })
 

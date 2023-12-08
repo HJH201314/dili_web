@@ -15,9 +15,9 @@ const useUserStore = defineStore('user', () => {
   const login = async (type: 'phone' | 'email', principal: string, credential: string) => {
     let res;
     if (type == 'phone') {
-      res = await securityApi.LoginController.loginUsingPOST({phone: principal, pswd: credential, type: 0});
+      res = await securityApi.loginController.loginUsingPost({phone: principal, pswd: credential, type: 0});
     } else if (type == 'email') {
-      res = await securityApi.LoginController.loginUsingPOST({email: principal, pin: credential, type: 1});
+      res = await securityApi.loginController.loginUsingPost({email: principal, pin: credential, type: 1});
     }
     if (res?.data.code === 200) {
       tokenStorage.value = res.data.data ?? '';
@@ -39,7 +39,7 @@ const useUserStore = defineStore('user', () => {
   };
 
   const sendPin = async (type: 'phone' | 'email', principal: string) => {
-    const res = await securityApi.LoginController.getPinUsingPOST({auth: principal, type: type == 'email' ? 0 : 1});
+    const res = await securityApi.loginController.getPinUsingPost({auth: principal, type: type == 'email' ? 0 : 1});
     return res.data.code === 200;
   }
 
@@ -52,14 +52,14 @@ const useUserStore = defineStore('user', () => {
       pin: type === 'email' ? credential : undefined,
       type: type === 'phone' ? 1 : 2,
     }
-    const res = await securityApi.LoginController.registerUsingPOST(param);
+    const res = await securityApi.loginController.registerUsingPost(param);
     return res?.data.code === 200;
   }
 
   const logout = async () => {
     try {
       if (token.value) {
-        const res = await securityApi.LoginController.logoutUsingGET({token: token.value});
+        const res = await securityApi.loginController.logoutUsingGet({token: token.value});
         if (res?.data.code === 200) {
           return true;
         }
@@ -77,7 +77,7 @@ const useUserStore = defineStore('user', () => {
     await nextTick(async() => {
       if (newVal && !oldVal) {
         avatar.value = 'https://img.yzcdn.cn/vant/cat.jpeg';
-        const res = await securityApi.LoginController.getCurrentUserUsingGET({token: token.value});
+        const res = await securityApi.loginController.getCurrentUserUsingGet({token: token.value});
         userInfoStorage.value = res.data.data ?? {};
       }
     });
