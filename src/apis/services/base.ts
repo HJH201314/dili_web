@@ -67,6 +67,5 @@ export const request = <TRes>(path: string, args: AxiosRequestConfig) => {
   if (!config.headers) config.headers = {};
   config.headers['token'] = localStorage.getItem("token") ?? '';
   config.headers['Authorization'] = localStorage.getItem("token") ?? '';
-  console.log(config)
   return axiosInstance.request<any, AxiosResponse<TRes>>(config);
 }
