@@ -9,7 +9,9 @@ import CommonHeader from "@/components/header/CommonHeader.vue";
   <RouterView v-slot="{ Component, route }">
     <Transition name="slide-fade">
       <div style="display: flex; flex-direction: column; height: 100%;">
-        <CommonHeader v-if="route.meta.showCommonHeader == undefined || route.meta.showCommonHeader" />
+        <CommonHeader v-if="route.meta.showCommonHeader == undefined || route.meta.showCommonHeader"
+                      :search-bar-style="{'opacity': 0.9}"
+        />
         <component class="child-view" :is="Component" />
       </div>
     </Transition>

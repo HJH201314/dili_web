@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch, computed } from "vue";
+import { onMounted, reactive, ref, watch, computed, CSSProperties } from "vue";
 import { Search } from "@icon-park/vue-next";
 import { useRouter } from "vue-router";
 import showToast from "@/components/toast/toast";
@@ -12,6 +12,10 @@ import DiliPopover from "@/components/popover/DiliPopover.vue";
 import HistorySpinner from "@/components/header/HistorySpinner.vue";
 import axios from "axios";
 import { treeEmits } from "element-plus/es/components/tree-v2/src/virtual-tree.mjs";
+
+const props = defineProps<{
+  searchBarStyle?: CSSProperties,
+}>();
 
 const userStore = useUserStore();
 
@@ -127,27 +131,41 @@ function handleMeClick() {
   }
 }
 
-const isSearching = ref(false);
+/* searchStatus - 搜索状态 : none-没有在搜索  searching-搜索框展开  mouseout-鼠标移出搜索面板但未关闭 */
+const searchStatus = ref<'none' | 'searching' | 'mouseout'>('none');
 const searchContainer = ref<HTMLDivElement>();
+const searchInputRef = ref<HTMLInputElement>();
+
+/**
+ * 处理input失焦
+ */
+function handleSearchInputBlur() {
+  if (searchStatus.value != 'mouseout') {
+    // 如果是因为鼠标点击搜索框中其它内容导致的失焦，就要将焦点放回input
+    searchInputRef.value?.focus();
+  }
+}
 const form = reactive({
   searchVal: "",
 });
-// watch(
-//     () => form.searchVal,
-//     (newVal) => {
-//         axios.get("http://localhost:8083/video/suggest",{
-//         params: {
-//           key: newVal
-//         }
-//       }).then(response =>{
-//         suggestList.value = []
-//         suggestList.value = response.data
-//       })
-//     },
-//     {
-//       deep: true
-//     }
-// )
+
+watch(
+    () => form.searchVal,
+    (newVal) => {
+      // /api/admin会走vite代理转发到localhost:8850，具体配置在vite.config.ts中
+        axios.get("/api/admin/video/suggest",{
+        params: {
+          key: newVal
+        }
+      }).then(response =>{
+        suggestList.value = []
+        suggestList.value = response.data
+      })
+    },
+    {
+      deep: true
+    }
+)
 const suggestList = ref([""])
 const historyList = ref([""])
 const hisIsShow = computed(() => {
@@ -187,15 +205,20 @@ const searchFromHistory = (SearchHisStr: string) => {
           <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
         </li>
       </ul>
-      <div class="center-search-container" ref="searchContainer" @focusout="() => isSearching = false">
-        <div class="center-search-bar" :class="{ 'center-search-bar-focus': isSearching }"
-          @focusin="() => isSearching = true">
-          <form :class="{ 'focus': isSearching }">
-            <input v-model="form.searchVal" type="text" id="nav-search-input" placeholder="搜点什么呢...?" />
+      <div class="center-search-container" ref="searchContainer">
+        <div class="center-search-bar" :class="{ 'center-search-bar-focus': searchStatus != 'none' }"
+             @focusin="() => searchStatus = 'searching'"
+             @mouseleave="() => searchStatus = 'mouseout'"
+             @mouseenter="() => searchStatus = (searchStatus == 'mouseout') ? 'searching' : searchStatus"
+             @focusout="() => searchStatus = 'none'"
+             :style="props.searchBarStyle"
+        >
+          <form :class="{ 'focus': searchStatus != 'none' }">
+            <input ref="searchInputRef" v-model="form.searchVal" type="text" id="nav-search-input" placeholder="搜点什么呢...?" @blur="handleSearchInputBlur" />
             <Search class="search" size="1.25rem" />
           </form>
           <Transition name="opacity-circ">
-            <div v-show="isSearching" class="center-search-panel">
+            <div v-show="searchStatus !== 'none'" class="center-search-panel">
               <div v-show="hisIsShow" class="hisBoard">
                 <div class="header">
                   <div class="title">搜索历史</div>
@@ -316,7 +339,6 @@ header {
     min-width: 180px;
     max-width: 500px;
     position: relative;
-    background: $color-grey;
     border-radius: .5rem;
     transition: background-color .2s $ease-out-circ;
     //&:focus-within {
@@ -332,8 +354,8 @@ header {
       align-items: center;
       justify-content: space-around;
       gap: .5rem;
-      background-color: $color-grey;
-      @extend %transition-all-circ;
+      background: transparentize($color-black, 0.75);
+      transition: background-color .2s $ease-out-circ;
 
       &.focus {
         background: white;
@@ -351,12 +373,22 @@ header {
         width: 100%;
         outline: none;
         border: none;
-        background: $color-grey;
+        background: transparent;
         padding: 0 .5rem;
+        &:not(:focus) {
+          &::placeholder {
+            color: transparentize(black, 0.25);
+          }
+        }
+
+        &::placeholder {
+          color: grey;
+        }
       }
 
       .search {
         cursor: pointer;
+        color: transparentize(black, 0.25);
         padding: .4rem;
         margin-right: .25rem;
         border-radius: .5rem;
@@ -373,6 +405,7 @@ header {
     border-right: solid 1px $color-grey-400;
     border-bottom: solid 1px $color-grey-400;
     box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
   }
 }
 
