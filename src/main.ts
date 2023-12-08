@@ -30,21 +30,21 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 }
 
 // 路由拦截
-router.beforeEach((to, from, next) => {
-  if (to.path === from.path) return;
-  console.log('to.path', to.path)
-  if (publicRoutes.indexOf(to.path) !== -1) {
-    next();
-    return;
-  } else {
-    if (!useUserStore().isLogin) {
-      showToast({type: 'danger', text: '请先登录！'});
-      next('/home');
-      return;
-    }
-    next();
-  }
-});
+// router.beforeEach((to, from, next) => {
+//   if (to.path === from.path) return;
+//   console.log('to.path', to.path)
+//   if (publicRoutes.indexOf(to.path) !== -1) {
+//     next();
+//     return;
+//   } else {
+//     if (!useUserStore().isLogin) {
+//       showToast({type: 'danger', text: '请先登录！'});
+//       next('/home');
+//       return;
+//     }
+//     next();
+//   }
+// });
 
 // 自定义指令v-shake
 app.directive('shake', {
