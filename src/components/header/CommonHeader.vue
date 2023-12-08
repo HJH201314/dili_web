@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch, computed, CSSProperties } from "vue";
+import { onMounted, reactive, ref, watch, computed, CSSProperties, nextTick } from "vue";
 import { Search } from "@icon-park/vue-next";
 import { useRouter } from "vue-router";
 import showToast from "@/components/toast/toast";
@@ -143,8 +143,19 @@ function handleSearchInputBlur() {
   if (searchStatus.value != 'mouseout') {
     // 如果是因为鼠标点击搜索框中其它内容导致的失焦，就要将焦点放回input
     searchInputRef.value?.focus();
+  } else {
+    // 如果是鼠标已经移出搜索面板，则关闭搜索
+    searchStatus.value = 'none';
   }
 }
+watch(() => searchStatus.value, (v) => {
+  console.log(searchStatus)
+  if (v == 'none') {
+    // 如果失去搜索状态，强制取消input的聚焦
+    searchInputRef.value?.blur();
+  }
+})
+
 const form = reactive({
   searchVal: "",
 });
@@ -207,14 +218,14 @@ const searchFromHistory = (SearchHisStr: string) => {
       </ul>
       <div class="center-search-container" ref="searchContainer">
         <div class="center-search-bar" :class="{ 'center-search-bar-focus': searchStatus != 'none' }"
-             @focusin="() => searchStatus = 'searching'"
-             @mouseleave="() => searchStatus = 'mouseout'"
+             @mouseleave="() => searchStatus = (searchStatus != 'none') ? 'mouseout' : 'none'"
              @mouseenter="() => searchStatus = (searchStatus == 'mouseout') ? 'searching' : searchStatus"
-             @focusout="() => searchStatus = 'none'"
              :style="props.searchBarStyle"
         >
           <form :class="{ 'focus': searchStatus != 'none' }">
-            <input ref="searchInputRef" v-model="form.searchVal" type="text" id="nav-search-input" placeholder="搜点什么呢...?" @blur="handleSearchInputBlur" />
+            <input ref="searchInputRef" v-model="form.searchVal" type="text" id="nav-search-input" placeholder="搜点什么呢...?"
+                   @focus="searchStatus = 'searching'"
+                   @blur="handleSearchInputBlur" />
             <Search class="search" size="1.25rem" />
           </form>
           <Transition name="opacity-circ">
@@ -354,7 +365,7 @@ header {
       align-items: center;
       justify-content: space-around;
       gap: .5rem;
-      background: transparentize($color-black, 0.75);
+      background: transparentize($color-black, 0.9);
       transition: background-color .2s $ease-out-circ;
 
       &.focus {
@@ -379,6 +390,10 @@ header {
           &::placeholder {
             color: transparentize(black, 0.25);
           }
+        }
+
+        &:focus {
+          background: transparentize(black, 0.9);
         }
 
         &::placeholder {
