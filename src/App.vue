@@ -9,7 +9,9 @@ import CommonHeader from "@/components/header/CommonHeader.vue";
   <RouterView v-slot="{ Component, route }">
     <Transition name="slide-fade">
       <div style="display: flex; flex-direction: column; height: 100%;">
-        <CommonHeader v-if="route.meta.showCommonHeader == undefined || route.meta.showCommonHeader" />
+        <CommonHeader v-if="route.meta.showCommonHeader == undefined || route.meta.showCommonHeader"
+                      :search-bar-style="{'opacity': 0.9}"
+        />
         <component class="child-view" :is="Component" />
       </div>
     </Transition>
@@ -18,6 +20,7 @@ import CommonHeader from "@/components/header/CommonHeader.vue";
 
 <style scoped lang="scss">
 @import "@/assets/animations";
+
 .background {
   position: fixed;
   top: 0;
@@ -27,8 +30,17 @@ import CommonHeader from "@/components/header/CommonHeader.vue";
   z-index: -1;
   background-image: url("@/assets/img/bg.png");
 }
+
 .child-view {
   transition: all .2s cubic-bezier(.55, 0, .1, 1);
   flex: 1;
+}
+</style>
+
+<style>
+/*全局样式，em标签包裹搜索关键字高亮 */
+em {
+  color: #f25d8e;
+  font-style: normal;
 }
 </style>

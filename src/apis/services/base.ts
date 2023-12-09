@@ -58,19 +58,14 @@ axiosInstance.interceptors.response.use(
   return Promise.reject(error);
 });
 
-/**
- * 为解决不同模块的接口调用问题，由各模块的base中的request做第一层处理，调用此处的request
- * @param path 请求相对路径
- * @param args 请求参数
- * @return Promise<AxiosResponse<TRes>> axios的response
- * */
 export const request = <TRes>(path: string, args: AxiosRequestConfig) => {
-  return axiosInstance.request<any, AxiosResponse<TRes>>({
-    headers: {
-      "token": localStorage.getItem("token") ?? "",
-      "Authorization": localStorage.getItem("token") ?? "",
-    },
+  console.log(localStorage.getItem("token") ?? "")
+  let config: AxiosRequestConfig<any> = {
     url: path,
     ...args,
-  });
+  };
+  if (!config.headers) config.headers = {};
+  config.headers['token'] = localStorage.getItem("token") ?? '';
+  config.headers['Authorization'] = localStorage.getItem("token") ?? '';
+  return axiosInstance.request<any, AxiosResponse<TRes>>(config);
 }

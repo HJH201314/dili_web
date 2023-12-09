@@ -7,3 +7,14 @@ export function generateRandomString(length: number): string {
   }
   return result;
 }
+
+export function getStatString(value: number) {
+  if (value < 10000) return value;
+  else {
+    let v = (value / 10000).toFixed(1);
+    if (v.endsWith('.0')) {
+      v = v.replace('.0', '');
+    }
+    return `${v}万`;
+  }
+}

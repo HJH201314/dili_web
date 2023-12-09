@@ -35,7 +35,7 @@ const showModal = ref(false);
 /* 观测visibility，可以通过切换visibility切换展示状态 */
 watch(() => props.visible, (v) => {
   showModal.value = v;
-});
+}, { immediate: true });
 /* 展示模态框（暴露的方法，配合ref使用） */
 function open() {
   showModal.value = true;
@@ -59,7 +59,7 @@ function handleClose() {
         <div class="modal-body" :style="props.modalStyle">
           <Close v-if="showClose" class="modal-body-close" size="20" @click="handleClose" />
           <div class="modal-body-content">
-            <slot></slot>
+            <slot :isShown="showModal"></slot>
           </div>
         </div>
       </div>

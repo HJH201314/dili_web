@@ -3,7 +3,7 @@
 import { request } from './base';
 
 /** 新增用户，同时新增关联的默认detail、statistics、role信息 POST /mg/user/add */
-export async function addUserUsingPOST(body: API.User, options?: { [key: string]: any }) {
+export async function addUserUsingPost(body: API.User, options?: { [key: string]: any }) {
   return request<API.CommonResultString_>('/mg/user/add', {
     method: 'POST',
     headers: {
@@ -15,7 +15,7 @@ export async function addUserUsingPOST(body: API.User, options?: { [key: string]
 }
 
 /** 根据用户id、角色id增加角色 POST /mg/user/addrole/${param1}/${param0} */
-export async function addRoleByIdUsingPOST(
+export async function addRoleByIdUsingPost(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.addRoleByIdUsingPOSTParams,
   options?: { [key: string]: any },
@@ -29,7 +29,7 @@ export async function addRoleByIdUsingPOST(
 }
 
 /** 根据id删除用户，同时删除与之关联的detail、statistics、role信息 DELETE /mg/user/delete/${param0} */
-export async function deleteUserByIdUsingDELETE(
+export async function deleteUserByIdUsingDelete(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.deleteUserByIdUsingDELETEParams,
   options?: { [key: string]: any },
@@ -43,7 +43,7 @@ export async function deleteUserByIdUsingDELETE(
 }
 
 /** 根据用户id。权限id删除权限 DELETE /mg/user/deleterole/${param1}/${param0} */
-export async function deleteRoleByIdUsingDELETE(
+export async function deleteRoleByIdUsingDelete(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.deleteRoleByIdUsingDELETEParams,
   options?: { [key: string]: any },
@@ -57,7 +57,7 @@ export async function deleteRoleByIdUsingDELETE(
 }
 
 /** 获取所有用户（仅user表） GET /mg/user/list */
-export async function getAllUserUsingGET(options?: { [key: string]: any }) {
+export async function getAllUserUsingGet(options?: { [key: string]: any }) {
   return request<API.CommonResultObject_>('/mg/user/list', {
     method: 'GET',
     ...(options || {}),
@@ -65,7 +65,7 @@ export async function getAllUserUsingGET(options?: { [key: string]: any }) {
 }
 
 /** 根据用户id修改用户（仅user） PUT /mg/user/update */
-export async function updateUserUsingPUT(body: API.User, options?: { [key: string]: any }) {
+export async function updateUserUsingPut(body: API.User, options?: { [key: string]: any }) {
   return request<API.CommonResultString_>('/mg/user/update', {
     method: 'PUT',
     headers: {
@@ -77,7 +77,7 @@ export async function updateUserUsingPUT(body: API.User, options?: { [key: strin
 }
 
 /** 根据uid更新detail表信息 PUT /mg/user/updatedetail */
-export async function updateDetailByIdUsingPUT(
+export async function updateDetailByIdUsingPut(
   body: API.UserDetail,
   options?: { [key: string]: any },
 ) {
@@ -92,7 +92,7 @@ export async function updateDetailByIdUsingPUT(
 }
 
 /** 根据uid更新statistics表信息 PUT /mg/user/updatestatistics */
-export async function updateStatisticsByIdUsingPUT(
+export async function updateStatisticsByIdUsingPut(
   body: API.UserStatistics,
   options?: { [key: string]: any },
 ) {

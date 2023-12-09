@@ -1,25 +1,70 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import useUserStore from "@/stores/useUserStore";
 import { Like, VideoOne, HomeTwo, Tips, Config } from "@icon-park/vue-next";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import SpaceHomeTab from "@/pages/personal/space/SpaceHomeTab.vue";
 import SpacePostTab from "@/pages/personal/space/SpacePostTab.vue";
 import SpaceVideoTab from "@/pages/personal/space/SpaceVideoTab.vue";
 import SpaceStarTab from "@/pages/personal/space/SpaceStarTab.vue";
 import SpaceSettingTab from "@/pages/personal/space/SpaceSettingTab.vue";
+import services from "@/apis/services";
+import showToast from "@/components/toast/toast";
+import { getStatString } from "../../../utils/string";
 
 const props = defineProps<{
   pathId?: string;
 }>();
 
 const userStore = useUserStore();
+const uid = computed(() => {
+  let uid;
+  if (props.pathId == 'me') {
+    uid = userStore.userInfo.id ?? 0;
+  } else {
+    uid = parseInt(props.pathId ?? '0');
+  }
+  return uid;
+});
+
 const route = useRoute();
 
 onMounted(() => {
-
+  init();
 });
 
+watch(() => props.pathId, (newVal, oldVal) => {
+  // quickToast(`${props.pathId}`);
+  if (newVal !== oldVal)
+    init();
+});
+
+function init() {
+  subPage.value = 'home';
+  getUserInfo();
+}
+
+const router = useRouter();
+
+async function getUserInfo() {
+  if (uid.value <= 0) {
+    showToast({text: `参数异常${props.pathId}-${uid.value}！`});
+    router.replace('/');
+  }
+  const res = await services.adminService.userInfoController.getUserInfoByUidUsingGet({
+    uid: uid.value,
+  });
+  if (res.data.code === 200) {
+    spaceUserInfo.value = res.data.data!;
+  }
+}
+
+const spaceUserInfo = ref<API.UserInfo>({});
+const info = reactive({
+  userInfo: spaceUserInfo,
+  videoNum: ref<number>(0), // TODO
+  starNum: ref<number>(0), // TODO
+})
 const subPage = ref(route.query['tab'] || 'home');
 
 function handleTabChange(tabName: string) {
@@ -40,10 +85,10 @@ function handleTabChange(tabName: string) {
             </div>
             <div class="user-info-middle">
               <div class="user-info__name">
-                {{ userStore.userInfo.name }}
+                {{ spaceUserInfo.name ?? '匿名用户' }}
               </div>
               <div class="user-info__desc">
-                系统原装简介，送给每一位小可爱~
+                {{ spaceUserInfo.info ?? '系统原装签名，送给每一位小可爱~' }}
               </div>
             </div>
           </div>
@@ -60,43 +105,43 @@ function handleTabChange(tabName: string) {
           <div class="space-nav-item" @click="handleTabChange('video')">
             <div class="space-nav-item__icon"><VideoOne fill="#02b5da" theme="filled" size="1.5rem" /></div>
             <div class="space-nav-item__text">投稿</div>
-            <div class="space-nav-item__count">233</div>
+            <div class="space-nav-item__count">{{ info.videoNum }}</div>
           </div>
           <div class="space-nav-item" @click="handleTabChange('star')">
             <div class="space-nav-item__icon"><Like fill="#f3a034" theme="filled" size="1.5rem" /></div>
             <div class="space-nav-item__text">收藏</div>
-            <div class="space-nav-item__count">666</div>
+            <div class="space-nav-item__count">{{ info.starNum }}</div>
           </div>
-          <div class="space-nav-item" @click="handleTabChange('setting')">
+          <div class="space-nav-item" @click="handleTabChange('setting')" v-if="props.pathId == 'me'">
             <div class="space-nav-item__icon"><Config fill="#ff5d47" theme="filled" size="1.5rem" /></div>
             <div class="space-nav-item__text">设置</div>
           </div>
           <div class="space-nav-stat" style="margin-left: auto;">
             <div class="space-nav-stat__text">关注数</div>
-            <div class="space-nav-stat__count">233</div>
+            <div class="space-nav-stat__count">{{ getStatString(spaceUserInfo.follow ?? 0) }}</div>
           </div>
           <div class="space-nav-stat">
             <div class="space-nav-stat__text">粉丝数</div>
-            <div class="space-nav-stat__count">66.6万</div>
+            <div class="space-nav-stat__count">{{ getStatString(spaceUserInfo.fan ?? 0) }}</div>
           </div>
           <div class="space-nav-stat">
             <div class="space-nav-stat__text">获赞数</div>
-            <div class="space-nav-stat__count">77.7万</div>
+            <div class="space-nav-stat__count">{{ getStatString(spaceUserInfo.like ?? 0) }}</div>
           </div>
-          <div class="space-nav-stat">
+          <div class="space-nav-stat" v-if="false">
             <div class="space-nav-stat__text">播放数</div>
-            <div class="space-nav-stat__count">648万</div>
+            <div class="space-nav-stat__count">{{getStatString(spaceUserInfo.play ?? 0) }}</div>
           </div>
         </div>
       </section>
       <div style="height: .5rem;"></div>
       <!-- 切换页面子组件 -->
-      <section class="main" style="display: contents; ">
+      <section class="main" style="display: contents;">
         <Transition name="slide-fade"><!-- TODO: 让这个动画生效 -->
           <SpaceHomeTab v-if="subPage == 'home'" />
           <SpacePostTab v-else-if="subPage == 'post'" />
           <SpaceVideoTab v-else-if="subPage == 'video'" />
-          <SpaceStarTab v-else-if="subPage == 'star'" />
+          <SpaceStarTab :uid="uid" v-else-if="subPage == 'star'" />
           <SpaceSettingTab v-else-if="subPage == 'setting'" />
         </Transition>
       </section>
@@ -120,8 +165,12 @@ function handleTabChange(tabName: string) {
 }
 .space {
   &-container {
-    max-width: 80%;
+    position: relative;
+    width: 80%;
+    max-width: 1280px;
     margin: 1rem auto;
+    display: flex;
+    flex-direction: column;
   }
   &-header {
     position: relative;

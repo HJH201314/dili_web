@@ -1,6 +1,7 @@
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref, watch, computed, nextTick } from "vue";
+import type { CSSProperties } from "vue";
 import { Search } from "@icon-park/vue-next";
 import { useRouter } from "vue-router";
 import showToast from "@/components/toast/toast";
@@ -10,6 +11,12 @@ import type { CommonModalFunc } from "@/components/modal/CommonModal";
 import DiliTooltip from "@/components/tooltip/DiliTooltip.vue";
 import DiliPopover from "@/components/popover/DiliPopover.vue";
 import HistorySpinner from "@/components/header/HistorySpinner.vue";
+import axios from "axios";
+import { treeEmits } from "element-plus/es/components/tree-v2/src/virtual-tree.mjs";
+
+const props = defineProps<{
+  searchBarStyle?: CSSProperties,
+}>();
 
 const userStore = useUserStore();
 
@@ -101,7 +108,7 @@ function handleEntryClick(e: Event, entry: Entry) {
   } else if (entry.onClick) {
     entry.onClick();
   }
-  showToast({text: entry.name, position: 'top'});
+  showToast({ text: entry.name, position: 'top' });
 }
 
 const refLoginModal = ref<CommonModalFunc>();
@@ -112,9 +119,9 @@ function handleLoginClick() {
 async function handleLogoutClick() {
   const res = await userStore.logout();
   if (res) {
-    showToast({text: '登出成功', position: 'top'});
+    showToast({ text: '登出成功', position: 'top' });
   } else {
-    showToast({text: '登出请求失败，已强制登出', position: 'top'});
+    showToast({ text: '登出请求失败，已强制登出', position: 'top' });
   }
 }
 
@@ -125,11 +132,79 @@ function handleMeClick() {
   }
 }
 
-const isSearching = ref(false);
+/* searchStatus - 搜索状态 : none-没有在搜索  searching-搜索框展开  mouseout-鼠标移出搜索面板但未关闭 */
+const searchStatus = ref<'none' | 'searching' | 'mouseout'>('none');
 const searchContainer = ref<HTMLDivElement>();
+const searchInputRef = ref<HTMLInputElement>();
+
+/**
+ * 处理input失焦
+ */
+function handleSearchInputBlur() {
+  if (searchStatus.value != 'mouseout') {
+    // 如果是因为鼠标点击搜索框中其它内容导致的失焦，就要将焦点放回input
+    searchInputRef.value?.focus();
+  } else {
+    // 如果是鼠标已经移出搜索面板，则关闭搜索
+    searchStatus.value = 'none';
+  }
+}
+watch(() => searchStatus.value, (v) => {
+  console.log(searchStatus)
+  if (v == 'none') {
+    // 如果失去搜索状态，强制取消input的聚焦
+    searchInputRef.value?.blur();
+  }
+})
+
 const form = reactive({
   searchVal: "",
 });
+
+watch(
+    () => form.searchVal,
+    (newVal) => {
+      // /api/admin会走vite代理转发到localhost:8850，具体配置在vite.config.ts中
+        axios.get("/api/admin/video/suggest",{
+        params: {
+          key: newVal
+        }
+      }).then(response =>{
+        suggestList.value = []
+        suggestList.value = response.data
+      })
+    },
+    {
+      deep: true
+    }
+)
+const suggestList = ref([""])
+const historyList = ref([""])
+const hisIsShow = computed(() => {
+  if(form.searchVal == ""){
+    fetchSearchHis();
+    return true;
+  }else{
+    return false;
+  }
+})
+const fetchSearchHis = () =>{
+  historyList.value = localStorage.getItem("searchHistory")?.split(",") as string[];
+}
+
+const addSearchHis = (newSearch: string) => {
+  let HistoryStr = localStorage.getItem("searchHistory")
+  if(HistoryStr == ""){
+    localStorage.setItem("searchHistory", newSearch);
+  }else{
+    HistoryStr = HistoryStr + ',' + newSearch;
+  }
+}
+
+const searchFromHistory = (SearchHisStr: string) => {
+  form.searchVal = SearchHisStr;
+  //触发搜索
+}
 </script>
 
 <template>
@@ -142,15 +217,31 @@ const form = reactive({
           <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
         </li>
       </ul>
-      <div class="center-search-container" ref="searchContainer" @focusout="() => isSearching = false">
-        <div class="center-search-bar" :class="{'center-search-bar-focus': isSearching}" @focusin="() => isSearching = true">
-          <form :class="{'focus': isSearching}">
-            <input v-model="form.searchVal" type="text" id="nav-search-input" placeholder="搜点什么呢...?" />
+      <div class="center-search-container" ref="searchContainer">
+        <div class="center-search-bar" :class="{ 'center-search-bar-focus': searchStatus != 'none' }"
+             @mouseleave="() => searchStatus = (searchStatus != 'none') ? 'mouseout' : 'none'"
+             @mouseenter="() => searchStatus = (searchStatus == 'mouseout') ? 'searching' : searchStatus"
+             :style="props.searchBarStyle"
+        >
+          <form :class="{ 'focus': searchStatus != 'none' }">
+            <input ref="searchInputRef" v-model="form.searchVal" type="text" id="nav-search-input" placeholder="搜点什么呢...?"
+                   @focus="searchStatus = 'searching'"
+                   @blur="handleSearchInputBlur" />
             <Search class="search" size="1.25rem" />
           </form>
           <Transition name="opacity-circ">
-            <div v-if="isSearching" class="center-search-panel">
-              123<br>123<br>123<br>123<br>123<br>123<br>123<br>123<br>123<br>123<br>
+            <div v-show="searchStatus !== 'none'" class="center-search-panel">
+              <div v-show="hisIsShow" class="hisBoard">
+                <div class="header">
+                  <div class="title">搜索历史</div>
+                  <div class="clear">清空</div>
+                </div>
+                <div class="histories">
+                  <div @click="searchFromHistory(history)" class="hisDiv" v-for="(history, index) in historyList" :key="index">{{ history }}</div>
+                </div>
+              </div>
+              <div class="searchSuggest" v-for="(suggest, index) in suggestList" :key="index" v-html="suggest">
+              </div>
             </div>
           </Transition>
         </div>
@@ -159,7 +250,8 @@ const form = reactive({
         <DiliTooltip position="bottom" :enabled="userStore.isLogin">
           <div class="nav-user-container" @click="handleMeClick">
             <span v-if="!userStore.isLogin" @click="handleLoginClick">登录/注册</span>
-            <img class="nav-user-avatar" v-if="userStore.isLogin" :src="userStore.avatar ?? '/favicon.ico'"  alt="avatar"/>
+            <img class="nav-user-avatar" v-if="userStore.isLogin" :src="userStore.avatar ?? '/favicon.ico'"
+              alt="avatar" />
           </div>
           <template #tip>
             <div class="nav-user-logout" @click="handleLogoutClick">点我登出</div>
@@ -167,9 +259,11 @@ const form = reactive({
         </DiliTooltip>
         <li v-for="entry in rightEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
           <DiliPopover position="bottom">
-            <span>{{ entry.name }}</span>
-            <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
             <template #body>
+              <span>{{ entry.name }}</span>
+              <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
+            </template>
+            <template #popover>
               <div v-if="entry.key == 'history'">
                 <HistorySpinner />
               </div>
@@ -177,7 +271,7 @@ const form = reactive({
           </DiliPopover>
         </li>
       </ul>
-      <button id="upload-button" @click="e => handleEntryClick(e, {key: 'upload', name: '投稿', href: '/upload'})">
+      <button id="upload-button" @click="e => handleEntryClick(e, { key: 'upload', name: '投稿', href: '/upload' })">
         投稿
       </button>
       <LoginModal ref="refLoginModal" />
@@ -213,6 +307,7 @@ header {
     display: flex;
     align-items: center;
   }
+
   li {
     @extend %click-able;
     position: relative;
@@ -220,6 +315,7 @@ header {
     cursor: pointer;
     padding: 1rem;
     box-sizing: border-box;
+
     span {
       a {
         text-decoration: none;
@@ -237,24 +333,26 @@ header {
       height: 2px;
     }
   }
-}
-.left-entry {
 
 }
+
+.left-entry {}
+
 .center-search {
   flex: 1;
+
   &-container {
     flex: 1;
     display: flex;
     justify-content: center;
   }
+
   &-bar {
     flex: 1;
     height: 2.5rem;
     min-width: 180px;
     max-width: 500px;
     position: relative;
-    background: $color-grey;
     border-radius: .5rem;
     transition: background-color .2s $ease-out-circ;
     //&:focus-within {
@@ -270,8 +368,9 @@ header {
       align-items: center;
       justify-content: space-around;
       gap: .5rem;
-      background-color: $color-grey;
-      @extend %transition-all-circ;
+      background: transparentize($color-black, 0.9);
+      transition: background-color .2s $ease-out-circ;
+
       &.focus {
         background: white;
         border-radius: .5rem .5rem 0 0;
@@ -280,6 +379,7 @@ header {
         border-top: solid 1px $color-grey-400;
         box-shadow: 0 0 8px rgba(0, 0, 0, 0.08);
       }
+
       input {
         flex: 1;
         line-height: 2rem;
@@ -287,11 +387,26 @@ header {
         width: 100%;
         outline: none;
         border: none;
-        background: $color-grey;
+        background: transparent;
         padding: 0 .5rem;
+        &:not(:focus) {
+          &::placeholder {
+            color: transparentize(black, 0.25);
+          }
+        }
+
+        &:focus {
+          background: transparentize(black, 0.9);
+        }
+
+        &::placeholder {
+          color: grey;
+        }
       }
+
       .search {
         cursor: pointer;
+        color: transparentize(black, 0.25);
         padding: .4rem;
         margin-right: .25rem;
         border-radius: .5rem;
@@ -308,8 +423,10 @@ header {
     border-right: solid 1px $color-grey-400;
     border-bottom: solid 1px $color-grey-400;
     box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
   }
 }
+
 .nav-user {
   &-container {
     @extend %click-able;
@@ -318,15 +435,18 @@ header {
     cursor: pointer;
     box-sizing: border-box;
   }
+
   &-avatar {
     width: 1.75rem;
     height: 1.75rem;
     border-radius: 50%;
     transition: transform .2s $ease-out-circ;
+
     &:hover {
       transform: rotate(-360deg);
     }
   }
+
   &-logout {
     background-color: white;
     white-space: nowrap;
@@ -334,8 +454,9 @@ header {
     font-size: .8rem;
   }
 }
-.right-entry {
-}
+
+.right-entry {}
+
 #upload-button {
   border: none;
   cursor: pointer;
@@ -346,11 +467,70 @@ header {
   background: $color-primary;
   color: white;
   transition: background-color .2s $ease-out-circ;
+
   &:hover {
     background-color: shade-color($color-primary, 5%);
   }
+
   &:active {
     background-color: shade-color($color-primary, 10%);
   }
 }
-</style>
+
+.searchSuggest {
+  padding-left: 5px;
+  height: 32px;
+  padding-top: 5px;
+  overflow: hidden;
+}
+
+.searchSuggest:hover {
+  background-color: rgb(227, 229, 231);
+}
+
+.hisBoard {
+  padding: 8px 5px 10px;
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .title {
+      font-size: 16px;
+      margin-left: 8px;
+      height: 24px;
+      line-height: 24px;
+    }
+
+    .clear {
+      font-size: 12px;
+      margin-right: 8px;
+      color: rgb(148, 153, 160);
+      height: 15px;
+      line-height: 12px;
+      cursor: pointer;
+    }
+
+    .clear:hover {
+      color: rgb(71, 197, 241);
+    }
+  }
+
+  .histories {
+    // display: flex;
+    .hisDiv {
+      display: inline-block;
+      box-sizing: border-box;
+      background-color: rgb(246, 247, 248);
+      margin-left: 8px;
+      font-size: 12px;
+      padding: 3px 5px;
+      border-radius: 6px;
+    }
+    .hisDiv:hover {
+      color: rgb(71, 197, 241);
+      cursor: pointer;
+    }
+  }
+
+}</style>

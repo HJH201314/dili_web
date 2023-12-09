@@ -10,6 +10,8 @@ declare namespace API {
     foreignId?: number;
     /** id，主键 */
     id?: string;
+    /** 是否置顶（1：置顶 0：不置顶） */
+    isTop?: number;
     /** 点赞数量 */
     likeNum?: number;
     /** 回复数量 */
@@ -22,15 +24,29 @@ declare namespace API {
     username?: string;
   };
 
-  type CommonResultListResultComment_ = {
+  type CommentVo = {
+    children?: CommentVo[];
+    content?: string;
+    createTime?: string;
+    foreignId?: number;
+    id?: string;
+    isLiked?: boolean;
+    likeNum?: number;
+    replyNum?: number;
+    targetUsername?: string;
+    userId?: number;
+    username?: string;
+  };
+
+  type CommonResultListResultCommentVo_ = {
     code?: number;
-    data?: ListResultComment_;
+    data?: ListResultCommentVo_;
     message?: string;
   };
 
   type CommonResultLong_ = {
     code?: number;
-    data?: number;
+    data?: string;
     message?: string;
   };
 
@@ -43,11 +59,6 @@ declare namespace API {
   type countCommentsByForeignIdUsingGETParams = {
     /** foreignId */
     foreignId: number;
-  };
-
-  type countSubCommentByPidUsingGETParams = {
-    /** pid */
-    pid: string;
   };
 
   type deleteChildCommentUsingDELETEParams = {
@@ -69,6 +80,10 @@ declare namespace API {
     flag: number;
     /** 点赞的对应的根评论id */
     pid: string;
+    /** 被点赞的评论的用户的id */
+    pUid: number;
+    /** 当前登录用户id */
+    uid: number;
   };
 
   type likeRootCommentUsingPOSTParams = {
@@ -76,6 +91,10 @@ declare namespace API {
     flag: number;
     /** 点赞的根评论的id */
     pid: string;
+    /** 被点赞的评论的用户的id */
+    pUid: number;
+    /** 当前登录用户id */
+    uid: number;
   };
 
   type listChildrenCommentByPagesUsingGETParams = {
@@ -85,8 +104,8 @@ declare namespace API {
     pid: string;
     /** 每页大小 */
     size: number;
-    /** 排序字段 */
-    sortBy: string;
+    /** 当前登录用户id */
+    uid: number;
   };
 
   type listCommentByPagesUsingGETParams = {
@@ -98,15 +117,24 @@ declare namespace API {
     size: number;
     /** 排序字段 */
     sortBy: string;
+    /** 当前登录的用户的id */
+    uid: number;
   };
 
-  type ListResultComment_ = {
-    list?: Comment[];
-    total?: number;
+  type ListResultCommentVo_ = {
+    list?: CommentVo[];
+    total?: string;
   };
 
   type replyCommentUsingPOSTParams = {
     /** 回复的根评论的id */
+    pid: string;
+  };
+
+  type toTopCommentUsingPOSTParams = {
+    /** 置顶或取消置顶 */
+    flag: number;
+    /** 要置顶的评论id（只能为根评论） */
     pid: string;
   };
 }
