@@ -11,5 +11,7 @@
     "types": [
       "node"
     ],
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
   }
 }

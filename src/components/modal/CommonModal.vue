@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Close } from "@icon-park/vue-next";
-import { CSSProperties, ref, watch } from "vue";
+import { CSSProperties, nextTick, ref, watch } from "vue";
 
 interface CommonModalProps {
   showClose?: boolean;
@@ -34,7 +34,10 @@ const showModal = ref(false);
 
 /* 观测visibility，可以通过切换visibility切换展示状态 */
 watch(() => props.visible, (v) => {
-  showModal.value = v;
+  // nextTick才真正改变可视，能够让props.visible从一开始就为true时也展示动画
+  nextTick(() => {
+    showModal.value = v;
+  });
 }, { immediate: true });
 /* 展示模态框（暴露的方法，配合ref使用） */
 function open() {
