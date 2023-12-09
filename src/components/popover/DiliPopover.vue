@@ -15,14 +15,14 @@ const props = withDefaults(defineProps<PopoverProps>(), {
 });
 
 const refTrigger = ref<HTMLDivElement>();
-const refTooltip = ref<HTMLDivElement>();
-const refPopover = ref<HTMLSpanElement>();
+const refContainer = ref<HTMLDivElement>();
+const refPopover = ref<HTMLDivElement>();
 
 const showPopover = ref(false);
 
 function show() {
   if (!props.enabled) return;
-  // 先切换show再设置位置，否则由于tooltip元素不存在，导致位置计算错误
+  // 先切换show再设置位置，否则由于popover元素不存在，导致位置计算错误
   showPopover.value = true;
   nextTick(() => {
     const trigger = refTrigger.value;
@@ -57,20 +57,20 @@ function show() {
 
 function hide(e: MouseEvent) {
   console.debug('mouse offset:', e.offsetX, e.offsetY);
-  if (e.offsetX < 0 || e.offsetX > refTooltip.value?.offsetWidth || e.offsetY < 0 || e.offsetY > refTooltip.value?.offsetHeight) {
+  if (e.offsetX < 0 || e.offsetX > refContainer.value?.offsetWidth || e.offsetY < 0 || e.offsetY > refContainer.value?.offsetHeight) {
     showPopover.value = false;
   }
 }
 </script>
 
 <template>
-  <div class="tooltip" @mouseenter="show" @mouseleave="(e) => hide(e)" ref="refTooltip">
-    <span class="tooltip-wrapper" ref="refTrigger">
-      <slot />
+  <div class="popover" @mouseenter="show" @mouseleave="(e) => hide(e)" ref="refContainer">
+    <span class="popover-wrapper" ref="refTrigger">
+      <slot name="body" />
     </span>
     <Transition>
-      <div v-show="showPopover || props.alwaysShow" class="tooltip-slot" ref="refPopover" role="tooltip">
-        <slot name="body" />
+      <div v-show="showPopover || props.alwaysShow" class="popover-slot" ref="refPopover" role="tooltip">
+        <slot name="popover" />
       </div>
     </Transition>
   </div>
@@ -78,7 +78,7 @@ function hide(e: MouseEvent) {
 
 <style scoped lang="scss">
 @import "@/assets/variables.module";
-.tooltip {
+.popover {
   position: relative;
   &-slot {
     position: absolute;

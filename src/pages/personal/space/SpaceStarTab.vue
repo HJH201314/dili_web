@@ -6,6 +6,11 @@ import VideoCard from "@/components/video-card/VideoCard.vue";
 import type { VideoCardProps } from "@/components/video-card/VideoCard";
 import services from "@/apis/services";
 import useUserStore from "@/stores/useUserStore";
+import useUserInfo from "@/stores/publicUserInfo";
+import { DeleteOne, MoreOne } from "@icon-park/vue-next";
+import DiliPopover from "@/components/popover/DiliPopover.vue";
+import showToast from "@/components/toast/toast";
+import showCommonDialog from "@/components/dialog/CommonDialog";
 
 const userStore = useUserStore();
 
@@ -21,9 +26,9 @@ const uid = ref(props.uid ?? userStore.userInfo.id ?? 0);
 
 type CollectionItem = {
   id: string;
-  name: string;
-  count: number;
-  creator: number;
+  name?: string;
+  count?: number;
+  creatorId?: number;
 }
 const collections = ref<CollectionItem[]>();
 
@@ -41,6 +46,7 @@ function getContainerStyle() {
   if (props.autoHeight) {
     // @ts-ignore
     styles.maxHeight = `calc(100vh - ${document.querySelector('#space-tab-star')?.offsetTop}px - 5.5rem)`; // 使用原生DOM查询，避免Transition组件导致的虚拟DOM的offsetTop错误
+    // @ts-ignore
     styles.height = `calc(100vh - ${document.querySelector('#space-tab-star')?.offsetTop}px - 5.5rem)`; // 使用原生DOM查询，避免Transition组件导致的虚拟DOM的offsetTop错误
   }
   return styles;
@@ -49,18 +55,36 @@ function getContainerStyle() {
 async function getCollections() {
   try {
     collections.value = [];
+    if (!props.uid) return;
     const res = await services.starService.shoucang.listStarByUidUsingGet({
       uid: props.uid,
     });
     if (res.data?.code == 200) {
       res.data?.data?.list?.map((v) => {
         collections.value?.push({
-          id: v.id,
+          id: v.id!,
           name: v.starName,
           count: v.starNum,
-          creator: v.uid,
+          creatorId: v.uid,
         });
       });
+    }
+    // 若没有当前收藏夹，则将列表第一个设置为当前选中的收藏夹
+    if (!currentCollection.value) {
+      if (collections.value?.length) {
+        currentCollection.value = collections.value[0];
+        handleCollectionChange(currentCollection.value);
+      }
+    }
+    // 如果当前收藏夹消失了，那么设置首个收藏夹为当前选中收藏夹；如果没收藏夹了，那么清除当前选中收藏夹
+    if (collections.value?.findIndex((v) => {
+      return v.id === currentCollection.value?.id;
+    }) == -1) {
+      if (collections.value?.length) {
+        currentCollection.value = collections.value[0];
+        handleCollectionChange(currentCollection.value);
+      }
+      else currentCollection.value = undefined;
     }
   } finally {
 
@@ -68,6 +92,8 @@ async function getCollections() {
 }
 
 const currentCollection = ref<CollectionItem>();
+const creatorId = computed(() => currentCollection.value?.creatorId); // 不单独compute的话，似乎无法响应变化
+const { status: creatorStatus, userInfo: creatorInfo } = useUserInfo(creatorId);
 const currentPage = ref(1);
 const pageSize = ref(20);
 function handleCollectionChange(item: CollectionItem) {
@@ -75,8 +101,42 @@ function handleCollectionChange(item: CollectionItem) {
   getVideoList(item.id);
 }
 
+async function handleCollectionDelete(item: CollectionItem) {
+  showCommonDialog({});
+  try {
+    if (parseInt(item.id) <= 0) {
+      showToast({ text: '删除失败！', type: 'danger' });
+      return;
+    }
+    const res = await services.starService.shoucang.removeStarUsingDelete({
+      sid: item.id
+    });
+    if (res.data.code == 200) {
+      showToast({ text: '删除成功！', type: 'success' });
+      getCollections();
+    } else {
+      showToast({ text: '删除失败！', type: 'danger' });
+    }
+  } catch (ignore) {}
+}
+
+async function handleCollectionAdd(collectionName: string) {
+  try {
+    const res = await services.starService.shoucang.addStarUsingPost({
+      uid: userStore.userInfo?.id!,
+      starName: collectionName,
+    });
+    if (res.data.code == 200) {
+      showToast({ text: '创建成功！', type: 'success' });
+      getCollections();
+    } else {
+      showToast({ text: '创建失败！', type: 'danger' });
+    }
+  } catch (ignore) {}
+}
+
 type StaredVideoItem = VideoCardProps & {
-  starDate: string; // 收藏日期
+  starDate?: string; // 收藏日期
 }
 const starList = ref<StaredVideoItem[]>([]);
 /**
@@ -146,8 +206,18 @@ async function getVideoList(sid: string) {
           {{ currentCollection?.name }}
         </div>
         <div class="creator">
-          创建者：{{ currentCollection?.creator }}
+          创建者：{{ creatorStatus == 'loading' ? '加载中...' : creatorInfo?.name }}
         </div>
+        <DiliPopover class="more" position="left">
+          <template #body>
+            <div><MoreOne theme="outline" size="1.25rem" /></div>
+          </template>
+          <template #popover>
+            <div class="more-actions">
+              <div class="delete" @click="handleCollectionDelete(currentCollection)"><DeleteOne theme="outline" size="1.25rem" fill="#ff7875" /></div>
+            </div>
+          </template>
+        </DiliPopover>
       </section>
       <hr style="border: 1px solid grey; opacity: 0.3; margin: .5rem 0" />
       <section class="video-list">
@@ -206,9 +276,42 @@ async function getVideoList(sid: string) {
     flex: 7;
     overflow: auto;
     .collection-info {
+      position: relative;
+      // display: grid;
       > .name {
         font-weight: bold;
         font-size: 1.25rem;
+      }
+      .more {
+        position: absolute;
+        aspect-ratio: 1;
+        top: 1rem;
+        right: 0;
+        height: 1.75rem;
+        width: 1.75rem;
+        span {
+          @extend %click-able;
+          @extend %button-like;
+          padding: .25rem;
+          vertical-align: center;
+        }
+
+        .more-actions {
+          z-index: 10;
+          height: 1.75rem;
+          //position: absolute;
+          //top: .5rem;
+          //right: 2.5rem;
+          border-radius: .5rem;
+          align-items: center;
+          box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+          display: flex;
+
+          .delete {
+            height: 100%;
+            aspect-ratio: 1;
+          }
+        }
       }
     }
     .video-list {

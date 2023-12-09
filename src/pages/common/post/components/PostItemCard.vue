@@ -49,11 +49,11 @@ onBeforeUnmount(() => {
 });
 
 function getCommentNum() {
-  commentApi.CommentController.countCommentsByForeignIdUsingGET({
+  commentApi.commentController.countCommentsByForeignIdUsingGet({
     foreignId: props.postId,
   }).then(res => {
     if (res.data.code == 200) {
-      commentCount.value = res.data.data;
+      commentCount.value = parseInt(res.data.data!);
     }
   }).catch();
 }
@@ -99,7 +99,7 @@ function handleDeletePost() {
     showToast({ text: '别删别人的啊', type: 'danger' });
     return;
   }
-  adminApi.UpdatesController.deleteByIdUsingDELETE({
+  adminApi.updatesController.deleteEssayByIdUsingDelete({
     id: props.postId,
   }).then(res => {
     if (res.data.code == 200) {

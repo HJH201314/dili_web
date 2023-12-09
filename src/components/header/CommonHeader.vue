@@ -1,6 +1,7 @@
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch, computed, CSSProperties, nextTick } from "vue";
+import { onMounted, reactive, ref, watch, computed, nextTick } from "vue";
+import type { CSSProperties } from "vue";
 import { Search } from "@icon-park/vue-next";
 import { useRouter } from "vue-router";
 import showToast from "@/components/toast/toast";
@@ -258,9 +259,11 @@ const searchFromHistory = (SearchHisStr: string) => {
         </DiliTooltip>
         <li v-for="entry in rightEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
           <DiliPopover position="bottom">
-            <span>{{ entry.name }}</span>
-            <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
             <template #body>
+              <span>{{ entry.name }}</span>
+              <div v-if="entry.href == router.currentRoute.value.path" class="active-underline" />
+            </template>
+            <template #popover>
               <div v-if="entry.key == 'history'">
                 <HistorySpinner />
               </div>
