@@ -31,6 +31,12 @@ const router = createRouter({
       component: () => import('@/pages/personal/space/SpacePage.vue'),
       props: true, // 将路由参数传为prop
     },
+    {
+      path: '/video/:videoId',
+      name: 'video',
+      component: () => import('@/pages/common/video/VideoPage.vue'),
+      props: true,
+    }
   ]
 })
 
