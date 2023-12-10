@@ -241,7 +241,7 @@ const feeds = ref<Feed[]>([
 <template>
   <div class="homepage">
     <div class="homepage-header">
-      <CommonHeader class="common-header"/>
+      <CommonHeader class="common-header" :header-style="{ 'background': 'transparent' }" />
       <img src="@/assets/img/headerbg.png" class="header-bg">
     </div>
 

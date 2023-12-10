@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch, computed, nextTick } from "vue";
+import { reactive, ref, watch, computed } from "vue";
 import type { CSSProperties } from "vue";
 import { Search } from "@icon-park/vue-next";
 import { useRouter } from "vue-router";
@@ -16,14 +16,10 @@ import { treeEmits } from "element-plus/es/components/tree-v2/src/virtual-tree.m
 
 const props = defineProps<{
   searchBarStyle?: CSSProperties,
+  headerStyle?: CSSProperties,
 }>();
 
 const userStore = useUserStore();
-
-/* 页面挂载时初始化 */
-onMounted(() => {
-  /* TODO: 初始化搜索框 */
-});
 
 /* 定义入口项属性 */
 type Entry = {
@@ -204,13 +200,18 @@ const addSearchHis = (newSearch: string) => {
 const searchFromHistory = (SearchHisStr: string) => {
   form.searchVal = SearchHisStr;
   //触发搜索
+  handleSearch();
+}
+
+function handleSearch() {
+  router.push(`/search?type=video&keyword=${form.searchVal}`);
 }
 </script>
 
 <template>
   <div class="common-header">
     <div class="header-placeholder" style="height: 3.5rem;"></div>
-    <header>
+    <header ref="headerRef" :style="headerStyle">
       <ul class="left-entry">
         <li v-for="entry in leftEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
           <span>{{ entry.name }}</span>
@@ -223,11 +224,12 @@ const searchFromHistory = (SearchHisStr: string) => {
              @mouseenter="() => searchStatus = (searchStatus == 'mouseout') ? 'searching' : searchStatus"
              :style="props.searchBarStyle"
         >
-          <form :class="{ 'focus': searchStatus != 'none' }">
+          <form :class="{ 'focus': searchStatus != 'none' }" @submit.prevent="handleSearch">
             <input ref="searchInputRef" v-model="form.searchVal" type="text" id="nav-search-input" placeholder="搜点什么呢...?"
                    @focus="searchStatus = 'searching'"
-                   @blur="handleSearchInputBlur" />
-            <Search class="search" size="1.25rem" />
+                   @blur="handleSearchInputBlur"
+            />
+            <Search class="search" size="1.25rem" @click="handleSearch" />
           </form>
           <Transition name="opacity-circ">
             <div v-show="searchStatus !== 'none'" class="center-search-panel">
@@ -283,7 +285,7 @@ const searchFromHistory = (SearchHisStr: string) => {
 @import "@/assets/main";
 
 .common-header {
-  background-color: white;
+  position: relative;
   box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.1);
 }
 
@@ -292,6 +294,9 @@ header {
   top: 0;
   left: 0;
   right: 0;
+  background-color: rgba(255, 255, 255, 1);
+  //-webkit-backdrop-filter: blur(3px);
+  //backdrop-filter: blur(3px);
   height: 3.5rem;
   padding: 0 1rem;
   display: flex;
