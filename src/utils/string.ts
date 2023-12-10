@@ -7,6 +7,9 @@ export function generateRandomString(length: number): string {
   }
   return result;
 }
+export function getRandomString(length: number) {
+  return generateRandomString(length);
+}
 
 export function getStatString(value: number) {
   if (value < 10000) return value;

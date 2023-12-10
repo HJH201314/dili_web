@@ -10,7 +10,8 @@ import useUserInfo from "@/stores/publicUserInfo";
 import { DeleteOne, MoreOne } from "@icon-park/vue-next";
 import DiliPopover from "@/components/popover/DiliPopover.vue";
 import showToast from "@/components/toast/toast";
-import showCommonDialog from "@/components/dialog/CommonDialog";
+import { DialogManager } from "@/components/dialog";
+import { getRandomString } from "@/utils/string";
 
 const userStore = useUserStore();
 
@@ -100,9 +101,13 @@ function handleCollectionChange(item: CollectionItem) {
   currentCollection.value = item;
   getVideoList(item.id);
 }
-
+function createDialog(props?: any) {
+  DialogManager.inputDialog({onCancel: close => close(), onConfirm: () => {
+    createDialog({title: getRandomString(5)});
+    }, ...props});
+}
 async function handleCollectionDelete(item: CollectionItem) {
-  showCommonDialog({});
+  createDialog();
   try {
     if (parseInt(item.id) <= 0) {
       showToast({ text: '删除失败！', type: 'danger' });
@@ -120,11 +125,13 @@ async function handleCollectionDelete(item: CollectionItem) {
   } catch (ignore) {}
 }
 
-async function handleCollectionAdd(collectionName: string) {
+async function handleCollectionAdd() {
+  const dialogRes = await DialogManager.inputDialog({ title: '新建收藏夹' }, { placeholder: '请输入新收藏夹的名称~' });
+  if (!dialogRes.status) return;
   try {
     const res = await services.starService.shoucang.addStarUsingPost({
       uid: userStore.userInfo?.id!,
-      starName: collectionName,
+      starName: dialogRes.value,
     });
     if (res.data.code == 200) {
       showToast({ text: '创建成功！', type: 'success' });
@@ -187,7 +194,7 @@ async function getVideoList(sid: string) {
 <template>
   <div ref="containerRef" id="space-tab-star" class="space-tab-star" :style="getContainerStyle()">
     <aside class="collection-list">
-      <div class="collection-list-item" style="justify-content: center; border: 1px dashed grey; margin-bottom: .5rem;">
+      <div class="collection-list-item" style="justify-content: center; border: 1px dashed grey; margin-bottom: .5rem;" @click="handleCollectionAdd">
         <div class="collection-list-item__name">新建收藏夹</div>
         <div class="collection-list-item__count">+</div>
       </div>

@@ -6,14 +6,45 @@ import { ref } from "vue";
 import type { CommonModalFunc } from "@/components/modal/CommonModal";
 import DiliButton from "@/components/button/DiliButton.vue";
 import type { CommonDialogEmits, CommonDialogProps } from "@/components/dialog/CommonDialog";
+import { DialogManager } from "@/components/dialog";
 
 const props = withDefaults(defineProps<CommonDialogProps>(), {
-  title: '123'
+  title: ''
 });
 
 const emits = defineEmits<CommonDialogEmits>();
 
 const modalRef = ref<CommonModalFunc>();
+
+function close() {
+  modalRef.value?.close();
+  if (props._id) {
+    // 如果有props.id，需要在manager中销毁自身
+    DialogManager.destroy(props._id);
+  }
+}
+
+function handleConfirm() {
+  if (props.onConfirm) {
+    props.onConfirm(close);
+    emits("onConfirm", close); // 传递关闭回调函数
+  } else {
+    close(); // 不存在回调函数时默认自动关闭
+  }
+}
+
+function handleCancel() {
+  if (props.onCancel) {
+    props.onCancel(close);
+    emits("onCancel", close); // 传递关闭回调函数
+  } else {
+    close(); // 不存在回调函数时默认自动关闭
+  }
+}
+
+defineExpose({
+  close,
+})
 </script>
 
 <template>
@@ -23,12 +54,15 @@ const modalRef = ref<CommonModalFunc>();
         <div class="dialog-title">{{ title }}</div>
       </header>
       <main>
+        <div>
+          {{ props.content }}
+        </div>
         <slot></slot>
       </main>
-      <hr style="margin: .5rem 0;" />
+      <hr />
       <footer>
-        <DiliButton text="取消" type="normal" />
-        <DiliButton text="确认" type="primary" />
+        <DiliButton text="取消" type="normal" @click="handleCancel" />
+        <DiliButton text="确认" type="primary" @click="handleConfirm" />
       </footer>
     </div>
   </CommonModal>
@@ -38,6 +72,10 @@ const modalRef = ref<CommonModalFunc>();
 .dialog {
   width: 100%;
   padding: .5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+
   > header {
 
   }
