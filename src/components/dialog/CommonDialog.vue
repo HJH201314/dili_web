@@ -71,7 +71,7 @@ defineExpose({
 <style scoped lang="scss">
 .dialog {
   width: 100%;
-  padding: .5rem;
+  padding: .25rem .5rem .5rem .5rem;
   display: flex;
   flex-direction: column;
   gap: .5rem;

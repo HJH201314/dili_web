@@ -5,8 +5,8 @@ import CommonHeader from "@/components/header/CommonHeader.vue";
 </script>
 
 <template>
-  <div class="background"></div>
   <RouterView v-slot="{ Component, route }">
+    <Teleport to="#app"><div v-if="route.meta.showBackground == undefined || route.meta.showBackground" class="background"></div></Teleport>
     <Transition name="slide-fade">
       <div style="display: flex; flex-direction: column; height: 100%;">
         <CommonHeader v-if="route.meta.showCommonHeader == undefined || route.meta.showCommonHeader"

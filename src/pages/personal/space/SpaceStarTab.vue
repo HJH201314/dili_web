@@ -7,11 +7,12 @@ import type { VideoCardProps } from "@/components/video-card/VideoCard";
 import services from "@/apis/services";
 import useUserStore from "@/stores/useUserStore";
 import useUserInfo from "@/stores/publicUserInfo";
-import { DeleteOne, MoreOne } from "@icon-park/vue-next";
+import { DeleteOne, MoreOne, Edit } from "@icon-park/vue-next";
 import DiliPopover from "@/components/popover/DiliPopover.vue";
 import showToast from "@/components/toast/toast";
 import { DialogManager } from "@/components/dialog";
 import { getRandomString } from "@/utils/string";
+import DiliTooltip from "@/components/tooltip/DiliTooltip.vue";
 
 const userStore = useUserStore();
 
@@ -24,6 +25,9 @@ const props = withDefaults(defineProps<SpaceStarTabProps>(), {
 });
 
 const uid = ref(props.uid ?? userStore.userInfo.id ?? 0);
+const isSelf = computed(() => {
+  return userStore.userInfo.id === uid.value;
+});
 
 type CollectionItem = {
   id: string;
@@ -101,13 +105,13 @@ function handleCollectionChange(item: CollectionItem) {
   currentCollection.value = item;
   getVideoList(item.id);
 }
-function createDialog(props?: any) {
-  DialogManager.inputDialog({onCancel: close => close(), onConfirm: () => {
-    createDialog({title: getRandomString(5)});
-    }, ...props});
-}
+
 async function handleCollectionDelete(item: CollectionItem) {
-  createDialog();
+  const dialogRes = await DialogManager.commonDialog({
+    title: '删除收藏夹',
+    content: `确定要删除收藏夹 ${item.name} 吗？`,
+  });
+  if (!dialogRes) return;
   try {
     if (parseInt(item.id) <= 0) {
       showToast({ text: '删除失败！', type: 'danger' });
@@ -122,6 +126,14 @@ async function handleCollectionDelete(item: CollectionItem) {
     } else {
       showToast({ text: '删除失败！', type: 'danger' });
     }
+  } catch (ignore) {}
+}
+
+async function handleCollectionEdit(item: CollectionItem) {
+  const dialogRes = await DialogManager.inputDialog({ title: '编辑收藏夹' }, { placeholder: '请输入收藏夹的名称~', value: item.name });
+  if (!dialogRes.status) return;
+  try {
+    // TODO: 对接修改收藏夹名称接口
   } catch (ignore) {}
 }
 
@@ -194,7 +206,7 @@ async function getVideoList(sid: string) {
 <template>
   <div ref="containerRef" id="space-tab-star" class="space-tab-star" :style="getContainerStyle()">
     <aside class="collection-list">
-      <div class="collection-list-item" style="justify-content: center; border: 1px dashed grey; margin-bottom: .5rem;" @click="handleCollectionAdd">
+      <div v-if="isSelf" class="collection-list-item" style="justify-content: center; border: 1px dashed grey; margin-bottom: .5rem;" @click="handleCollectionAdd">
         <div class="collection-list-item__name">新建收藏夹</div>
         <div class="collection-list-item__count">+</div>
       </div>
@@ -215,13 +227,14 @@ async function getVideoList(sid: string) {
         <div class="creator">
           创建者：{{ creatorStatus == 'loading' ? '加载中...' : creatorInfo?.name }}
         </div>
-        <DiliPopover class="more" position="left">
+        <DiliPopover v-if="isSelf" class="more" position="left">
           <template #body>
             <div><MoreOne theme="outline" size="1.25rem" /></div>
           </template>
           <template #popover>
             <div class="more-actions">
-              <div class="delete" @click="handleCollectionDelete(currentCollection)"><DeleteOne theme="outline" size="1.25rem" fill="#ff7875" /></div>
+              <div class="action edit" @click="handleCollectionEdit(currentCollection)"><Edit theme="outline" size="1.25rem" fill="#26a69a" /></div>
+              <div class="action delete" @click="handleCollectionDelete(currentCollection)"><DeleteOne theme="outline" size="1.25rem" fill="#ff7875" /></div>
             </div>
           </template>
         </DiliPopover>
@@ -314,7 +327,7 @@ async function getVideoList(sid: string) {
           box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
           display: flex;
 
-          .delete {
+          .action {
             height: 100%;
             aspect-ratio: 1;
           }

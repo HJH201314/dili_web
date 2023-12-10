@@ -15,7 +15,7 @@ export class DialogManager {
   private static instances: Map<string, CommonDialogInstance> = new Map();
   private static top: number; // 当前最高的z-index
 
-  public static commonDialog = async (props: CommonDialogProps, defaultSlot?: VNode) => new Promise(resolve => {
+  public static commonDialog = async (props: CommonDialogProps, defaultSlot?: VNode) => new Promise<boolean>(resolve => {
     const id = getRandomString(5);
     const dialogDiv = document.createElement('div');
     document.querySelector('#app')?.appendChild(dialogDiv);

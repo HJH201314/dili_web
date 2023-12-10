@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
-import CommonHeader from "@/components/header/CommonHeader.vue";
+import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import VideoCard2 from "@/components/video-card/VideoCard2.vue";
+import Hls from "hls.js";
 
 const router = useRouter();
 
@@ -10,7 +10,18 @@ const props = defineProps<{
   videoID?: string;
 }>();
 
+const videoRef = ref<HTMLVideoElement>();
 
+watch(() => videoRef.value, (val) => {
+  if (val) {
+    const hls = new Hls();
+    hls.loadSource('https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8');
+    hls.attachMedia(videoRef.value);
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      videoRef.value?.play(); // 此处浏览器提示用户未交互无法播放
+    });
+  }
+}, { immediate: true });
 
 </script>
 
@@ -28,10 +39,9 @@ const props = defineProps<{
             <span class="copyright">未经作者授权，禁止转载</span>
           </div>
         </div>
+<!--        <DiliButton text="开播" @click="videoRef?.play()"></DiliButton>-->
         <div class="player-window">
-          <div class="player-window-top">
-
-          </div>
+          <video class="player" ref="videoRef" id="video" controls></video>
           <div class="player-window-bottom">
 
           </div>
@@ -213,12 +223,13 @@ a {
 }
 .player-window {
   width: 100%;
-  height: 0;
-  padding-top: 56.25%;
   position: relative;
-  background-color: #000;
   border-radius: 8px;
   overflow: hidden;
+}
+.player {
+  width: 100%;
+  // height: need compute
 }
 .video-actions {
   display: flex;

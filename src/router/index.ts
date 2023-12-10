@@ -26,6 +26,12 @@ const router = createRouter({
       component: () => import('@/pages/common/post/PostDetail.vue'),
     },
     {
+      path: '/search',
+      name: 'search-result',
+      component: () => import('@/pages/common/search/SearchPage.vue'),
+      meta: { showBackground: false }
+    },
+    {
       path: '/space/:pathId',
       name: 'space',
       component: () => import('@/pages/personal/space/SpacePage.vue'),
