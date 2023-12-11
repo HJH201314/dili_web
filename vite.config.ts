@@ -40,22 +40,28 @@ export default defineConfig({
     port: 4753,
     proxy: {
       '/api/security': {
-        target: 'http://localhost:8848/',
+        //target: 'http://172.29.16.13:8848/',
+        target: 'http://127.0.0.1:4523/m1/3578335-0-default/',
+        //target: 'http://localhost:8848/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/security/, ''),
       },
       '/api/manage': {
         target: 'http://localhost:8849/',
+        //target: 'http://172.29.16.13:8849/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/manage/, ''),
       },
       '/api/admin': {
-        target: 'http://localhost:8850/',
+        target: 'http://127.0.0.1:4523/m1/3578335-0-b56c7805/',
+        //target: 'http://localhost:8850/',
+        //target: 'http://172.29.16.13:8850/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/admin/, ''),
       },
       '/api/comment': {
         target: 'http://localhost:8851/',
+        //target: 'http://172.29.16.13:8851/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/comment/, ''),
       }
