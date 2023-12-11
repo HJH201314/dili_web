@@ -163,7 +163,7 @@ watch(
       // /api/admin会走vite代理转发到localhost:8850，具体配置在vite.config.ts中
         axios.get("/api/admin/video/suggest",{
         params: {
-          key: newVal
+          key: encodeURIComponent(newVal)
         }
       }).then(response =>{
         suggestList.value = []
@@ -204,7 +204,7 @@ const searchFromHistory = (SearchHisStr: string) => {
 }
 
 function handleSearch() {
-  router.push(`/search?type=video&keyword=${form.searchVal}`);
+  window.open(router.resolve(`/search?type=video&keyword=${form.searchVal}`).href, '_blank');
 }
 </script>
 
@@ -244,6 +244,7 @@ function handleSearch() {
               </div>
               <div class="searchSuggest" v-for="(suggest, index) in suggestList" :key="index" v-html="suggest">
               </div>
+              <div style="height: 1rem" v-show="!suggestList.length"><!-- 占位，让没有搜索结果时的搜索面板圆润起来 --></div>
             </div>
           </Transition>
         </div>

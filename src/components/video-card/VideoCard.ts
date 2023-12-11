@@ -7,7 +7,7 @@ export type VideoCardInfo = {
   upName?: string; // 视频作者昵称
   playNum?: number; // 播放量
   dmNum?: number; // 弹幕量
-  createTime?: string; // 视频上传时间
+  createTime?: string | [number, number, number, number, number, number]; // 视频上传时间
   duration?: number | string; // 视频时长（hh:mm:ss格式或秒数）
 }
 

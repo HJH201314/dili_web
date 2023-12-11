@@ -12,10 +12,6 @@ import DiliButton from "@/components/button/DiliButton.vue";
 import { quickToast } from "@/components/toast/toast";
 import services from "@/apis/services";
 
-type VideoSearchResult = VideoCardProps & {};
-
-const resultVideoList = ref<VideoSearchResult[]>();
-
 const route = useRoute();
 const router = useRouter();
 
@@ -23,7 +19,6 @@ const searchLoadingRef = ref<HTMLDivElement>();
 
 onMounted(() => {
   refresh();
-  observer.observe(searchLoadingRef.value!);
 });
 
 // 创建 Intersection Observer 实例
@@ -69,24 +64,24 @@ function refresh() {
     searchForm.sort = route.query.sort;
   }
   refreshTabCursor(searchForm.type);
+  videoList.value = [];
+  pageNum.value = 0;
+  hasMoreVideo.value = true;
+  observer.unobserve(searchLoadingRef.value!);
+  observer.observe(searchLoadingRef.value!);
 }
 
 /**
  * 执行搜索，仅改变路由地址
  */
 function search() {
-  router.replace(`/search?type=${searchForm.type}&keyword=${searchForm.keyword}&partition=${searchForm.partition}&sort=${searchForm.sort}`)
+  router.replace(`/search?type=${searchForm.type}&keyword=${searchForm.keyword}&partition=${searchForm.partition}&sort=${searchForm.sort}`).then(() => {
+    refresh();
+  });
 }
 
-/**
- * 观测路径query参数的变化，若发生变化就要刷新
- */
-watch(() => route.params, (newVal, oldVal) => {
-  refresh();
-});
 function handleSearchClick() {
   search();
-
 }
 
 const tabCursorRef = ref<HTMLDivElement>();
@@ -120,6 +115,8 @@ const hasMoreVideo = ref(true);
 const pageNum = ref(1);
 const pageSize = ref(30);
 async function getVideos() {
+  if (!hasMoreVideo.value) return;
+  pageNum.value += 1;
   try {
     const res = await services.adminService.videoController.searchVideoUsingGet({
       page: pageNum.value,
@@ -132,16 +129,29 @@ async function getVideos() {
     if (res.data.code == 200) {
       res.data.data?.list?.forEach((v) => {
         videoList.value?.push({
-          // vid: v.
+          vid: v.id!,
+          title: v.title,
+          coverUrl: v.url,
+          upName: v.upName,
+          upId: undefined,
+          duration: v.totalTime,
+          dmNum: v.dmNum,
+          playNum: v.playNum,
+          createTime: v.uploadTime,
         });
       });
+      if (res.data.data?.list?.length == 0) {
+        hasMoreVideo.value = false;
+      } else {
+        observer.unobserve(searchLoadingRef.value!);
+        observer.observe(searchLoadingRef.value!);
+      }
     }
-    for (let i = 0; i < 10; i++) {
-      videoList.value?.push({
-        vid: videoList.value?.length + 1,
-      });
-      console.log(videoList)
-    }
+    // for (let i = 0; i < 10; i++) {
+    //   videoList.value?.push({
+    //     vid: videoList.value?.length + 1,
+    //   });
+    // }
     // if (res.data.data.list.length == 0) hasMoreVideo.value = false;
   } catch (ignore) {}
 }
@@ -181,7 +191,7 @@ async function getVideos() {
       </div>
     </section>
     <section class="search-result">
-      <VideoCard v-for="item in videoList" />
+      <VideoCard v-for="item in videoList" v-bind="item" auto-fetch />
     </section>
     <section ref="searchLoadingRef" class="search-loading" id="search-loading">
       {{ hasMoreVideo ? '加载中...' : '没有更多了>_<' }}

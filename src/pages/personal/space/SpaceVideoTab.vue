@@ -24,7 +24,7 @@ const isSelf = computed(() => {
   return userStore.userInfo.id === uid.value;
 });
 
-const videoList = ref<VideoCardProps[]>();
+const videoList = ref<VideoCardProps[]>([]);
 
 onMounted(() => {
   Promise.all([
@@ -34,6 +34,7 @@ onMounted(() => {
 });
 
 const containerRef = ref<HTMLDivElement>();
+const loadingRef = ref<HTMLDivElement>();
 
 function getContainerStyle() {
   const styles: CSSProperties = {};
@@ -46,20 +47,49 @@ function getContainerStyle() {
   return styles;
 }
 
+let intersectionObserver;
+
+onMounted(() => {
+  intersectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        getVideos();
+      }
+    });
+  }, {
+    root: containerRef.value,
+  });
+  intersectionObserver.observe(loadingRef.value!);
+})
+
+const hasMore = ref(true);
 async function getVideos() {
+  if (!props.uid) return;
+  if (hasMore.value) {
+    currentPage.value += 1;
+  } else return;
   try {
-    if (!props.uid) return;
     const res = await services.adminService.userInfoController.getUserVideoUsingGet({
       uid: props.uid,
       page: currentPage.value,
       size: pageSize.value,
     });
-    if (res.data?.code == 200) {
-      res.data?.data?.list?.map((v) => {
-        videoList.value?.push({
-          vid: v?.id!,
+    if (res.data?.code == 200 && res.data?.data?.list) {
+      if (res.data.data.list.length > 0) {
+        res.data?.data?.list?.map((v) => {
+          videoList.value?.push({
+            vid: v?.id!,
+            coverUrl: v?.url,
+            title: v?.title,
+            upId: undefined,
+            upName: v?.upName,
+            duration: v?.totalTime,
+            createTime: v?.uploadTime,
+          });
         });
-      });
+      } else {
+        hasMore.value = false;
+      }
     }
   } finally {
 
@@ -76,6 +106,9 @@ const pageSize = ref(20);
     <section class="video-list">
       <VideoCard class="video-list-item" v-for="item in videoList" v-bind="item" auto-fetch />
     </section>
+    <section ref="loadingRef" class="video-loading">
+      {{ hasMore ? '加载中...' : '没有更多啦~' }}
+    </section>
   </div>
 </template>
 
@@ -86,19 +119,24 @@ const pageSize = ref(20);
   border-radius: .5rem;
   box-shadow: $box-shadow;
   background-color: white;
-  padding: .5rem;
+  overflow: auto;
   .video-list {
-    display: grid;
-    column-gap: 1rem;
-    grid-template-columns: repeat(4, 1fr);
+    position: relative;
+    padding: .5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem .75rem;
     &-item {
-      margin-bottom: .5rem;
+      width: calc((100% - 2.25rem) / 4); // 展示四列
       &-footer {
         padding-left: .2rem;
         font-size: .8rem;
         color: $color-grey-500;
       }
     }
+  }
+  .video-loading {
+    text-align: center;
   }
 }
 </style>

@@ -1,15 +1,23 @@
 <script setup lang="ts">
 import type { DiliButtonProps } from "@/components/button/DiliButton";
 import variables from "@/assets/variables.module.scss";
-import { computed, ref, watch } from "vue";
+import { computed, CSSProperties, ref, watch } from "vue";
 import { getDarkerColor } from "@/utils/color";
 
 const props = withDefaults(defineProps<DiliButtonProps>(), {
   text: "",
   type: "normal",
+  shadow: true,
 });
 
 const buttonRef = ref<HTMLButtonElement>();
+
+const buttonStyle = computed(() => {
+  return {
+    'box-shadow': props.shadow ? variables.boxShadow : 'none',
+    ...props.buttonStyle
+  } as CSSProperties;
+});
 
 const backgroundColor = computed(() => {
   if (props.type == 'primary') {
