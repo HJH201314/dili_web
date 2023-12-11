@@ -1,4 +1,9 @@
 declare namespace API {
+  type addPartitionUsingPOSTParams = {
+    /** name */
+    name: string;
+  };
+
   type AuthDto = {
     auth?: string;
     type?: number;
@@ -17,6 +22,12 @@ declare namespace API {
   };
 
   type CommonResultListResult_ = {
+    code?: number;
+    data?: ListResult_;
+    message?: string;
+  };
+
+  type CommonResultListResult2 = {
     code?: number;
     data?: ListResult;
     message?: string;
@@ -42,7 +53,7 @@ declare namespace API {
 
   type CommonResultListVo2 = {
     code?: number;
-    data?: Vo3[];
+    data?: Vo4[];
     message?: string;
   };
 
@@ -76,7 +87,18 @@ declare namespace API {
     message?: string;
   };
 
+  type CommonResultVo2 = {
+    code?: number;
+    data?: Vo3;
+    message?: string;
+  };
+
   type deleteEssayByIdUsingDELETEParams = {
+    /** id */
+    id: number;
+  };
+
+  type deletePartitionUsingDELETEParams = {
     /** id */
     id: number;
   };
@@ -136,6 +158,11 @@ declare namespace API {
     id: number;
   };
 
+  type getVideoInfoUsingGETParams = {
+    /** 视频id */
+    id: number;
+  };
+
   type HisQueryDto = {
     mediaType?: number;
     userId?: number;
@@ -162,8 +189,13 @@ declare namespace API {
     total?: string;
   };
 
+  type ListResult_ = {
+    list?: Pinyin__[];
+    total?: string;
+  };
+
   type ListResultVo_ = {
-    list?: Vo3[];
+    list?: Vo4[];
     total?: string;
   };
 
@@ -182,6 +214,21 @@ declare namespace API {
     name?: string;
   };
 
+  type Pinyin__ = {
+    /** 用户粉丝数量 */
+    fan?: number;
+    /** 用户uid */
+    id?: number;
+    /** 用户简介 */
+    info?: string;
+    /** 用户等级 */
+    level?: number;
+    /** 用户昵称 */
+    name?: string;
+    /** 用户投稿视频数量 */
+    video?: number;
+  };
+
   type publishUsingPOSTParams = {
     /** 动态的正文，长度1~1024 */
     content: string;
@@ -190,7 +237,7 @@ declare namespace API {
   type publishVideoUsingPOSTParams = {
     /** 动态的正文，长度1~1024 */
     content: string;
-    /** 视频分区id */
+    /** 视频分区id,如果不发这个，默认为1，代表未分区 */
     pid: number;
     /** 视频标题 */
     title: string;
@@ -205,9 +252,39 @@ declare namespace API {
     type?: number;
   };
 
+  type searchUserUsingGETParams = {
+    /** key，不能为空，搜索关键字 */
+    key: string;
+    /** page，页码，默认1 */
+    page?: number;
+    /** pid，分区id，默认为0，不作区分 */
+    pid?: number;
+    /** size，每页大小，默认30 */
+    size?: number;
+    /** sortBy，排序方式，默认0不排序，1-最多播放、2-最新发布、3-最多弹幕、4-最多收藏如果分类id为1表示搜索用户，此时1-粉丝数高到低、2-粉丝数低到高、3-等级高到低，4-等级低到高 */
+    sortBy?: number;
+    /** time，默认0，不作区分，1-10分钟以内，2-10到30分钟，3-30到60分钟，4-60分钟以上 */
+    time?: number;
+  };
+
   type searchUsingGETParams = {
     /** classificationId，0表示搜索视频，1表示搜索用户，默认0 */
     classificationId?: number;
+    /** key，不能为空，搜索关键字 */
+    key: string;
+    /** page，页码，默认1 */
+    page?: number;
+    /** pid，分区id，默认为0，不作区分 */
+    pid?: number;
+    /** size，每页大小，默认30 */
+    size?: number;
+    /** sortBy，排序方式，默认0不排序，1-最多播放、2-最新发布、3-最多弹幕、4-最多收藏如果分类id为1表示搜索用户，此时1-粉丝数高到低、2-粉丝数低到高、3-等级高到低，4-等级低到高 */
+    sortBy?: number;
+    /** time，默认0，不作区分，1-10分钟以内，2-10到30分钟，3-30到60分钟，4-60分钟以上 */
+    time?: number;
+  };
+
+  type searchVideoUsingGETParams = {
     /** key，不能为空，搜索关键字 */
     key: string;
     /** page，页码，默认1 */
@@ -279,6 +356,13 @@ declare namespace API {
     vid?: number;
   };
 
+  type updatePartitionUsingPUTParams = {
+    /** id */
+    id: number;
+    /** name */
+    name: string;
+  };
+
   type updateUsingPUTParams = {
     /** 动态的正文，长度1~1024 */
     content: string;
@@ -324,6 +408,27 @@ declare namespace API {
     name?: string;
   };
 
+  type video_ = {
+    /** 投币数量 */
+    coinNum?: number;
+    /** 弹幕数量 */
+    dmNum?: number;
+    /** 视频id */
+    id?: number;
+    /** 分区id */
+    pid?: number;
+    /** 播放量 */
+    playNum?: number;
+    /** 收藏数量 */
+    starNum?: number;
+    /** 标题 */
+    title?: string;
+    /** 总时长 */
+    totalTime?: number;
+    /** 视频url */
+    url?: string;
+  };
+
   type Vo = {
     /** 视频的封面 */
     coverUrl?: string;
@@ -365,6 +470,12 @@ declare namespace API {
   };
 
   type Vo3 = {
+    update?: Update;
+    user?: User;
+    video?: video_;
+  };
+
+  type Vo4 = {
     /** 弹幕数量 */
     dmNum?: number;
     /** 动态id */

@@ -6,7 +6,7 @@ import { getDarkerColor } from "@/utils/color";
 
 const props = withDefaults(defineProps<DiliButtonProps>(), {
   text: "",
-  type: "normal"
+  type: "normal",
 });
 
 const buttonRef = ref<HTMLButtonElement>();
@@ -43,7 +43,7 @@ const activeFontColor = computed(() => {
 
 <template>
   <div class="dili-button">
-    <button ref="buttonRef">
+    <button ref="buttonRef" :style="buttonStyle">
       {{ props.text }}
     </button>
     <div class="mask">

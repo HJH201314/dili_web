@@ -286,7 +286,6 @@ function handleSearch() {
 
 .common-header {
   position: relative;
-  box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.1);
 }
 
 header {
@@ -294,6 +293,7 @@ header {
   top: 0;
   left: 0;
   right: 0;
+  box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.1);
   background-color: rgba(255, 255, 255, 1);
   //-webkit-backdrop-filter: blur(3px);
   //backdrop-filter: blur(3px);
