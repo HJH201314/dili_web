@@ -94,6 +94,7 @@ function handleUpNameClick() {
     overflow: hidden;
     position: relative;
     width: 100%;
+    height: 0;
     &-image {
       position: absolute;
       inset: 0;
