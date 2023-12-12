@@ -41,8 +41,8 @@ export default defineConfig({
     proxy: {
       '/api/security': {
         //target: 'http://172.29.16.13:8848/',
-        target: 'http://127.0.0.1:4523/m1/3578335-0-default/',
-        //target: 'http://localhost:8848/',
+        // target: 'http://127.0.0.1:4523/m1/3578335-0-default/',
+        target: 'http://localhost:8848/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/security/, ''),
       },
@@ -53,8 +53,8 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/manage/, ''),
       },
       '/api/admin': {
-        target: 'http://127.0.0.1:4523/m1/3578335-0-b56c7805/',
-        //target: 'http://localhost:8850/',
+        // target: 'http://127.0.0.1:4523/m1/3578335-0-b56c7805/',
+        target: 'http://localhost:8083/',
         //target: 'http://172.29.16.13:8850/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/admin/, ''),
