@@ -1,59 +1,83 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { genFileId } from 'element-plus'
 import type { UploadInstance, UploadProps, UploadRawFile } from 'element-plus'
+import axios from 'axios'
 
-const upload = ref<UploadInstance>()
+const upload = ref()
 
 const handleExceed: UploadProps['onExceed'] = (files) => {
-    upload.value!.clearFiles()
-    const file = files[0] as UploadRawFile
-    file.uid = genFileId()
-    upload.value!.handleStart(file)
+    upload.value = files[0];
+    console.log(upload.value)
+    submitUpload();
 }
 
-const submitUpload = () => {
-    upload.value!.submit()
+
+const headers = {
+    'Content-Type': 'multipart/form-data',
+    'Authorization': localStorage.getItem('token'),  // 请求头
+};
+
+const videoHeaders = {
+    'Authorization': localStorage.getItem('token'),  // 请求头
 }
+
+const handleSuccess = (response: any, file: any, fileList: any) => {
+    console.log('上传成功', response, file, fileList);
+    // 在这里可以处理上传成功后的逻辑
+
+}
+const submitUpload = () => {
+    const formData = new FormData();
+    formData.append('video', upload.value);
+    console.log("发送请求")
+    axios.post('/api/admin/updates/uploadMedia', formData, { headers: headers }).then(res => {
+        console.log(res.data)
+        if (res.data.code == 200) {
+            //请求成功
+            imageUrl.value = res.data.data;
+        } else {
+            alert(res.data.msg)
+        }
+    })
+        .catch(err => {
+            alert("失败" + err)
+        })
+
+
+};
+
 
 
 
 interface RuleForm {
-    imageUrl: string
     title: string,
-    partition: string,
-    description: string
+    pid: string,
+    content: string
 }
 
 const formSize = ref('default')
 const ruleFormRef = ref<FormInstance>()
 const ruleForm = reactive<RuleForm>({
-    imageUrl: '',
     title: '',
-    partition: '',
-    description: ''
+    pid: '',
+    content: ''
 })
 
 const rules = reactive<FormRules<RuleForm>>({
-    imageUrl: [
-        {
-            required: false,
-            message: '请上传封面'
-        }
-    ],
     title: [
         { required: true, message: '请输入标题', trigger: 'blur' }
     ],
-    partition: [
+    pid: [
         {
             required: true,
             message: '请选择分区'
         },
     ],
-    description: [
+    content: [
         {
             required: true,
             message: '请选择简介'
@@ -61,12 +85,28 @@ const rules = reactive<FormRules<RuleForm>>({
     ]
 })
 
+//提交表单
 const submitForm = async (formEl: FormInstance | undefined, ruleForm: RuleForm) => {
     if (!formEl) return
     await formEl.validate((valid, fields) => {
         if (valid) {
             console.log('submit!')
             console.log(ruleForm)
+            console.log("发送请求")
+            axios.post('/api/admin/updates/video', ruleForm, { headers: headers }).then(res => {
+                console.log(res.data)
+                if (res.data.code == 200) {
+                    //请求成功
+                    imageUrl.value = res.data.data;
+
+                } else {
+                    alert(res.data.msg)
+                }
+            })
+                .catch(err => {
+                    alert("失败" + err)
+                })
+
         } else {
             console.log('error submit!', fields)
         }
@@ -79,11 +119,13 @@ const resetForm = (formEl: FormInstance | undefined) => {
 }
 
 
+const imageUrl = ref('');
 const handleAvatarSuccess: UploadProps['onSuccess'] = (
     response,
     uploadFile
 ) => {
-    ruleForm.imageUrl = URL.createObjectURL(uploadFile.raw!)
+    imageUrl.value = URL.createObjectURL(uploadFile.raw!)
+    console.log("!!!!!" + imageUrl.value);
 }
 
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
@@ -98,44 +140,47 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
 }
 
 
-const value = ref('')
-
-const options = [
-    {
-        value: '动画',
-        label: '动画',
-    },
-    {
-        value: '番剧',
-        label: '番剧',
-    },
-    {
-        value: '国创',
-        label: '国创',
-    },
-    {
-        value: '音乐',
-        label: '音乐',
-    },
-    {
-        value: '舞蹈',
-        label: '舞蹈',
-    },
-    {
-        value: '游戏',
-        label: '游戏',
+class Partition {
+    value: number;
+    label: string;
+    constructor(id: number, name: string) {
+        this.value = id;
+        this.label = name;
     }
-]
+};
+
+const partitions = ref<Partition[]>([]);
+
+onMounted(() => {
+
+    //初始化获取所有分区
+    axios.get('/api/admin/updates/partition', { headers: headers }).then(res => {
+        // console.log(res.data)
+        if (res.data.code == 200) {
+            //请求成功
+            for (let i = 0; i < res.data.data.length; i++) {
+                partitions.value.push(new Partition(res.data.data[i].id, res.data.data[i].name));
+            }
+        } else {
+            alert(res.data.msg)
+        }
+    })
+        .catch(err => {
+            alert("失败" + err)
+        })
+
+});
+
+const options = partitions;
 
 </script>
 
 <template>
     <el-card class="topBox">
-        <el-upload ref="upload" class="upload-demo" action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-            :limit="1" :on-exceed="handleExceed" :auto-upload="false">
-
+        <el-upload ref="upload" class="upload-demo" action="/api/admin/updates/uploadMedia" :headers="videoHeaders"
+            :show-file-list="false" name="video" method="post" :limit="1" :on-success="handleSuccess"
+            :on-exceed="handleExceed" :auto-upload="true">
             <el-button class="btn-addVideo" type="primary">+添加视频</el-button>
-
         </el-upload>
     </el-card>
 
@@ -152,7 +197,7 @@ const options = [
             <el-form-item label="封面" prop="imageUrl">
                 <el-upload class="avatar-uploader" action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
                     :show-file-list="false" :on-success="handleAvatarSuccess" :before-upload="beforeAvatarUpload">
-                    <img v-if="ruleForm.imageUrl" :src="ruleForm.imageUrl" class="avatar" />
+                    <img v-if="imageUrl" :src="imageUrl" class="avatar" />
                     <div v-else style="position: relative;width: 150px;height: 150px;">
                         <el-icon class="avatar-uploader-icon">
                             <Plus />
@@ -165,13 +210,13 @@ const options = [
             <el-form-item label="标题" prop="title">
                 <el-input v-model="ruleForm.title" show-word-limit type="text" maxlength="10" />
             </el-form-item>
-            <el-form-item label="分区" prop="partition">
-                <el-select v-model="ruleForm.partition" placeholder="请选择分区">
+            <el-form-item label="分区" prop="pid">
+                <el-select v-model="ruleForm.pid" placeholder="请选择分区">
                     <el-option v-for=" item  in  options " :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
             </el-form-item>
-            <el-form-item label="简介" prop="description">
-                <el-input v-model="ruleForm.description" :rows="3" type="textarea" placeholder="填写更全面的相关信息，让更多人找到你的视频吧！"
+            <el-form-item label="简介" prop="content">
+                <el-input v-model="ruleForm.content" :rows="3" type="textarea" placeholder="填写更全面的相关信息，让更多人找到你的视频吧！"
                     show-word-limit maxlength="250" />
             </el-form-item>
             <el-form-item style="margin-top: 30px;">
