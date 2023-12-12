@@ -39,31 +39,35 @@ export default defineConfig({
   server: {
     port: 4753,
     proxy: {
+      // 修改target，指向相应模块需要请求的服务端/Mock地址
       '/api/security': {
-        //target: 'http://172.29.16.13:8848/',
-        // target: 'http://127.0.0.1:4523/m1/3578335-0-default/',
         target: 'http://localhost:8848/',
+        // target: 'http://127.0.0.1:4523/m1/3578335-0-default/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/security/, ''),
       },
       '/api/manage': {
         target: 'http://localhost:8849/',
-        //target: 'http://172.29.16.13:8849/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/manage/, ''),
       },
       '/api/admin': {
+        target: 'http://localhost:8850/',
         // target: 'http://127.0.0.1:4523/m1/3578335-0-b56c7805/',
-        target: 'http://localhost:8083/',
-        //target: 'http://172.29.16.13:8850/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/admin/, ''),
       },
       '/api/comment': {
         target: 'http://localhost:8851/',
-        //target: 'http://172.29.16.13:8851/',
+        // target: 'http://127.0.0.1:4523/m1/3578335-0-a03db424/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/comment/, ''),
+      },
+      '/api/star': {
+        target: 'http://localhost:8852/',
+        // target: 'http://127.0.0.1:4523/m1/3578335-0-0c83f97b/',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/star/, ''),
       }
     }
   },
