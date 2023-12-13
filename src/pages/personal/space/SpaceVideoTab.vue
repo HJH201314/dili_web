@@ -96,7 +96,7 @@ async function getVideos() {
   }
 }
 
-const currentPage = ref(1);
+const currentPage = ref(0);
 const pageSize = ref(20);
 
 </script>
@@ -120,9 +120,9 @@ const pageSize = ref(20);
   box-shadow: $box-shadow;
   background-color: white;
   overflow: auto;
+  padding: .5rem;
   .video-list {
     position: relative;
-    padding: .5rem;
     display: flex;
     flex-wrap: wrap;
     gap: .5rem .75rem;
@@ -137,6 +137,7 @@ const pageSize = ref(20);
   }
   .video-loading {
     text-align: center;
+    color: $color-grey-500;
   }
 }
 </style>

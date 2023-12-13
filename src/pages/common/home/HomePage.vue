@@ -6,6 +6,7 @@ import VideoCard from "@/components/video-card/VideoCard.vue";
 import services from "@/apis/services";
 import { allPartitionsUsingGet } from "@/apis/services/video-platform-admin/updatesController";
 import DiliButton from "@/components/button/DiliButton.vue";
+import usePartitionStore from "@/stores/usePartitionStore";
 
 onMounted(() => {
   iconImage.value = document.getElementById("iconImage") as HTMLImageElement;
@@ -110,18 +111,14 @@ const feeds = ref<Feed[]>([]);
 const slides = ref<Feed[]>([]);
 const partition = ref<API.Partition[]>([]);
 
+const partitionStore = usePartitionStore()
 function getCategories() {
-  services.adminService.updatesController.allPartitionsUsingGet({})
-  .then((res) => {
-    partition.value = res.data.data ?? [];
-    for (let i = 0; i < partition.value.length; i++) {
-      leftCategories.value.push({
-        id: partition.value[i].id!,
-        name: partition.value[i].name!,
-        link: "/home",
-        //  link: "/video/partition/" + partition.value[i].id!,
-      })
-    }
+  leftCategories.value = partitionStore.partition.map((p) => {
+    return {
+      id: p.id,
+      name: p.name,
+      link: `/search?partition=${p.name}`,
+    };
   });
 }
 

@@ -7,7 +7,12 @@ export type DiliButtonProps = {
   backgroundColor?: string;
   fontColor?: string;
   shadow?: boolean;
+  disabled?: boolean;
 
   // 自定义样式
   buttonStyle?: CSSProperties;
+}
+
+export type DiliButtonEmits = {
+  (event: 'click'): void;
 }

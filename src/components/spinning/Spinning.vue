@@ -31,7 +31,7 @@ const props = withDefaults(defineProps<SpinningProps>(), {
     scale: 1;
   }
   50% {
-    scale: 0.8;
+    scale: 0.9;
   }
 }
 
