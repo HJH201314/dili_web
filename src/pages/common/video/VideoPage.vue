@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, nextTick } from "vue";
+import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import VideoCard2 from "@/components/video-card/VideoCard2.vue";
 import Hls from "hls.js";
@@ -61,7 +61,6 @@ const initBarrage = () => {
   });
   art.theme = 'rgb(0, 174, 236)'
 }
-const videoRef = ref<HTMLVideoElement>()
 const isFollowed = ref(false)
 const isMenuVisivle = ref(false)
 
