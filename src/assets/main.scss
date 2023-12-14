@@ -19,7 +19,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  user-select: none;
+  // user-select: none;
   touch-action: pan-x pan-y;
   overflow: hidden;
   transition: color 0.5s,

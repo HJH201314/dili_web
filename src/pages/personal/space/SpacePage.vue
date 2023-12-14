@@ -140,7 +140,7 @@ function handleTabChange(tabName: string) {
         <Transition name="slide-fade"><!-- TODO: 让这个动画生效 -->
           <SpaceHomeTab v-if="subPage == 'home'" />
           <SpacePostTab v-else-if="subPage == 'post'" />
-          <SpaceVideoTab v-else-if="subPage == 'video'" />
+          <SpaceVideoTab :uid="uid" v-else-if="subPage == 'video'" />
           <SpaceStarTab :uid="uid" v-else-if="subPage == 'star'" />
           <SpaceSettingTab v-else-if="subPage == 'setting'" />
         </Transition>

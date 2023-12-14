@@ -1,15 +1,26 @@
 <script setup lang="ts">
-import type { DiliButtonProps } from "@/components/button/DiliButton";
+import type { DiliButtonProps, DiliButtonEmits } from "@/components/button/DiliButton";
 import variables from "@/assets/variables.module.scss";
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
+import type { CSSProperties } from "vue";
 import { getDarkerColor } from "@/utils/color";
 
 const props = withDefaults(defineProps<DiliButtonProps>(), {
   text: "",
-  type: "normal"
+  type: "normal",
+  shadow: true,
 });
 
+const emit = defineEmits<DiliButtonEmits>();
+
 const buttonRef = ref<HTMLButtonElement>();
+
+const buttonStyle = computed(() => {
+  return {
+    'box-shadow': props.shadow ? variables.boxShadow : 'none',
+    ...props.buttonStyle
+  } as CSSProperties;
+});
 
 const backgroundColor = computed(() => {
   if (props.type == 'primary') {
@@ -39,11 +50,16 @@ const activeFontColor = computed(() => {
   return getDarkerColor(fontColor.value, 0.2);
 });
 
+function handleClick() {
+  if (props.disabled) return; // 如果禁用了，直接拦截click事件
+  emit('click');
+}
+
 </script>
 
 <template>
-  <div class="dili-button">
-    <button ref="buttonRef">
+  <div class="dili-button" @click="handleClick">
+    <button ref="buttonRef" :style="buttonStyle" :class="{'disabled': props.disabled}">
       {{ props.text }}
     </button>
     <div class="mask">
@@ -68,13 +84,20 @@ const activeFontColor = computed(() => {
     background-color: v-bind(backgroundColor);
     color: v-bind(fontColor);
     overflow: hidden;
+    white-space: pre;
 
-    &:hover {
+    &.disabled {
+      background-color: $color-grey-200;
+      color: $color-grey-500;
+      cursor: not-allowed;
+    }
+
+    &:not(&.disabled):hover {
       background-color: v-bind(hoverBackgroundColor);
       color: v-bind(hoverFontColor);
     }
 
-    &:active {
+    &:not(&.disabled):active {
       background-color: v-bind(activeBackgroundColor);
       color: v-bind(activeFontColor);
     }

@@ -32,6 +32,11 @@ const router = createRouter({
     //   meta: { showBackground: false }
     // },
     {
+      path: '/upload',
+      name: 'upload',
+      component: () => import('@/pages/common/upload/UploadPage.vue'),
+    },
+    {
       path: '/space/:pathId',
       name: 'space',
       component: () => import('@/pages/personal/space/SpacePage.vue'),
