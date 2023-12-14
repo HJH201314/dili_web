@@ -16,8 +16,7 @@ const props = defineProps<{
 
 const videoRef = ref<HTMLDivElement>();
 
-
-var art;
+let art: Artplayer;
 const initBarrage = () => {
   art = new Artplayer({
     container: videoRef.value!,
@@ -26,7 +25,12 @@ const initBarrage = () => {
     customType: {
       m3u8: playM3u8,
     },
-    setting: true,
+    setting: true,//设置面板
+    autoSize: true,//自动调整视频尺寸以隐藏黑边
+    fullscreen: true,//全屏
+    playbackRate: true,//播放速度
+    miniProgressBar: true,//在视频失去焦点后出现的mini进度条  
+    pip: true,
     plugins: [
       artplayerPluginDanmuku({
         danmuku: function () {
@@ -54,9 +58,8 @@ const initBarrage = () => {
         uid: userStore.userInfo?.id
         // uid: 1
       })
-      
   });
-
+  art.theme = 'rgb(0, 174, 236)'
 }
 
 watch(() => videoRef.value, (val) => {
@@ -64,6 +67,7 @@ watch(() => videoRef.value, (val) => {
     initBarrage();
   }
 }, { immediate: true });
+
 
 function playM3u8(video, url, art) {
   if (Hls.isSupported()) {
