@@ -185,7 +185,7 @@ const hisIsShow = computed(() => {
   }
 })
 const fetchSearchHis = () =>{
-  historyList.value = localStorage.getItem("searchHistory")?.split(",") as string[];
+  historyList.value = localStorage.getItem("searchHistory")?.split(",").slice(0, 20) as string[];
 }
 
 const addSearchHis = (newSearch: string) => {
@@ -193,7 +193,7 @@ const addSearchHis = (newSearch: string) => {
   if(HistoryStr == ""){
     localStorage.setItem("searchHistory", newSearch);
   }else{
-    HistoryStr = HistoryStr + ',' + newSearch;
+    HistoryStr = newSearch + ',' + HistoryStr;
   }
 }
 

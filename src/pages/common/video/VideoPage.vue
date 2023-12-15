@@ -1,36 +1,74 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import VideoCard2 from '@/components/video-card/VideoCard2.vue'
-import Hls from 'hls.js'
-import { DeleteOne, Edit, MoreOne } from "@icon-park/vue-next";
-import DiliPopover from "@/components/popover/DiliPopover.vue";
+import { ref, watch } from "vue";
+import { useRouter } from "vue-router";
+import VideoCard2 from "@/components/video-card/VideoCard2.vue";
+import Hls from "hls.js";
+import Artplayer from 'artplayer';
+import artplayerPluginDanmuku from 'artplayer-plugin-danmuku';
+import axios from 'axios'
+import useUserStore from "@/stores/useUserStore";
 
-const router = useRouter()
+const router = useRouter();
+const userStore = useUserStore();
 const props = defineProps<{
   videoID?: string
 }>()
 
-const videoRef = ref<HTMLVideoElement>()
+const videoRef = ref<HTMLDivElement>();
+
+let art: Artplayer;
+const initBarrage = () => {
+  art = new Artplayer({
+    container: videoRef.value!,
+    url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
+    type: 'm3u8',
+    customType: {
+      m3u8: playM3u8,
+    },
+    setting: true,//设置面板
+    autoSize: true,//自动调整视频尺寸以隐藏黑边
+    fullscreen: true,//全屏
+    playbackRate: true,//播放速度
+    miniProgressBar: true,//在视频失去焦点后出现的mini进度条
+    pip: true,
+    plugins: [
+      artplayerPluginDanmuku({
+        danmuku: function () {
+          return new Promise((resovle) => {
+            axios.get("/api/admin/video/getBarrageVoByVid", {
+              params: {
+                vid: 1
+              }
+            }).then((res) => {
+              return resovle(res.data.data)
+            })
+          })
+        },
+        speed: 8,
+        heatmap: true, // 是否开启弹幕热度图, 默认为 false
+      }),
+    ],
+  });
+  //监听输入的新弹幕
+  art.on('artplayerPluginDanmuku:emit', (danmu) => {
+      axios.post("/api/admin/video/saveBarrage", {
+        ... danmu,
+        // vid: 1,
+        vid: parseInt(props.videoID!),
+        uid: userStore.userInfo?.id
+        // uid: 1
+      })
+  });
+  art.theme = 'rgb(0, 174, 236)'
+}
 const isFollowed = ref(false)
 const isMenuVisivle = ref(false)
 
-watch(
-  () => videoRef.value,
-  (val) => {
-    if (val) {
-      const hls = new Hls()
-      hls.loadSource(
-        'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8'
-      )
-      hls.attachMedia(videoRef.value)
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        videoRef.value?.play() // 此处浏览器提示用户未交互无法播放
-      })
-    }
-  },
-  { immediate: true }
-)
+watch(() => videoRef.value, (val) => {
+  if (val) {
+    initBarrage();
+  }
+});
 
 function showMenu() {
   isMenuVisivle.value = true
@@ -51,6 +89,22 @@ function toggleFollow() {
   isFollowed.value = !isFollowed.value
 }
 
+
+function playM3u8(video, url, art) {
+  if (Hls.isSupported()) {
+    if (art.hls) art.hls.destroy();
+    const hls = new Hls();
+    hls.loadSource(url);
+    hls.attachMedia(video);
+    art.hls = hls;
+    art.on('destroy', () => hls.destroy());
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = url;
+  } else {
+    art.notice.show = 'Unsupported playback format: m3u8';
+  }
+}
+
 </script>
 
 <template>
@@ -69,8 +123,11 @@ function toggleFollow() {
         </div>
         <!--        <DiliButton text="开播" @click="videoRef?.play()"></DiliButton>-->
         <div class="player-window">
-          <video class="player" ref="videoRef" id="video" controls></video>
-          <div class="player-window-bottom"></div>
+          <!-- <video class="player" ref="videoRef" id="video" controls></video> -->
+          <div ref="videoRef" class="artplayer-app"></div>
+          <div class="player-window-bottom">
+
+          </div>
         </div>
         <div class="video-actions">
           <button class="video-like">
@@ -201,6 +258,7 @@ a {
   background-color: #f5f5f5;
   display: flex;
 }
+
 .video-container {
   height: 100%;
   width: 80%;
@@ -214,6 +272,7 @@ a {
   justify-content: center;
   overflow: scroll;
 }
+
 .left-section {
   width: 60%;
   height: 100%;
@@ -221,12 +280,14 @@ a {
   flex-direction: column;
   position: relative;
 }
+
 .video-info {
   width: 100%;
   height: 100px;
   box-sizing: border-box;
   padding-top: 22px;
 }
+
 .title {
   font-size: 20px;
   font-weight: 500;
@@ -237,6 +298,7 @@ a {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .detail {
   font-size: 13px;
   display: flex;
@@ -247,6 +309,7 @@ a {
   overflow: hidden;
   box-sizing: border-box;
 }
+
 .view {
   display: inline-flex;
   align-items: center;
@@ -254,6 +317,7 @@ a {
   margin-right: 12px;
   overflow: hidden;
 }
+
 .dm {
   display: inline-flex;
   align-items: center;
@@ -261,6 +325,7 @@ a {
   margin-right: 12px;
   overflow: hidden;
 }
+
 .pubdate {
   display: inline-flex;
   align-items: center;
@@ -268,22 +333,26 @@ a {
   margin-right: 12px;
   overflow: hidden;
 }
+
 .copyright {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
   overflow: hidden;
 }
+
 .player-window {
   width: 100%;
   position: relative;
   border-radius: 8px;
   overflow: hidden;
 }
+
 .player {
   width: 100%;
   // height: need compute
 }
+
 .video-actions {
   display: flex;
   align-items: center;
@@ -293,6 +362,7 @@ a {
   line-height: 28px;
   border-bottom: 1px solid #e3e5e7;
 }
+
 .video-like,
 .video-coin,
 .video-star {
@@ -306,10 +376,12 @@ a {
   cursor: pointer;
   color: #18191c;
 }
+
 .video-detail {
   margin: 16px 0;
   border-bottom: 1px solid #e3e5e7;
 }
+
 .video-description {
   font-size: 14px;
   line-height: 22px;
@@ -319,33 +391,39 @@ a {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .video-tags {
   overflow: hidden;
   text-overflow: ellipsis;
   padding-bottom: 6px;
   margin: 16px 0 20px 0;
 }
+
 .comment-list {
   margin-top: 8px;
   position: relative;
 }
+
 .list-header {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   margin-bottom: 12px;
 }
+
 .list-title {
   font-size: 20px;
   font-weight: 500;
   color: #18191c;
   margin-right: 12px;
 }
+
 .list-count {
   font-size: 14px;
   color: #9499a0;
   margin-right: 12px;
 }
+
 .list-sort {
   display: flex;
   align-items: center;
@@ -353,12 +431,14 @@ a {
   font-size: 14px;
   color: #9499a0;
 }
+
 .reply-box {
   height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 .reply-box-avatar {
   width: 40px;
   height: 40px;
@@ -367,6 +447,7 @@ a {
   margin-right: 10px;
   margin-left: 10px;
 }
+
 .reply-box-input {
   height: 100%;
   flex: 1;
@@ -377,6 +458,7 @@ a {
   box-sizing: border-box;
   color: #18191c;
 }
+
 .reply-box-input textarea {
   width: 100%;
   height: 100%;
@@ -391,10 +473,12 @@ a {
   box-sizing: border-box;
   overflow: auto;
 }
+
 .reply-box-input textarea:hover,
 .reply-box-input textarea:focus {
   border-color: #fff;
 }
+
 .reply-box-input-actions {
   height: 100%;
   display: flex;
@@ -406,19 +490,22 @@ a {
   border-radius: 4px;
   cursor: pointer;
 }
+
 .reply-box-input-actions::before {
-  content: '';
+  content: "";
   position: absolute;
-  opacity: 0.5;
+  opacity: .5;
   width: 100%;
   height: 100%;
   border-radius: 4px;
   background-color: #00aeec;
   transition: opacity 0.3s;
 }
+
 .reply-box-input-actions:hover::before {
   opacity: 1;
 }
+
 .send-text {
   position: absolute;
   z-index: 1;
@@ -426,6 +513,7 @@ a {
   font-weight: 500;
   color: #ffffff;
 }
+
 .right-section {
   width: 40%;
   height: 100%;
@@ -434,12 +522,14 @@ a {
   position: relative;
   margin-left: 30px;
 }
+
 .author-info {
   box-sizing: border-box;
   height: 100px;
   display: flex;
   align-items: center;
 }
+
 .author-info-left {
   width: 80px;
   height: 80px;
@@ -447,6 +537,7 @@ a {
   align-items: center;
   justify-content: center;
 }
+
 .avatar {
   width: 60px;
   height: 60px;
@@ -463,14 +554,17 @@ a {
   margin-left: 12px;
   flex: 1;
 }
+
 .author-detail {
   margin-bottom: 5px;
 }
+
 .author-detail-top {
   padding-top: 10px;
   display: flex;
   align-items: center;
 }
+
 .author-detail-name {
   font-size: 15px;
   font-weight: 500;
@@ -482,6 +576,7 @@ a {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .author-detail-sendmsg {
   font-size: 13px;
   transition: color 0.3s;
@@ -489,9 +584,11 @@ a {
   flex-shrink: 0;
   display: flex;
 }
+
 .author-detail-sendmsg:hover {
   color: #00aeec;
 }
+
 .author-description {
   margin-top: 2px;
   font-size: 13px;
@@ -502,15 +599,17 @@ a {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .author-info-actions {
   position: relative;
   display: flex;
   margin-top: 5px;
   overflow: visible;
 }
+
 .follow-btn {
+  display: inline-flex;
   position: relative;
-  display: flex;
   font-size: 14px;
   background-color: #00aeec;
   color: #fff;
@@ -538,18 +637,26 @@ a {
   color: #18191c;
   cursor: pointer;
 }
-.dropdowm-menu div:hover {
+
+.follow-btn:hover {
   background-color: #ebebeb;
 }
+
 .recommend-list {
   margin-top: 18px;
   display: flex;
   flex-direction: column;
 }
+
 .recommend-list-title {
   font-size: 16px;
   font-weight: 500;
   color: #18191c;
   margin-bottom: 12px;
+}
+
+.artplayer-app {
+  height: 300px;
+
 }
 </style>
