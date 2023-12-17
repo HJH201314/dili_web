@@ -11,6 +11,9 @@ import CusInput from "@/components/input/CusInput.vue";
 import DiliButton from "@/components/button/DiliButton.vue";
 import { quickToast } from "@/components/toast/toast";
 import services from "@/apis/services";
+import usePartitionStore from "@/stores/usePartitionStore";
+import UserCard from "@/components/user-card/UserCard.vue";
+import type { UserCardProps } from "@/components/user-card/UserCard";
 
 const route = useRoute();
 const router = useRouter();
@@ -29,7 +32,11 @@ const observer = new IntersectionObserver((entries) => {
       if (entry.target.id == 'search-loading') {
         console.log('元素可见');
         if (hasMoreVideo.value) {
-          getVideos();
+          if (searchForm.type == 'video') {
+            getVideos();
+          } else if (searchForm.type == 'person') {
+            getPersons();
+          }
         }
       }
     } else {
@@ -38,14 +45,34 @@ const observer = new IntersectionObserver((entries) => {
   });
 });
 
-type SortType = 'auto' | 'new' | 'hot';
+type SortType = 'auto' | 'new' | 'hot' | 'dm' | 'star';
 type SearchType = 'video' | 'person';
 const searchForm = reactive({
   keyword: ref(''),
   type: ref<SearchType>('video'),
-  partition: ref<string>(''),
-  sort: ref<SortType>('auto')
+  partition: ref<number>(0),
+  sort: ref<SortType>('auto'),
+  time: ref<number>(0),
+  level: ref<number>(0),
+  expanded: false,
 });
+
+function getSorterIdByName(sorterName: SortType) {
+  switch (sorterName) {
+    case 'auto':
+      return 0;
+    case 'new':
+      return 2;
+    case 'hot':
+      return 1;
+    case 'dm':
+      return 3;
+    case 'star':
+      return 4;
+    default:
+      return 0;
+  }
+}
 
 function refresh() {
   if (route.query.keyword) {
@@ -54,6 +81,11 @@ function refresh() {
   if (route.query.type as string in ['video', 'person']) {
     // @ts-ignore
     searchForm.type = route.query.type;
+    if (searchForm.type == 'video') {
+      pageSize.value = 1;
+    } else if (searchForm.type == 'person') {
+      pageSize.value = 1;
+    }
   }
   if (route.query.partition) {
     // @ts-ignore
@@ -63,8 +95,17 @@ function refresh() {
     // @ts-ignore
     searchForm.sort = route.query.sort;
   }
+  if (route.query.time) {
+    // @ts-ignore
+    searchForm.time = route.query.time;
+  }
+  if (route.query.level) {
+    // @ts-ignore
+    searchForm.level = route.query.level;
+  }
   refreshTabCursor(searchForm.type);
   videoList.value = [];
+  userList.value = [];
   pageNum.value = 0;
   hasMoreVideo.value = true;
   observer.unobserve(searchLoadingRef.value!);
@@ -75,9 +116,15 @@ function refresh() {
  * 执行搜索，仅改变路由地址
  */
 function search() {
-  router.replace(`/search?type=${searchForm.type}&keyword=${searchForm.keyword}&partition=${searchForm.partition}&sort=${searchForm.sort}`).then(() => {
-    refresh();
-  });
+  if (searchForm.type == 'video') {
+    router.replace(`/search?type=${searchForm.type}&keyword=${searchForm.keyword}&partition=${searchForm.partition}&sort=${searchForm.sort}&time=${searchForm.time}`).then(() => {
+      refresh();
+    });
+  } else if (searchForm.type == 'person') {
+    router.replace(`/search?type=${searchForm.type}&keyword=${searchForm.keyword}&level=${searchForm.level}`).then(() => {
+      refresh();
+    });
+  }
 }
 
 function handleSearchClick() {
@@ -87,6 +134,7 @@ function handleSearchClick() {
 const tabCursorRef = ref<HTMLDivElement>();
 function handleTypeChange(type: SearchType) {
   searchForm.type = type;
+  pageNum.value = 1;
   search();
 }
 watch(() => searchForm.type, (value, oldValue) => {
@@ -110,10 +158,21 @@ function handleSortChange(method: SortType) {
   search();
 }
 
+function handleTimeChange(time: number) {
+  searchForm.time = time;
+  search();
+}
+
+function handleLevelChange(level: number) {
+  searchForm.level = level;
+  search();
+}
+
 const videoList = ref<VideoCardProps[]>([]);
+const userList = ref<UserCardProps[]>([]);
 const hasMoreVideo = ref(true);
 const pageNum = ref(1);
-const pageSize = ref(30);
+const pageSize = ref(1);
 async function getVideos() {
   if (!hasMoreVideo.value) return;
   pageNum.value += 1;
@@ -122,9 +181,9 @@ async function getVideos() {
       page: pageNum.value,
       size: pageSize.value,
       key: searchForm.keyword,
-      pid: 0, // todo: support pid
-      sortBy: 0, // todo: support sortBy
-      time: 0, // todo: support time
+      pid: searchForm.partition,
+      sortBy: getSorterIdByName(searchForm.sort),
+      time: searchForm.time,
     });
     if (res.data.code == 200) {
       res.data.data?.list?.forEach((v) => {
@@ -155,6 +214,48 @@ async function getVideos() {
     // if (res.data.data.list.length == 0) hasMoreVideo.value = false;
   } catch (ignore) {}
 }
+
+async function getPersons() {
+  if (!hasMoreVideo.value) return;
+  pageNum.value += 1;
+  try {
+    const res = await services.adminService.videoController.searchUserUsingGet({
+      page: pageNum.value,
+      size: pageSize.value,
+      key: searchForm.keyword,
+      sortBy: searchForm.level,
+    });
+    if (res.data.code == 200) {
+      res.data.data?.list?.forEach((v) => {
+        userList.value?.push({
+          uid: v.id,
+          level: v.level,
+          name: v.name,
+          videoNum: v.video,
+          fanNum: v.fan,
+        });
+      });
+      if (res.data.data?.list?.length == 0) {
+        hasMoreVideo.value = false;
+      } else {
+        observer.unobserve(searchLoadingRef.value!);
+        observer.observe(searchLoadingRef.value!);
+      }
+    }
+    // for (let i = 0; i < 10; i++) {
+    //   videoList.value?.push({
+    //     vid: videoList.value?.length + 1,
+    //   });
+    // }
+    // if (res.data.data.list.length == 0) hasMoreVideo.value = false;
+  } catch (ignore) {}
+}
+
+const partitionStore = usePartitionStore();
+function handlePartitionChange(pid: number) {
+  searchForm.partition = pid;
+  handleSearchClick();
+}
 </script>
 
 <template>
@@ -179,20 +280,82 @@ async function getVideos() {
       <div ref="tabCursorRef" class="search-tab-cursor"></div>
     </section>
     <hr />
-    <section class="search-sort">
-      <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.sort == 'auto'}" @click="handleSortChange('auto')">
-        综合排序
-      </div>
-      <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.sort == 'hot'}" @click="handleSortChange('hot')">
-        最多播放
-      </div>
-      <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.sort == 'new'}" @click="handleSortChange('new')">
-        最新发布
-      </div>
-    </section>
-    <section class="search-result">
-      <VideoCard v-for="item in videoList" v-bind="item" auto-fetch />
-    </section>
+    <div style="display: contents;" v-if="searchForm.type == 'video'">
+      <section class="search-sort">
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.sort == 'auto'}" @click="handleSortChange('auto')">
+          综合排序
+        </div>
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.sort == 'hot'}" @click="handleSortChange('hot')">
+          最多播放
+        </div>
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.sort == 'new'}" @click="handleSortChange('new')">
+          最新发布
+        </div>
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.sort == 'dm'}" @click="handleSortChange('dm')">
+          最多弹幕
+        </div>
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.sort == 'star'}" @click="handleSortChange('star')">
+          最多收藏
+        </div>
+        <div style="margin-left: auto;" class="search-sort-item" :class="{'search-sort-item--active': searchForm.expanded}" @click="searchForm.expanded = !searchForm.expanded">
+          {{ searchForm.expanded ? '收起' : '展开' }}
+        </div>
+      </section>
+      <section class="search-sort" v-if="searchForm.expanded">
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.time == 0}" @click="handleTimeChange(0)">
+          全部
+        </div>
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.time == 1}" @click="handleTimeChange(1)">
+          1-10分钟
+        </div>
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.time == 2}" @click="handleTimeChange(2)">
+          10-30分钟
+        </div>
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.time == 3}" @click="handleTimeChange(3)">
+          30-60分钟
+        </div>
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.time == 4}" @click="handleTimeChange(4)">
+          60分钟以上
+        </div>
+      </section>
+      <section class="search-sort" v-if="searchForm.expanded">
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.partition == 0}" @click="handlePartitionChange(0)">
+          全部
+        </div>
+        <div class="search-sort-item" v-for="item in partitionStore.partition" :class="{'search-sort-item--active': searchForm.partition == item.id!}" @click="handlePartitionChange(item.id!)">
+          {{ item.name }}
+        </div>
+      </section>
+      <section class="search-result">
+        <TransitionGroup name="ease-in">
+          <VideoCard :key="item.vid" v-for="item in videoList" v-bind="item" auto-fetch />
+        </TransitionGroup>
+      </section>
+    </div>
+    <div style="display: contents" v-else-if="searchForm.type == 'person'">
+      <section class="search-sort">
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.level == 0}" @click="handleLevelChange(0)">
+          默认排序
+        </div>
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.level == 1}" @click="handleLevelChange(1)">
+          粉丝数由高到低
+        </div>
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.level == 2}" @click="handleLevelChange(2)">
+          粉丝数由低到高
+        </div>
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.level == 3}" @click="handleLevelChange(3)">
+          Lv等级由高到低
+        </div>
+        <div class="search-sort-item" :class="{'search-sort-item--active': searchForm.level == 4}" @click="handleLevelChange(4)">
+          Lv等级由低到高
+        </div>
+      </section>
+      <section class="search-result">
+        <TransitionGroup name="ease-in">
+          <UserCard :key="item.uid" v-for="item in userList" v-bind="item" auto-fetch />
+        </TransitionGroup>
+      </section>
+    </div>
     <section ref="searchLoadingRef" class="search-loading" id="search-loading">
       {{ hasMoreVideo ? '加载中...' : '没有更多了>_<' }}
     </section>
@@ -201,6 +364,7 @@ async function getVideos() {
 
 <style scoped lang="scss">
 @import "@/assets/variables.module";
+@import "@/assets/animations";
 .search-page {
   position: relative;
 
@@ -256,7 +420,7 @@ async function getVideos() {
   }
 
   .search-sort {
-    margin: 1rem 0;
+    margin: .5rem 0;
     padding: 0 10rem;
     display: flex;
     justify-content: flex-start;

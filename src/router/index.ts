@@ -26,12 +26,12 @@ const router = createRouter({
       component: () => import('@/pages/common/post/PostDetailPage.vue'),
       props: true,
     },
-    // {
-    //   path: '/search',
-    //   name: 'search-result',
-    //   component: () => import('@/pages/common/search/SearchPage.vue'),
-    //   meta: { showBackground: false }
-    // },
+    {
+      path: '/search',
+      name: 'search-result',
+      component: () => import('@/pages/common/search/SearchPage.vue'),
+      meta: { showBackground: false }
+    },
     {
       path: '/upload',
       name: 'upload',

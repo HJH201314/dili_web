@@ -87,22 +87,19 @@ const rightEntries = ref<Entry[]>([
     name: "历史",
     icon: 'history',
     href: "/history",
-  },
-  {
-    key: "platform",
-    name: "创作中心",
-    icon: 'platform',
-    href: "/platform",
+    onClick() {
+      return;
+    }
   },
 ]);
 
 const router = useRouter();
 function handleEntryClick(e: Event, entry: Entry) {
-  if (entry.href) {
+  if (entry.onClick) {
+    entry.onClick();
+  } else if (entry.href) {
     if (entry.href == router.currentRoute.value.path) return;
     router.push(entry.href);
-  } else if (entry.onClick) {
-    entry.onClick();
   }
   showToast({ text: entry.name, position: 'top' });
 }
@@ -190,10 +187,11 @@ const fetchSearchHis = () =>{
 
 const addSearchHis = (newSearch: string) => {
   let HistoryStr = localStorage.getItem("searchHistory")
-  if(HistoryStr == ""){
+  if(HistoryStr == "" || HistoryStr == null){
     localStorage.setItem("searchHistory", newSearch);
   }else{
     HistoryStr = newSearch + ',' + HistoryStr;
+    localStorage.setItem("searchHistory", HistoryStr);
   }
 }
 
@@ -203,7 +201,14 @@ const searchFromHistory = (SearchHisStr: string) => {
   handleSearch();
 }
 
-function handleSearch() {
+function handleSearch(keyword?: string) {
+  if (keyword) {
+    keyword = keyword?.replace(/<em>/g, '');
+    keyword = keyword?.replace(/<\/em>/g, '');
+    form.searchVal = keyword;
+  }
+  addSearchHis(form.searchVal);
+  // router.push(`/search?type=video&keyword=${form.searchVal}`)
   window.open(router.resolve(`/search?type=video&keyword=${form.searchVal}`).href, '_blank');
 }
 </script>
@@ -242,7 +247,7 @@ function handleSearch() {
                   <div @click="searchFromHistory(history)" class="hisDiv" v-for="(history, index) in historyList" :key="index">{{ history }}</div>
                 </div>
               </div>
-              <div class="searchSuggest" v-for="(suggest, index) in suggestList" :key="index" v-html="suggest">
+              <div class="searchSuggest" v-for="(suggest, index) in suggestList" :key="index" v-html="suggest" @click="handleSearch(suggest)">
               </div>
               <div style="height: 1rem" v-show="!suggestList.length"><!-- 占位，让没有搜索结果时的搜索面板圆润起来 --></div>
             </div>

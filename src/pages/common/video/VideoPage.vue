@@ -3,6 +3,7 @@ import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import VideoCard2 from "@/components/video-card/VideoCard2.vue";
 import Hls from "hls.js";
+import dashjs from "dashjs";
 import Artplayer from 'artplayer';
 import artplayerPluginDanmuku from 'artplayer-plugin-danmuku';
 import axios from 'axios'
@@ -20,10 +21,10 @@ let art: Artplayer;
 const initBarrage = () => {
   art = new Artplayer({
     container: videoRef.value!,
-    url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
-    type: 'm3u8',
+    url: 'http://172.29.16.37:9000/video-platform.updates/video/video/7/1702798991436/720P_input1702798943981.mpd',
+    type: 'mpd',
     customType: {
-      m3u8: playM3u8,
+      mpd: playMpd,
     },
     setting: true,//设置面板
     autoSize: true,//自动调整视频尺寸以隐藏黑边
@@ -102,6 +103,18 @@ function playM3u8(video, url, art) {
     video.src = url;
   } else {
     art.notice.show = 'Unsupported playback format: m3u8';
+  }
+}
+
+function playMpd(video, url, art) {
+  if (dashjs.supportsMediaSource()) {
+    if (art.dash) art.dash.destroy();
+    const dash = dashjs.MediaPlayer().create();
+    dash.initialize(video, url, art.option.autoplay);
+    art.dash = dash;
+    art.on('destroy', () => dash.destroy());
+  } else {
+    art.notice.show = 'Unsupported playback format: mpd';
   }
 }
 

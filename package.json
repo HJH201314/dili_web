@@ -22,6 +22,7 @@
     "artplayer-plugin-danmuku": "^5.0.1",
     "autoprefixer": "^10.4.16",
     "axios": "^1.6.1",
+    "dashjs": "^4.7.3",
     "easy-typer-js": "^2.1.0",
     "element-plus": "^2.4.3",
     "hls.js": "^1.4.13",

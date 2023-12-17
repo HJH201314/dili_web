@@ -1,8 +1,13 @@
 <script setup lang="ts">
 
-import { onMounted, ref, watch } from "vue";
-import type { CusInputProps } from "@/components/input/CusInput";
+import { ref, watch } from "vue";
 
+type CusInputProps = {
+  value?: string;
+  modelValue?: string;
+  placeholder?: string;
+  disabled?: boolean;
+}
 const props = withDefaults(defineProps<CusInputProps>(), {
 });
 
@@ -10,22 +15,17 @@ const emit = defineEmits<{
   (event: 'update:modelValue', value: string): void;
 }>();
 
-const v = ref<string>(props.modelValue || props.value || '');
+const v = ref(props.modelValue || props.value);
 
-watch(() => props.modelValue, (val) => {
-  v.value = val ?? '';
-}, { immediate: true });
-
-watch(() => v.value, (newValue, oldValue) => {
-  if (newValue && newValue !== oldValue) {
-    console.log(newValue)
-    emit("update:modelValue", newValue);
+watch(() => props.modelValue, (newValue, oldValue) => {
+  if (newValue != undefined && newValue !== oldValue) {
+    v.value = newValue;
   }
 });
 </script>
 
 <template>
-  <input class="cus-input" v-model="v" :placeholder="placeholder" />
+  <input class="cus-input" v-model="v" :placeholder="props.placeholder" :disabled="props.disabled" @change="$emit('update:modelValue', v!)" />
 </template>
 
 <style scoped lang="scss">

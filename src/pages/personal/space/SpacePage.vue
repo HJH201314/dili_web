@@ -11,6 +11,7 @@ import SpaceSettingTab from "@/pages/personal/space/SpaceSettingTab.vue";
 import services from "@/apis/services";
 import showToast from "@/components/toast/toast";
 import { getStatString } from "../../../utils/string";
+import useFollowCacheStore from "@/stores/useFollowCacheStore";
 
 const props = defineProps<{
   pathId?: string;
@@ -45,6 +46,7 @@ function init() {
 }
 
 const router = useRouter();
+const followCacheStore = useFollowCacheStore();
 
 async function getUserInfo() {
   if (uid.value <= 0) {
@@ -56,6 +58,10 @@ async function getUserInfo() {
   });
   if (res.data.code === 200) {
     spaceUserInfo.value = res.data.data!;
+  }
+  // 模拟关注数
+  if (spaceUserInfo.value.follow == 0) {
+    spaceUserInfo.value.follow = followCacheStore.isFollowed()
   }
 }
 

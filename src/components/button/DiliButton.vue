@@ -39,10 +39,11 @@ const activeBackgroundColor = computed(() => {
 });
 
 const fontColor = computed(() => {
+  if (props.fontColor) return props.fontColor;
   if (props.type == 'primary') {
     return '#FFFFFF';
   } else {
-    return props.fontColor || variables.colorBlack;
+    return variables.colorBlack;
   }
 });
 const hoverFontColor = computed(() => {
@@ -63,7 +64,7 @@ function handleClick() {
   <div class="dili-button" @click="handleClick">
     <button ref="buttonRef" :style="buttonStyle" :class="{'disabled': props.disabled}">
       <slot></slot>
-      <span v-if="props.text">{{ props.text }}</span>
+      <span class="button-text" v-if="props.text">{{ props.text }}</span>
     </button>
     <div class="mask" :class="{'disabled': props.disabled}">
 
@@ -90,6 +91,7 @@ function handleClick() {
     display: flex;
     gap: .5rem;
     align-items: center;
+    justify-content: center;
 
     &.disabled {
       //background-color: $color-grey-200;
