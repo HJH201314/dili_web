@@ -19,6 +19,9 @@ import { Forbid, Like, Baokemeng, Star } from "@icon-park/vue-next";
 import usePartitionStore from "@/stores/usePartitionStore";
 import DiliButton from "@/components/button/DiliButton.vue";
 import UserCard from "@/components/user-card/UserCard.vue";
+import CommonDialog from "@/components/dialog/CommonDialog.vue";
+import type { CommonDialogExpose } from "@/components/dialog/CommonDialog";
+import { DialogManager } from "@/components/dialog";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -26,6 +29,7 @@ const props = defineProps<{
   videoID?: string
 }>()
 
+const playerWindowRef = ref<HTMLDivElement>();
 const videoRef = ref<HTMLDivElement>();
 
 /* 视频信息相关 */
@@ -70,10 +74,10 @@ let art: Artplayer;
 const initBarrage = () => {
   art = new Artplayer({
     container: videoRef.value!,
-    url: 'http://172.29.16.37:9000/video-platform.updates/video/video/7/1702798991436/720P_input1702798943981.mpd',
+    url: 'http://localhost:9000/video-platform.updates/video/video/3/1702828228177/1080.m3u8',
     type: 'm3u8',
     customType: {
-      mpd: playM3u8,
+      m3u8: playM3u8,
     },
     setting: true,//设置面板
     autoSize: true,//自动调整视频尺寸以隐藏黑边
@@ -117,6 +121,9 @@ const isMenuVisivle = ref(false)
 watch(() => videoRef.value, (val) => {
   if (val) {
     initBarrage();
+    // 计算视频组件高度
+    videoRef.value!.style.height = `${videoRef.value!.offsetWidth * 9 / 16}px`;
+    playerWindowRef.value!.style.minHeight = `${videoRef.value!.offsetWidth * 9 / 16}px`;
   }
 });
 
@@ -166,6 +173,74 @@ function playMpd(video, url, art) {
     art.notice.show = 'Unsupported playback format: mpd';
   }
 }
+
+/* 收藏相关 */
+const starDialogRef = ref<CommonDialogExpose>();
+const starList = ref<API.Star>([]);
+
+async function getStarList() {
+  try {
+    const res = await services.starService.starController.listStarByUidUsingGet({
+      uid: userStore.userInfo?.id,
+    });
+    if (res.data.code == 200) {
+      starList.value = res.data.data?.list;
+    }
+  } finally {
+
+  }
+}
+
+async function handleStarClick() {
+  await getStarList();
+  starDialogRef.value?.show();
+
+}
+
+function handleStarAdd() {
+  DialogManager.inputDialog({
+    title: '新建收藏夹',
+    content: '请输入收藏夹名称',
+  }).then(res1 => {
+    if (res1.status) {
+      services.starService.starController.addStarUsingPost({
+        starName: res1.value,
+        uid: userStore.userInfo?.id,
+      }).then((res2) => {
+        if (res2.data.code == 200) {
+          ToastManager.success('添加成功');
+          getStarList().then(() => {
+            selectedStar.value = [res1.value];
+          });
+        }
+      });
+    }
+  });
+}
+
+const selectedStar = ref<number[]>([]);
+async function handleStarConfirm(close: Function) {
+  try {
+    if (selectedStar.value.length == 0) return;
+    const res = await services.starService.starController.starVideoUsingPost({
+      updateId: videoInfo.value?.update?.id,
+    }, selectedStar.value);
+    if (res.data.code == 200) {
+      ToastManager.success('收藏成功！');
+    }
+  } finally {
+    close();
+  }
+}
+function handleChooseStar(item: API.Star) {
+  if (selectedStar.value.indexOf(item.id) == -1) {
+    selectedStar.value.push(item.id);
+  } else {
+    selectedStar.value = selectedStar.value.filter((v) => {
+      return v != item.id;
+    });
+  }
+}
 </script>
 
 <template>
@@ -178,18 +253,18 @@ function playMpd(video, url, art) {
           <div class="detail">
             <span class="view">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#ffffff"><path d="M12 4.99805C9.48178 4.99805 7.283 5.12616 5.73089 5.25202C4.65221 5.33949 3.81611 6.16352 3.72 7.23254C3.60607 8.4998 3.5 10.171 3.5 11.998C3.5 13.8251 3.60607 15.4963 3.72 16.76355C3.81611 17.83255 4.65221 18.6566 5.73089 18.7441C7.283 18.8699 9.48178 18.998 12 18.998C14.5185 18.998 16.7174 18.8699 18.2696 18.74405C19.3481 18.65655 20.184 17.8328 20.2801 16.76405C20.394 15.4973 20.5 13.82645 20.5 11.998C20.5 10.16965 20.394 8.49877 20.2801 7.23205C20.184 6.1633 19.3481 5.33952 18.2696 5.25205C16.7174 5.12618 14.5185 4.99805 12 4.99805zM5.60965 3.75693C7.19232 3.62859 9.43258 3.49805 12 3.49805C14.5677 3.49805 16.8081 3.62861 18.3908 3.75696C20.1881 3.90272 21.6118 5.29278 21.7741 7.09773C21.8909 8.3969 22 10.11405 22 11.998C22 13.88205 21.8909 15.5992 21.7741 16.8984C21.6118 18.7033 20.1881 20.09335 18.3908 20.23915C16.8081 20.3675 14.5677 20.498 12 20.498C9.43258 20.498 7.19232 20.3675 5.60965 20.2392C3.81206 20.0934 2.38831 18.70295 2.22603 16.8979C2.10918 15.5982 2 13.8808 2 11.998C2 10.1153 2.10918 8.39787 2.22603 7.09823C2.38831 5.29312 3.81206 3.90269 5.60965 3.75693z" fill="currentColor"></path><path d="M14.7138 10.96875C15.50765 11.4271 15.50765 12.573 14.71375 13.0313L11.5362 14.8659C10.74235 15.3242 9.75 14.7513 9.75001 13.8346L9.75001 10.1655C9.75001 9.24881 10.74235 8.67587 11.5362 9.13422L14.7138 10.96875z" fill="currentColor"></path></svg>
-              {{ getStatString(videoInfo?.video?.playNum) }}
+              {{ getStatString(videoInfo?.video?.playNum ?? 0) }}
             </span>
             <span class="dm">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#ffffff"><path d="M12 4.99805C9.48178 4.99805 7.283 5.12616 5.73089 5.25202C4.65221 5.33949 3.81611 6.16352 3.72 7.23254C3.60607 8.4998 3.5 10.171 3.5 11.998C3.5 13.8251 3.60607 15.4963 3.72 16.76355C3.81611 17.83255 4.65221 18.6566 5.73089 18.7441C7.283 18.8699 9.48178 18.998 12 18.998C14.5185 18.998 16.7174 18.8699 18.2696 18.74405C19.3481 18.65655 20.184 17.8328 20.2801 16.76405C20.394 15.4973 20.5 13.82645 20.5 11.998C20.5 10.16965 20.394 8.49877 20.2801 7.23205C20.184 6.1633 19.3481 5.33952 18.2696 5.25205C16.7174 5.12618 14.5185 4.99805 12 4.99805zM5.60965 3.75693C7.19232 3.62859 9.43258 3.49805 12 3.49805C14.5677 3.49805 16.8081 3.62861 18.3908 3.75696C20.1881 3.90272 21.6118 5.29278 21.7741 7.09773C21.8909 8.3969 22 10.11405 22 11.998C22 13.88205 21.8909 15.5992 21.7741 16.8984C21.6118 18.7033 20.1881 20.09335 18.3908 20.23915C16.8081 20.3675 14.5677 20.498 12 20.498C9.43258 20.498 7.19232 20.3675 5.60965 20.2392C3.81206 20.0934 2.38831 18.70295 2.22603 16.8979C2.10918 15.5982 2 13.8808 2 11.998C2 10.1153 2.10918 8.39787 2.22603 7.09823C2.38831 5.29312 3.81206 3.90269 5.60965 3.75693z" fill="currentColor"></path><path d="M15.875 10.75L9.875 10.75C9.46079 10.75 9.125 10.4142 9.125 10C9.125 9.58579 9.46079 9.25 9.875 9.25L15.875 9.25C16.2892 9.25 16.625 9.58579 16.625 10C16.625 10.4142 16.2892 10.75 15.875 10.75z" fill="currentColor"></path><path d="M17.375 14.75L11.375 14.75C10.9608 14.75 10.625 14.4142 10.625 14C10.625 13.5858 10.9608 13.25 11.375 13.25L17.375 13.25C17.7892 13.25 18.125 13.5858 18.125 14C18.125 14.4142 17.7892 14.75 17.375 14.75z" fill="currentColor"></path><path d="M7.875 10C7.875 10.4142 7.53921 10.75 7.125 10.75L6.625 10.75C6.21079 10.75 5.875 10.4142 5.875 10C5.875 9.58579 6.21079 9.25 6.625 9.25L7.125 9.25C7.53921 9.25 7.875 9.58579 7.875 10z" fill="currentColor"></path><path d="M9.375 14C9.375 14.4142 9.03921 14.75 8.625 14.75L8.125 14.75C7.71079 14.75 7.375 14.4142 7.375 14C7.375 13.5858 7.71079 13.25 8.125 13.25L8.625 13.25C9.03921 13.25 9.375 13.5858 9.375 14z" fill="currentColor"></path></svg>
-              {{ getStatString(videoInfo?.video?.dmNum) }}
+              {{ getStatString(videoInfo?.video?.dmNum ?? 0) }}
             </span>
             <span class="pubdate"><DateFormat :date="videoInfo?.update?.uploadTime" /></span>
             <span class="copyright"><Forbid theme="outline" :fill="variables.colorDanger" />未经作者授权，禁止转载</span>
           </div>
         </div>
         <!--        <DiliButton text="开播" @click="videoRef?.play()"></DiliButton>-->
-        <div class="player-window">
+        <div ref="playerWindowRef" class="player-window">
           <!-- <video class="player" ref="videoRef" id="video" controls></video> -->
           <div ref="videoRef" class="artplayer-app"></div>
           <div class="player-window-bottom">
@@ -205,7 +280,7 @@ function playMpd(video, url, art) {
             <Baokemeng theme="outline" size="2rem" />
             <span>{{ videoInfo?.video?.dmNum ?? 0 }}</span>
           </div>
-          <div class="video-star">
+          <div class="video-star" @click="handleStarClick">
             <Star theme="outline" size="2rem" />
             <span>{{ videoInfo?.video?.starNum ?? 0 }}</span>
           </div>
@@ -266,11 +341,59 @@ function playMpd(video, url, art) {
         </div>
       </div>
     </div>
+    <CommonDialog ref="starDialogRef" title="收藏" :on-confirm="handleStarConfirm">
+      <div class="star-list">
+        <div class="star-list-item" style="border: 1px dashed grey; margin-bottom: .25rem"
+             @click="handleStarAdd"
+        >
+          <div class="star-list-item__name">
+            + 新建收藏夹
+          </div>
+        </div>
+        <div class="star-list-item" :class="{'star-list-item--selected': selectedStar.indexOf(item.id) != -1}"
+             @click="handleChooseStar(item)"
+             v-for="item in starList">
+          <div class="star-list-item__name">
+            {{ item.starName }}
+          </div>
+          <div class="star-list-item__num">
+            {{ item.starNum }}
+          </div>
+        </div>
+      </div>
+    </CommonDialog>
   </div>
 </template>
 
 <style scoped lang="scss">
 @import "@/assets/variables.module";
+
+.star-list {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  &-item {
+    @extend %button-like;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    &__name {
+
+    }
+    &__num {
+
+    }
+    &--selected {
+      background-color: $color-primary;
+      color: white;
+    }
+    &:not(&--selected) {
+      @extend %click-able;
+    }
+  }
+}
+
 a {
   text-decoration: none;
 }
@@ -297,7 +420,7 @@ a {
 }
 
 .left-section {
-  width: 60%;
+  width: 70%;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -370,7 +493,7 @@ a {
 
 .player-window {
   width: 100%;
-  position: relative;
+  //position: relative;
   border-radius: 8px;
   overflow: hidden;
 }
@@ -546,7 +669,7 @@ a {
 
 .right-section {
   margin-top: 1rem;
-  width: 40%;
+  width: 30%;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -687,7 +810,7 @@ a {
 }
 
 .artplayer-app {
-  height: 300px;
+  //height: 300px;
 
 }
 </style>

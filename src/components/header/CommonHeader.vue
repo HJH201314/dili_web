@@ -259,7 +259,7 @@ function handleSearch(keyword?: string) {
              @mouseenter="() => searchStatus = (searchStatus == 'mouseout') ? 'searching' : searchStatus"
              :style="props.searchBarStyle"
         >
-          <form :class="{ 'focus': searchStatus != 'none' }" @submit.prevent="handleSearch">
+          <form :class="{ 'focus': searchStatus != 'none' }" @submit.prevent>
             <input ref="searchInputRef" v-model="form.searchVal" type="text" id="nav-search-input" placeholder="搜点什么呢...?"
                    @focus="searchStatus = 'searching'"
                    @blur="handleSearchInputBlur"

@@ -13,6 +13,8 @@ import showToast from "@/components/toast/toast";
 import { DialogManager } from "@/components/dialog";
 import { getRandomString } from "@/utils/string";
 import DiliTooltip from "@/components/tooltip/DiliTooltip.vue";
+import DiliButton from "@/components/button/DiliButton.vue";
+import ToastManager from "@/components/toast/ToastManager";
 
 const userStore = useUserStore();
 
@@ -61,7 +63,7 @@ async function getCollections() {
   try {
     collections.value = [];
     if (!props.uid) return;
-    const res = await services.starService.shoucang.listStarByUidUsingGet({
+    const res = await services.starService.starController.listStarByUidUsingGet({
       uid: props.uid,
     });
     if (res.data?.code == 200) {
@@ -99,7 +101,7 @@ async function getCollections() {
 const currentCollection = ref<CollectionItem>();
 const creatorId = computed(() => currentCollection.value?.creatorId); // 不单独compute的话，似乎无法响应变化
 const { status: creatorStatus, userInfo: creatorInfo } = useUserInfo(creatorId);
-const currentPage = ref(1);
+const currentPage = ref(0);
 const pageSize = ref(20);
 function handleCollectionChange(item: CollectionItem) {
   currentCollection.value = item;
@@ -117,7 +119,7 @@ async function handleCollectionDelete(item: CollectionItem) {
       showToast({ text: '删除失败！', type: 'danger' });
       return;
     }
-    const res = await services.starService.shoucang.removeStarUsingDelete({
+    const res = await services.starService.starController.removeStarUsingDelete({
       sid: item.id
     });
     if (res.data.code == 200) {
@@ -141,7 +143,7 @@ async function handleCollectionAdd() {
   const dialogRes = await DialogManager.inputDialog({ title: '新建收藏夹' }, { placeholder: '请输入新收藏夹的名称~' });
   if (!dialogRes.status) return;
   try {
-    const res = await services.starService.shoucang.addStarUsingPost({
+    const res = await services.starService.starController.addStarUsingPost({
       uid: userStore.userInfo?.id!,
       starName: dialogRes.value,
     });
@@ -164,7 +166,7 @@ const starList = ref<StaredVideoItem[]>([]);
  */
 async function getVideoList(sid: string) {
   try {
-    const res = await services.starService.shoucang.listStarContentBySidByPageUsingGet({
+    const res = await services.starService.starController.listStarContentBySidByPageUsingGet({
       sid: sid,
       page: currentPage.value,
       size: pageSize.value,
@@ -200,6 +202,29 @@ async function getVideoList(sid: string) {
   }
 }
 
+async function handleStarVideoDelete(vid: number) {
+  // 获取视频信息
+  try {
+    const videoInfoRes = await services.adminService.videoController.getVideoInfoUsingGet({
+      id: vid,
+    });
+    const res = await services.starService.starController.removeStarVideoUsingDelete({
+      sid: currentCollection.value?.id,
+      updateId: videoInfoRes.data.data?.update?.id,
+    });
+    if (res.data.code == 200) {
+      ToastManager.success('删除成功！');
+      starList.value = [];
+      getVideoList(currentCollection.value?.id);
+    } else {
+      ToastManager.danger('删除失败！');
+    }
+  } catch (e) {
+    ToastManager.danger('删除失败！');
+  } finally {
+
+  }
+}
 
 </script>
 
@@ -245,6 +270,20 @@ async function getVideoList(sid: string) {
           <template #footer>
             <div class="video-list-item-footer">
               收藏于 {{ item.starDate }}
+              <DiliPopover style="margin-left: auto" position="left">
+                <template #body>
+                  <DiliButton>
+                    <MoreOne />
+                  </DiliButton>
+                </template>
+                <template #popover>
+                  <div style="display: flex; border-radius: .5rem;">
+                    <DiliButton @click="handleStarVideoDelete(item.vid)">
+                      <DeleteOne />
+                    </DiliButton>
+                  </div>
+                </template>
+              </DiliPopover>
             </div>
           </template>
         </VideoCard>
@@ -344,6 +383,7 @@ async function getVideoList(sid: string) {
           padding-left: .2rem;
           font-size: .8rem;
           color: $color-grey-500;
+          display: flex;
         }
       }
     }
