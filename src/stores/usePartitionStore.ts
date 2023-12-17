@@ -40,10 +40,24 @@ const usePartitionStore = defineStore('partition', () => {
     return partitionStorage.value;
   }
 
+  /**
+   * 根据分区id获取分区名
+   */
+  function getPartitionNameById(pid: number) {
+    partition.value.forEach((v) => {
+      if (v.id == pid) {
+        console.log(v)
+        return v.name;
+      }
+    });
+    return '';
+  }
+
   return {
     partition,
     getPartition,
     refreshPartition,
+    getPartitionNameById,
   }
 });
 

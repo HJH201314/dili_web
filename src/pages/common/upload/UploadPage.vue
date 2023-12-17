@@ -89,7 +89,7 @@ const basicForm = reactive<RuleForm>({
 
 const rules = reactive<FormRules<RuleForm>>({
   title: [
-    {required: true, message: '请输入标题', trigger: 'blur'}
+    {required: true, message: '请输入标题', trigger: 'blur'},
   ],
   pid: [
     {
@@ -253,7 +253,7 @@ const submitted = ref(false); // 是否已经最终提交
         </el-upload>
       </el-form-item>
       <el-form-item label="标题" prop="title">
-        <el-input v-model="basicForm.title" show-word-limit type="text" maxlength="10"/>
+        <el-input v-model="basicForm.title" show-word-limit type="text" maxlength="50"/>
       </el-form-item>
       <el-form-item label="分区" prop="pid">
         <el-select v-model="basicForm.pid" placeholder="请选择分区">
@@ -263,11 +263,11 @@ const submitted = ref(false); // 是否已经最终提交
       <el-form-item label="简介" prop="content">
         <el-input v-model="basicForm.content" :rows="3" type="textarea"
                   placeholder="填写更全面的相关信息，让更多人找到你的视频吧！"
-                  show-word-limit maxlength="250"/>
+                  show-word-limit maxlength="1000"/>
       </el-form-item>
       <el-form-item style="margin-top: 30px;">
         <div style="display: flex; gap: 1rem; width: 100%;">
-          <DiliButton type="primary" @click="submitForm" :text="submitting ? ' 转码中, 请耐心等待...' : '  立即投稿   '" :disabled="submitted || submitting">
+          <DiliButton type="primary" @click="submitForm" :text="submitting ? ' 转码中, 请耐心等待...' : (submitted ? '  投稿完成  ' : '  立即投稿   ')" :disabled="submitted || submitting">
             <Spinning v-if="submitting" />
           </DiliButton>
           <DiliButton style="margin-left: auto;" type="normal" @click="resetForm" text="   重置   " :shadow="false"></DiliButton>

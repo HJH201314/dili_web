@@ -9,3 +9,5 @@ export const COMMENT_SERVICE_PATH = "/comment";
 export const ADMIN_SERVICE_PATH = "/admin";
 
 export const STAR_SERVICE_PATH = "/star";
+
+export const RECOMMEND_SERVICE_PATH = "/recommend";

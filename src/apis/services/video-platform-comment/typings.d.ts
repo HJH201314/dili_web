@@ -134,7 +134,7 @@ declare namespace API {
 
   type ListResultCommentVo_ = {
     list?: CommentVo[];
-    total?: number;
+    total?: string;
   };
 
   type replyCommentUsingPOSTParams = {

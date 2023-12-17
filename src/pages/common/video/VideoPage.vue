@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import VideoCard2 from "@/components/video-card/VideoCard2.vue";
 import Hls from "hls.js";
@@ -8,6 +8,17 @@ import Artplayer from 'artplayer';
 import artplayerPluginDanmuku from 'artplayer-plugin-danmuku';
 import axios from 'axios'
 import useUserStore from "@/stores/useUserStore";
+import CommentView from "@/pages/common/video/components/CommentView.vue";
+import services from "@/apis/services";
+import variables from "@/assets/variables.module.scss";
+import ToastManager from "@/components/toast/ToastManager";
+import useUserInfo from "@/stores/publicUserInfo";
+import { getStatString } from "../../../utils/string";
+import DateFormat from "@/components/date-format/DateFormat.vue";
+import { Forbid, Like, Baokemeng, Star } from "@icon-park/vue-next";
+import usePartitionStore from "@/stores/usePartitionStore";
+import DiliButton from "@/components/button/DiliButton.vue";
+import UserCard from "@/components/user-card/UserCard.vue";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -17,14 +28,52 @@ const props = defineProps<{
 
 const videoRef = ref<HTMLDivElement>();
 
+/* 视频信息相关 */
+const videoInfo = ref<API.VideoInfoVo>();
+const userInfo = useUserInfo(() => videoInfo.value?.user?.id);
+const upInfo = useUserInfo(() => videoInfo.value?.user?.id);
+onMounted(() => {
+  if (!props.videoID) router.replace('/home');
+  const vid = parseInt(props.videoID!);
+
+  Promise.all([
+    getVideoInfo(vid),
+
+  ]);
+
+});
+
+async function getVideoInfo(vid: number) {
+  try {
+    const res = await services.adminService.videoController.getVideoInfoUsingGet({
+      id: vid,
+    });
+    if (res.data.code == 200) {
+      videoInfo.value = res.data.data;
+      partitionName.value = partitionStore.getPartitionNameById(videoInfo.value?.video?.pid);
+    } else {
+      ToastManager.danger('获取信息失败');
+    }
+  } catch (e) {
+    ToastManager.danger('获取信息失败');
+  } finally {
+
+  }
+}
+
+const partitionStore = usePartitionStore();
+const partitionName = ref<string>('');
+
+
+/* 视频播放相关 */
 let art: Artplayer;
 const initBarrage = () => {
   art = new Artplayer({
     container: videoRef.value!,
     url: 'http://172.29.16.37:9000/video-platform.updates/video/video/7/1702798991436/720P_input1702798943981.mpd',
-    type: 'mpd',
+    type: 'm3u8',
     customType: {
-      mpd: playMpd,
+      mpd: playM3u8,
     },
     setting: true,//设置面板
     autoSize: true,//自动调整视频尺寸以隐藏黑边
@@ -117,7 +166,6 @@ function playMpd(video, url, art) {
     art.notice.show = 'Unsupported playback format: mpd';
   }
 }
-
 </script>
 
 <template>
@@ -126,12 +174,18 @@ function playMpd(video, url, art) {
       <!-- Left Section -->
       <div class="left-section">
         <div class="video-info">
-          <div class="title">赤壁之战的锅谁背？【小约翰】</div>
+          <div class="title">{{ videoInfo?.video?.title }}</div>
           <div class="detail">
-            <span class="view">173.4万</span>
-            <span class="dm">1.4万</span>
-            <span class="pubdate">2023-12-08 11：00：13</span>
-            <span class="copyright">未经作者授权，禁止转载</span>
+            <span class="view">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#ffffff"><path d="M12 4.99805C9.48178 4.99805 7.283 5.12616 5.73089 5.25202C4.65221 5.33949 3.81611 6.16352 3.72 7.23254C3.60607 8.4998 3.5 10.171 3.5 11.998C3.5 13.8251 3.60607 15.4963 3.72 16.76355C3.81611 17.83255 4.65221 18.6566 5.73089 18.7441C7.283 18.8699 9.48178 18.998 12 18.998C14.5185 18.998 16.7174 18.8699 18.2696 18.74405C19.3481 18.65655 20.184 17.8328 20.2801 16.76405C20.394 15.4973 20.5 13.82645 20.5 11.998C20.5 10.16965 20.394 8.49877 20.2801 7.23205C20.184 6.1633 19.3481 5.33952 18.2696 5.25205C16.7174 5.12618 14.5185 4.99805 12 4.99805zM5.60965 3.75693C7.19232 3.62859 9.43258 3.49805 12 3.49805C14.5677 3.49805 16.8081 3.62861 18.3908 3.75696C20.1881 3.90272 21.6118 5.29278 21.7741 7.09773C21.8909 8.3969 22 10.11405 22 11.998C22 13.88205 21.8909 15.5992 21.7741 16.8984C21.6118 18.7033 20.1881 20.09335 18.3908 20.23915C16.8081 20.3675 14.5677 20.498 12 20.498C9.43258 20.498 7.19232 20.3675 5.60965 20.2392C3.81206 20.0934 2.38831 18.70295 2.22603 16.8979C2.10918 15.5982 2 13.8808 2 11.998C2 10.1153 2.10918 8.39787 2.22603 7.09823C2.38831 5.29312 3.81206 3.90269 5.60965 3.75693z" fill="currentColor"></path><path d="M14.7138 10.96875C15.50765 11.4271 15.50765 12.573 14.71375 13.0313L11.5362 14.8659C10.74235 15.3242 9.75 14.7513 9.75001 13.8346L9.75001 10.1655C9.75001 9.24881 10.74235 8.67587 11.5362 9.13422L14.7138 10.96875z" fill="currentColor"></path></svg>
+              {{ getStatString(videoInfo?.video?.playNum) }}
+            </span>
+            <span class="dm">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#ffffff"><path d="M12 4.99805C9.48178 4.99805 7.283 5.12616 5.73089 5.25202C4.65221 5.33949 3.81611 6.16352 3.72 7.23254C3.60607 8.4998 3.5 10.171 3.5 11.998C3.5 13.8251 3.60607 15.4963 3.72 16.76355C3.81611 17.83255 4.65221 18.6566 5.73089 18.7441C7.283 18.8699 9.48178 18.998 12 18.998C14.5185 18.998 16.7174 18.8699 18.2696 18.74405C19.3481 18.65655 20.184 17.8328 20.2801 16.76405C20.394 15.4973 20.5 13.82645 20.5 11.998C20.5 10.16965 20.394 8.49877 20.2801 7.23205C20.184 6.1633 19.3481 5.33952 18.2696 5.25205C16.7174 5.12618 14.5185 4.99805 12 4.99805zM5.60965 3.75693C7.19232 3.62859 9.43258 3.49805 12 3.49805C14.5677 3.49805 16.8081 3.62861 18.3908 3.75696C20.1881 3.90272 21.6118 5.29278 21.7741 7.09773C21.8909 8.3969 22 10.11405 22 11.998C22 13.88205 21.8909 15.5992 21.7741 16.8984C21.6118 18.7033 20.1881 20.09335 18.3908 20.23915C16.8081 20.3675 14.5677 20.498 12 20.498C9.43258 20.498 7.19232 20.3675 5.60965 20.2392C3.81206 20.0934 2.38831 18.70295 2.22603 16.8979C2.10918 15.5982 2 13.8808 2 11.998C2 10.1153 2.10918 8.39787 2.22603 7.09823C2.38831 5.29312 3.81206 3.90269 5.60965 3.75693z" fill="currentColor"></path><path d="M15.875 10.75L9.875 10.75C9.46079 10.75 9.125 10.4142 9.125 10C9.125 9.58579 9.46079 9.25 9.875 9.25L15.875 9.25C16.2892 9.25 16.625 9.58579 16.625 10C16.625 10.4142 16.2892 10.75 15.875 10.75z" fill="currentColor"></path><path d="M17.375 14.75L11.375 14.75C10.9608 14.75 10.625 14.4142 10.625 14C10.625 13.5858 10.9608 13.25 11.375 13.25L17.375 13.25C17.7892 13.25 18.125 13.5858 18.125 14C18.125 14.4142 17.7892 14.75 17.375 14.75z" fill="currentColor"></path><path d="M7.875 10C7.875 10.4142 7.53921 10.75 7.125 10.75L6.625 10.75C6.21079 10.75 5.875 10.4142 5.875 10C5.875 9.58579 6.21079 9.25 6.625 9.25L7.125 9.25C7.53921 9.25 7.875 9.58579 7.875 10z" fill="currentColor"></path><path d="M9.375 14C9.375 14.4142 9.03921 14.75 8.625 14.75L8.125 14.75C7.71079 14.75 7.375 14.4142 7.375 14C7.375 13.5858 7.71079 13.25 8.125 13.25L8.625 13.25C9.03921 13.25 9.375 13.5858 9.375 14z" fill="currentColor"></path></svg>
+              {{ getStatString(videoInfo?.video?.dmNum) }}
+            </span>
+            <span class="pubdate"><DateFormat :date="videoInfo?.update?.uploadTime" /></span>
+            <span class="copyright"><Forbid theme="outline" :fill="variables.colorDanger" />未经作者授权，禁止转载</span>
           </div>
         </div>
         <!--        <DiliButton text="开播" @click="videoRef?.play()"></DiliButton>-->
@@ -143,104 +197,59 @@ function playMpd(video, url, art) {
           </div>
         </div>
         <div class="video-actions">
-          <button class="video-like">
-            <span>likes</span>
-          </button>
-          <button class="video-coin">
-            <span>coins</span>
-          </button>
-          <button class="video-star">
-            <span>shares</span>
-          </button>
+          <div class="video-like">
+            <Like theme="outline" size="2rem" />
+            <span>{{ videoInfo?.updateheat?.likeNum ?? 0 }}</span>
+          </div>
+          <div class="video-coin">
+            <Baokemeng theme="outline" size="2rem" />
+            <span>{{ videoInfo?.video?.dmNum ?? 0 }}</span>
+          </div>
+          <div class="video-star">
+            <Star theme="outline" size="2rem" />
+            <span>{{ videoInfo?.video?.starNum ?? 0 }}</span>
+          </div>
         </div>
         <div class="video-detail">
           <div class="video-description">
-            <span>本篇为小约翰之赤壁之战。</span>
+            <span>{{ videoInfo?.update?.content }}</span>
           </div>
           <div class="video-tags">
-            <span>标签：</span>
-            <span>赤壁之战</span>
-            <span>三国</span>
-            <span>历史</span>
+            <span>分区：</span>
+            <DiliButton :text="partitionName"></DiliButton>
           </div>
         </div>
-        <div class="comment-list">
-          <div class="list-header">
-            <div class="list-title">评论</div>
-            <div class="list-count">0</div>
-            <div class="list-sort">
-              <span>时间</span>
-              <span>热度</span>
-            </div>
-          </div>
-          <div class="reply-box">
-            <div class="reply-box-avatar"></div>
-            <div class="reply-box-input">
-              <textarea placeholder="你猜我的评论区在等待谁？"></textarea>
-            </div>
-            <div class="reply-box-input-actions">
-              <div class="send-text">发布</div>
-            </div>
-          </div>
-        </div>
+        <CommentView :post-id="videoInfo?.update?.id" :post-user-id="videoInfo?.user?.id" />
+<!--        <div class="comment-list">-->
+<!--          <div class="list-header">-->
+<!--            <div class="list-title">评论</div>-->
+<!--            <div class="list-count">0</div>-->
+<!--            <div class="list-sort">-->
+<!--              <span>时间</span>-->
+<!--              <span>热度</span>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--          <div class="reply-box">-->
+<!--            <div class="reply-box-avatar"></div>-->
+<!--            <div class="reply-box-input">-->
+<!--              <textarea placeholder="你猜我的评论区在等待谁？"></textarea>-->
+<!--            </div>-->
+<!--            <div class="reply-box-input-actions">-->
+<!--              <div class="send-text">发布</div>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
       </div>
 
       <!-- Right Section -->
       <div class="right-section">
-        <div class="author-info">
-          <div class="author-info-left">
-            <div class="avatar">
-              <img class="avatar-img" src="@/assets/img/video/icon-dt.png" alt="avatar" />
-            </div>
-          </div>
-          <div class="author-info-right">
-            <div class="author-detail">
-              <div class="author-detail-top">
-                <a
-                  class="author-detail-name"
-                  href="https://space.bilibili.com/23947287"
-                  target="_blank"
-                >
-                  小约翰
-                </a>
-                <a
-                  class="author-detail-sendmsg"
-                  href="https://message.bilibili.com/#/whisper/mid23947287"
-                  target="_blank"
-                >
-                  <svg
-                    style="padding-right: 3px"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M15.435 17.7717H4.567C2.60143 17.7717 1 16.1723 1 14.2047V5.76702C1 3.80144 2.59942 2.20001 4.567 2.20001H15.433C17.3986 2.20001 19 3.79943 19 5.76702V14.2047C19.002 16.1703 17.4006 17.7717 15.435 17.7717ZM4.567 4.00062C3.59327 4.00062 2.8006 4.79328 2.8006 5.76702V14.2047C2.8006 15.1784 3.59327 15.9711 4.567 15.9711H15.433C16.4067 15.9711 17.1994 15.1784 17.1994 14.2047V5.76702C17.1994 4.79328 16.4067 4.00062 15.433 4.00062H4.567Z"
-                      fill="currentColor"
-                    ></path>
-                    <path
-                      d="M9.99943 11.2C9.51188 11.2 9.02238 11.0667 8.59748 10.8019L8.5407 10.7635L4.3329 7.65675C3.95304 7.37731 3.88842 6.86226 4.18996 6.50976C4.48954 6.15544 5.0417 6.09699 5.4196 6.37643L9.59412 9.45943C9.84279 9.60189 10.1561 9.60189 10.4067 9.45943L14.5812 6.37643C14.9591 6.09699 15.5113 6.15544 15.8109 6.50976C16.1104 6.86409 16.0478 7.37731 15.6679 7.65675L11.4014 10.8019C10.9765 11.0667 10.487 11.2 9.99943 11.2Z"
-                      fill="currentColor"
-                    ></path>
-                  </svg>
-                  发消息
-                </a>
-              </div>
-              <div title="更过了哈" class="author-description">更过了哈</div>
-            </div>
-            <div class="author-info-actions">
-              <div class="follow-btn" @click="toggleFollow" @mouseenter="showMenu" @mouseleave="hideMenu">
-                {{ isFollowed ? '已关注' : '关注'}}
-                <div  v-show="isMenuVisivle" class="dropdowm-menu">
-                  <div @click="setGroup">设置分组</div>
-                  <div @click="toggleFollow">{{ isFollowed ? '取消关注' : '关注'}}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <UserCard
+          :uid="videoInfo?.user?.id"
+          :name="videoInfo?.user?.name"
+          :fan-num="userInfo.userInfo?.value?.fan"
+          :video-num="userInfo.essayCount"
+          :level="videoInfo?.user?.level"
+        />
         <div class="recommend-list">
           <div class="recommend-list-title">相关推荐</div>
           <video-card2
@@ -261,6 +270,7 @@ function playMpd(video, url, art) {
 </template>
 
 <style scoped lang="scss">
+@import "@/assets/variables.module";
 a {
   text-decoration: none;
 }
@@ -268,7 +278,7 @@ a {
 .video-page {
   width: 100%;
   height: 100%;
-  background-color: #f5f5f5;
+  background-color: white;
   display: flex;
 }
 
@@ -321,6 +331,7 @@ a {
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
+  color: $color-grey-500;
 }
 
 .view {
@@ -329,6 +340,7 @@ a {
   flex-shrink: 0;
   margin-right: 12px;
   overflow: hidden;
+  gap: .25rem;
 }
 
 .dm {
@@ -337,6 +349,7 @@ a {
   flex-shrink: 0;
   margin-right: 12px;
   overflow: hidden;
+  gap: .25rem;
 }
 
 .pubdate {
@@ -348,6 +361,7 @@ a {
 }
 
 .copyright {
+  margin-left: auto;
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
@@ -374,6 +388,7 @@ a {
   padding-bottom: 12px;
   line-height: 28px;
   border-bottom: 1px solid #e3e5e7;
+  gap: 1rem;
 }
 
 .video-like,
@@ -384,10 +399,11 @@ a {
   display: flex;
   align-items: center;
   white-space: nowrap;
-  font-size: 14px;
+  font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
   color: #18191c;
+  gap: .5rem;
 }
 
 .video-detail {
@@ -410,6 +426,7 @@ a {
   text-overflow: ellipsis;
   padding-bottom: 6px;
   margin: 16px 0 20px 0;
+  display: flex;
 }
 
 .comment-list {
@@ -528,6 +545,7 @@ a {
 }
 
 .right-section {
+  margin-top: 1rem;
   width: 40%;
   height: 100%;
   display: flex;

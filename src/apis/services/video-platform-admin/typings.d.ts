@@ -9,9 +9,70 @@ declare namespace API {
     type?: number;
   };
 
+  type Barrage = {
+    /** 弹幕颜色 */
+    color?: string;
+    /** 弹幕模式，0滚动，1静止 */
+    mode?: number;
+    /** 弹幕发送的现实时间 */
+    sendTime?: string;
+    /** 弹幕文本 */
+    text?: string;
+    /** 弹幕出现的视频播放时间，秒数 */
+    time?: number;
+    /** 用户id */
+    uid?: number;
+    /** 视频id */
+    vid?: number;
+  };
+
+  type BarrageVo = {
+    border?: boolean;
+    color?: string;
+    mode?: number;
+    text?: string;
+    time?: number;
+  };
+
+  type CommonResult = {
+    code?: number;
+    data?: Record<string, any>;
+    message?: string;
+  };
+
+  type CommonResultInt_ = {
+    code?: number;
+    data?: number;
+    message?: string;
+  };
+
+  type CommonResultListBarrage_ = {
+    code?: number;
+    data?: Barrage[];
+    message?: string;
+  };
+
+  type CommonResultListBarrageVo_ = {
+    code?: number;
+    data?: BarrageVo[];
+    message?: string;
+  };
+
   type CommonResultListHistory_ = {
     code?: number;
     data?: History[];
+    message?: string;
+  };
+
+  type CommonResultListHistoryVo_ = {
+    code?: number;
+    data?: HistoryVo[];
+    message?: string;
+  };
+
+  type CommonResultListInt_ = {
+    code?: number;
+    data?: number[];
     message?: string;
   };
 
@@ -23,19 +84,19 @@ declare namespace API {
 
   type CommonResultListResult_ = {
     code?: number;
-    data?: ListResult_;
-    message?: string;
-  };
-
-  type CommonResultListResult2 = {
-    code?: number;
     data?: ListResult;
     message?: string;
   };
 
-  type CommonResultListResultVo_ = {
+  type CommonResultListResultUserSearchDoc_ = {
     code?: number;
-    data?: ListResultVo_;
+    data?: ListResultUserSearchDoc_;
+    message?: string;
+  };
+
+  type CommonResultListResultVideoVo_ = {
+    code?: number;
+    data?: ListResultVideoVo_;
     message?: string;
   };
 
@@ -45,15 +106,9 @@ declare namespace API {
     message?: string;
   };
 
-  type CommonResultListVo_ = {
+  type CommonResultListVideoVo_ = {
     code?: number;
-    data?: Vo[];
-    message?: string;
-  };
-
-  type CommonResultListVo2 = {
-    code?: number;
-    data?: Vo4[];
+    data?: VideoVo[];
     message?: string;
   };
 
@@ -81,16 +136,21 @@ declare namespace API {
     message?: string;
   };
 
-  type CommonResultVo_ = {
+  type CommonResultVideoDetailVo_ = {
     code?: number;
-    data?: Vo2;
+    data?: VideoDetailVo;
     message?: string;
   };
 
-  type CommonResultVo2 = {
+  type CommonResultVideoInfoVo_ = {
     code?: number;
-    data?: Vo3;
+    data?: VideoInfoVo;
     message?: string;
+  };
+
+  type countUpdatesUsingGETParams = {
+    /** uid */
+    uid: number;
   };
 
   type deleteEssayByIdUsingDELETEParams = {
@@ -104,8 +164,22 @@ declare namespace API {
   };
 
   type deleteVideoByIdUsingDELETEParams = {
-    /** id */
+    /** vid */
     id: number;
+  };
+
+  type getBarrageByVidUsingGETParams = {
+    /** 视频id */
+    vid: number;
+  };
+
+  type getBarrageListByVidUsingGETParams = {
+    /** 页码 */
+    page: number;
+    /** 每页数量 */
+    size: number;
+    /** 视频id */
+    vid: number;
   };
 
   type getEssayByIdUsingGETParams = {
@@ -139,6 +213,23 @@ declare namespace API {
     cntStart: number;
   };
 
+  type getRecommendByUpdateIdUsingGETParams = {
+    /** uid */
+    uid: number;
+    /** updateId */
+    updateId: number;
+  };
+
+  type getRecommendUsingGETParams = {
+    /** uid */
+    uid: number;
+  };
+
+  type getUidByNameUsingGETParams = {
+    /** upName */
+    upName: string;
+  };
+
   type getUserInfoByUidUsingGETParams = {
     /** uid */
     uid: number;
@@ -165,6 +256,13 @@ declare namespace API {
     id: number;
   };
 
+  type getVideoUsingGETParams = {
+    /** bucketName */
+    bucketName: string;
+    /** objectName */
+    objectName: string;
+  };
+
   type HisQueryDto = {
     mediaType?: number;
     userId?: number;
@@ -186,18 +284,35 @@ declare namespace API {
     watchedAt?: TimeReq;
   };
 
+  type HistoryVo = {
+    /** 视频的封面 */
+    coverUrl?: string;
+    /** 历史记录的时间 */
+    hisTime?: string;
+    /** 视频的标题 */
+    title?: string;
+    /** 视频对应的id */
+    uid?: number;
+    /** up主的名字 */
+    upName?: string;
+    /** 观看到的时间 */
+    watchedAt?: string;
+  };
+
+  type InputStream = true;
+
   type ListResult = {
     list?: Record<string, any>[];
     total?: string;
   };
 
-  type ListResult_ = {
-    list?: Pinyin__[];
+  type ListResultUserSearchDoc_ = {
+    list?: UserSearchDoc[];
     total?: string;
   };
 
-  type ListResultVo_ = {
-    list?: Vo4[];
+  type ListResultVideoVo_ = {
+    list?: VideoVo[];
     total?: string;
   };
 
@@ -216,19 +331,13 @@ declare namespace API {
     name?: string;
   };
 
-  type Pinyin__ = {
-    /** 用户粉丝数量 */
-    fan?: number;
-    /** 用户uid */
-    id?: number;
-    /** 用户简介 */
-    info?: string;
-    /** 用户等级 */
-    level?: number;
-    /** 用户昵称 */
-    name?: string;
-    /** 用户投稿视频数量 */
-    video?: number;
+  type plusScoreUsingPOSTParams = {
+    /** 得分：(观看：+1 ,点赞：+2 ,投币：+3 ,收藏：+4) */
+    score: number;
+    /** 当前登录的用户id */
+    uid: number;
+    /** 动态id */
+    updateId: number;
   };
 
   type publishUsingPOSTParams = {
@@ -252,6 +361,17 @@ declare namespace API {
     pin?: string;
     pswd?: string;
     type?: number;
+  };
+
+  type Resource = {
+    description?: string;
+    file?: string;
+    filename?: string;
+    inputStream?: InputStream;
+    open?: boolean;
+    readable?: boolean;
+    uri?: string;
+    url?: string;
   };
 
   type searchUserUsingGETParams = {
@@ -410,7 +530,22 @@ declare namespace API {
     name?: string;
   };
 
-  type video_ = {
+  type UserSearchDoc = {
+    /** 用户粉丝数量 */
+    fan?: number;
+    /** 用户uid */
+    id?: number;
+    /** 用户简介 */
+    info?: string;
+    /** 用户等级 */
+    level?: number;
+    /** 用户昵称 */
+    name?: string;
+    /** 用户投稿视频数量 */
+    video?: number;
+  };
+
+  type Video = {
     /** 投币数量 */
     coinNum?: number;
     /** 弹幕数量 */
@@ -431,22 +566,7 @@ declare namespace API {
     url?: string;
   };
 
-  type Vo = {
-    /** 视频的封面 */
-    coverUrl?: string;
-    /** 历史记录的时间 */
-    hisTime?: string;
-    /** 视频的标题 */
-    title?: string;
-    /** 视频对应的id */
-    uid?: number;
-    /** up主的名字 */
-    upName?: string;
-    /** 观看到的时间 */
-    watchedAt?: string;
-  };
-
-  type Vo2 = {
+  type VideoDetailVo = {
     /** 投币数量 */
     coin?: number;
     /** 弹幕数量 */
@@ -471,13 +591,13 @@ declare namespace API {
     uploadTime?: string;
   };
 
-  type Vo3 = {
+  type VideoInfoVo = {
     update?: Update;
     user?: User;
-    video?: video_;
+    video?: Video;
   };
 
-  type Vo4 = {
+  type VideoVo = {
     /** 弹幕数量 */
     dmNum?: number;
     /** 动态id */

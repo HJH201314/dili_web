@@ -36,26 +36,51 @@ export default function useUserInfo(uid: MaybeRefOrGetter<number | undefined>, c
   const status = ref<'success' | 'failed' | 'loading' | 'none'>('none');
   // 用户公开信息
   const userInfo = ref<API.UserInfo>();
+  // 用户essay信息
+  const essayCount = ref<number>(0);
 
-  watch(() => toValue(uid), async (val) => {
-    // 判断uid是否有值
-    if (!val) {
+  watch(() => toValue(uid), (val) => {
+    if (val) {
+      Promise.all([
+        getUserInfoFunc(val),
+        getEssayNumFunc(val),
+      ]).then();
+    } else {
       status.value = 'none';
-      return;
     }
+  }, { immediate: true });
+
+  async function getUserInfoFunc(uid: number) {
     try {
       // 发起请求
       status.value = 'loading'
-      userInfo.value = await getUserInfo(val);
+      userInfo.value = await getUserInfo(uid);
       // 请求成功
       status.value = 'success';
       callback?.(userInfo.value);
     } catch (e) {
       status.value = 'failed';
     }
-  }, { immediate: true });
+  }
+
+  async function getEssayNumFunc(uid: number) {
+    try {
+      // 发起请求
+      status.value = 'loading'
+      const res = await services.adminService.updatesController.countUpdatesUsingGet({
+        uid: uid,
+      })
+      if (res.data.code == 200) {
+        // 请求成功
+        status.value = 'success';
+        essayCount.value = res.data.data!;
+      }
+    } catch (e) {
+      status.value = 'failed';
+    }
+  }
 
   return {
-    status, userInfo
+    status, userInfo, essayCount,
   };
 }

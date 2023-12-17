@@ -13,7 +13,7 @@ import adminApi from "@/apis/services/video-platform-admin";
 import { delay } from "@/utils/delay";
 import Spinning from "@/components/spinning/Spinning.vue";
 import { useQuery } from "@tanstack/vue-query";
-import { getUserInfo } from "@/stores/publicUserInfo";
+import useUserInfo, { getUserInfo } from "@/stores/publicUserInfo";
 
 const userStore = useUserStore();
 
@@ -63,7 +63,7 @@ const { data: postResult, status: postQueryStatus, refetch: refetchPosts } = use
   queryFn: getPosts,
 });
 
-watchEffect(async () => {
+watch(() => postResult.value, async () => {
   if (postQueryStatus.value != 'success') return;
   if (!postResult.value) return;
   for (let item of postResult.value) {
@@ -84,11 +84,16 @@ watchEffect(async () => {
       content: item.content ? decodeURIComponent(item.content) : '',
     });
   }
+  console.log(posts.value.length, hasNoMore.value)
+  if (posts.value.length == 0 && !hasNoMore.value) {
+    currentPage.value += 1;
+    await refetchPosts();
+  }
 });
 
 async function getPosts() {
   try {
-    const res = await adminApi.updatesController.allEssayUsingGet({
+    const res = await adminApi.updatesController.getInPageUsingGet({
       pageNum: currentPage.value,
       pageSize: 10,
     });
@@ -179,6 +184,8 @@ function clearInput() {
   currentPage.value = 1;
   posts.value = [];
 }
+
+const publicUserInfo = useUserInfo(() => userStore.userInfo.id);
 </script>
 
 <template>
@@ -191,9 +198,9 @@ function clearInput() {
             <div class="right"><span class="username">{{ userStore.userInfo.name }}</span><br /><span class="vip">超级会员</span></div>
           </div>
           <div class="stats">
-            <div id="post-left-user-follow" class="stats-item"><span>111</span><span>关注</span></div>
-            <div id="post-left-user-fans" class="stats-item"><span>23333</span><span>粉丝</span></div>
-            <div id="post-left-user-fans" class="stats-item"><span>88</span><span>动态</span></div>
+            <div id="post-left-user-follow" class="stats-item"><span>{{ publicUserInfo.userInfo.value?.follow ?? 0 }}</span><span>关注</span></div>
+            <div id="post-left-user-fans" class="stats-item"><span>{{ publicUserInfo.userInfo.value?.fan ?? 0 }}</span><span>粉丝</span></div>
+            <div id="post-left-user-fans" class="stats-item" @click="router.push('/space/me?tab=post')"><span>{{ publicUserInfo.essayCount.value ?? 0 }}</span><span>动态</span></div>
           </div>
         </section>
         <section class="post-left-live">广告位招租</section>

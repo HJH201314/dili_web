@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, reactive, ref, watch } from "vue";
 import securityApi from "@/apis/services/video-platform-security";
 import { useLocalStorage } from "@vueuse/core";
 

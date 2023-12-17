@@ -58,7 +58,7 @@ export class DialogManager {
       setup() {
         return <CusInput modelValue={value.value} onUpdate:modelValue={(v: string) => {
           value.value = v;
-        }} placeholder={'请输入点什么'} {...inputProps}></CusInput>
+        }} placeholder={inputProps?.placeholder ?? '请输入点什么'} {...inputProps}></CusInput>
       }
     }
     const overrideProps: CommonDialogProps = {};

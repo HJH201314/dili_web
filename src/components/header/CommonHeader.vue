@@ -13,6 +13,10 @@ import DiliPopover from "@/components/popover/DiliPopover.vue";
 import HistorySpinner from "@/components/header/HistorySpinner.vue";
 import axios from "axios";
 import { treeEmits } from "element-plus/es/components/tree-v2/src/virtual-tree.mjs";
+import DiliButton from "@/components/button/DiliButton.vue";
+import { DialogManager } from "@/components/dialog";
+import services from "@/apis/services";
+import ToastManager from "@/components/toast/ToastManager";
 
 const props = defineProps<{
   searchBarStyle?: CSSProperties,
@@ -115,6 +119,32 @@ async function handleLogoutClick() {
     showToast({ text: '登出成功', position: 'top' });
   } else {
     showToast({ text: '登出请求失败，已强制登出', position: 'top' });
+  }
+}
+
+async function handleChangePassword() {
+  const dialogRes = await DialogManager.inputDialog({
+    title: '修改密码',
+    content: '请输入新密码',
+  }, {
+    inputAttrs: {
+      type: 'password'
+    }
+  });
+  if (dialogRes.status) {
+    try {
+      const res = await services.manageService.userController.updateUserUsingPut({
+        id: userStore.userInfo.id,
+        password: dialogRes.value,
+      });
+      if (res.data.code == 200) {
+        ToastManager.success('修改成功！');
+      } else {
+        ToastManager.danger(`修改失败！`);
+      }
+    } catch (e) {
+        ToastManager.danger(`修改失败！`);
+    }
   }
 }
 
@@ -255,16 +285,22 @@ function handleSearch(keyword?: string) {
         </div>
       </div>
       <ul class="right-entry">
-        <DiliTooltip position="bottom" :enabled="userStore.isLogin">
-          <div class="nav-user-container" @click="handleMeClick">
-            <span v-if="!userStore.isLogin" @click="handleLoginClick">登录/注册</span>
-            <img class="nav-user-avatar" v-if="userStore.isLogin" :src="userStore.avatar ?? '/favicon.ico'"
-              alt="avatar" />
-          </div>
-          <template #tip>
-            <div class="nav-user-logout" @click="handleLogoutClick">点我登出</div>
+        <DiliPopover position="bottom" :enabled="userStore.isLogin">
+          <template #body>
+            <div class="nav-user-container" @click="handleMeClick">
+              <span v-if="!userStore.isLogin" @click="handleLoginClick">登录/注册</span>
+              <img class="nav-user-avatar" v-if="userStore.isLogin" :src="userStore.avatar ?? '/favicon.ico'"
+                   alt="avatar" />
+            </div>
           </template>
-        </DiliTooltip>
+          <template #popover>
+            <div class="nav-user-actions">
+              <DiliButton class="nav-user-action" :button-style="{'border-radius': '0'}" @click="handleLogoutClick" text="修改昵称"></DiliButton>
+              <DiliButton class="nav-user-action" :button-style="{'border-radius': '0'}" @click="handleChangePassword" text="修改密码"></DiliButton>
+              <DiliButton class="nav-user-action" :button-style="{'border-radius': '0'}" @click="handleLogoutClick" text="登出账号"></DiliButton>
+            </div>
+          </template>
+        </DiliPopover>
         <li v-for="entry in rightEntries" :key="entry.key" @click="(e) => handleEntryClick(e, entry)">
           <DiliPopover position="bottom">
             <template #body>
@@ -458,11 +494,18 @@ header {
     }
   }
 
-  &-logout {
+  &-actions {
+    display: flex;
+    flex-direction: column;
+    border-radius: .5rem;
+    overflow: hidden;
+    align-items: center;
     background-color: white;
+  }
+
+  &-action {
     white-space: nowrap;
     cursor: pointer;
-    font-size: .8rem;
   }
 }
 

@@ -38,6 +38,20 @@ export async function changeVideoCoverUsingPost(body: string, options?: { [key: 
   });
 }
 
+/** 获取动态数量 GET /updates/count/${param0} */
+export async function countUpdatesUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.countUpdatesUsingGETParams,
+  options?: { [key: string]: any },
+) {
+  const { uid: param0, ...queryParams } = params;
+  return request<API.CommonResultInt_>(`/updates/count/${param0}`, {
+    method: 'GET',
+    params: { ...queryParams },
+    ...(options || {}),
+  });
+}
+
 /** 删除指定图文动态 DELETE /updates/delete */
 export async function deleteEssayByIdUsingDelete(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
@@ -114,7 +128,7 @@ export async function getHomePageUsingGet(
   params: API.getHomePageUsingGETParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.CommonResultListVo2>('/updates/homePage', {
+  return request<API.CommonResultListVideoVo_>('/updates/homePage', {
     method: 'GET',
     params: {
       ...params,
@@ -201,6 +215,14 @@ export async function deletePartitionUsingDelete(
     params: {
       ...params,
     },
+    ...(options || {}),
+  });
+}
+
+/** 预览视频封面 GET /updates/previewVideoCover */
+export async function previewVideoCoverUsingGet(options?: { [key: string]: any }) {
+  return request<API.Resource>('/updates/previewVideoCover', {
+    method: 'GET',
     ...(options || {}),
   });
 }

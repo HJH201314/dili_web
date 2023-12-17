@@ -41,7 +41,7 @@ watch(() => props.pathId, (newVal, oldVal) => {
 });
 
 function init() {
-  subPage.value = 'home';
+  subPage.value = route.query.tab ?? 'home';
   getUserInfo();
 }
 
@@ -58,10 +58,6 @@ async function getUserInfo() {
   });
   if (res.data.code === 200) {
     spaceUserInfo.value = res.data.data!;
-  }
-  // 模拟关注数
-  if (spaceUserInfo.value.follow == 0) {
-    spaceUserInfo.value.follow = followCacheStore.isFollowed()
   }
 }
 

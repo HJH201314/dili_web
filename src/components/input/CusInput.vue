@@ -1,14 +1,8 @@
 <script setup lang="ts">
 
 import { ref, watch } from "vue";
-import type { InputEmits } from "element-plus";
+import type { CusInputProps } from "@/components/input/CusInput";
 
-type CusInputProps = {
-  value?: string;
-  modelValue?: string;
-  placeholder?: string;
-  disabled?: boolean;
-}
 const props = withDefaults(defineProps<CusInputProps>(), {
 });
 

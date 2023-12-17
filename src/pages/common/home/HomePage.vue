@@ -125,7 +125,7 @@ function getCategories() {
 }
 
 function getslides() {
-  services.adminService.updatesController.getHomePageUsingGet({pageSize: 5, uid: userStore.userInfo.id ?? 0}).then((res) => {
+  services.adminService.updatesController.getHomePageUsingGet({pageSize: 5, uid: /*userStore.userInfo.id ??*/ 0}).then((res) => {
     video.value = res.data.data ?? [];
     for (let i = 0; i < video.value.length; i++) {
       slides.value.push({
@@ -140,7 +140,7 @@ function getslides() {
 function getFeed() {
   services.adminService.updatesController.getHomePageUsingGet({
     pageSize: feednum.value.pageSize!,
-    uid: userStore.userInfo.id ?? 0,
+    uid: /*userStore.userInfo.id ??*/ 0,
   }).then((res) => {
     video.value = res.data.data ?? [];
     for (let i = 0; i < video.value.length; i++) {
@@ -194,14 +194,15 @@ function getFeed() {
       </div>
       <div class="channel-right-container">
         <div class="container-item-left">
-          <div v-for="category in leftCategories" :key="category.id" class="channel-link">
+          <div v-for="category in leftCategories" :key="category.id" class="channel-link"
+               @click="router.push(`/search?partition=${category.id}`)">
             <a class="a" :href="category.link" target="_blank">{{ category.name }}</a>
           </div>
         </div>
         <div class="vertical-line"></div>
         <div class="container-item-right">
           <div v-for="category in rightCategories" :key="category.id" class="channel-link">
-            <a :href="category.link" target="_blank">{{ category.name }}</a>
+            <a class="a" :href="category.link" target="_blank">{{ category.name }}</a>
           </div>
         </div>
       </div>
@@ -245,6 +246,7 @@ function getFeed() {
 </template>
 
 <style scoped lang="scss">
+@import "@/assets/variables.module";
 .common-header {
   position: absolute;
   background-color: rgba(255, 255, 255, 0.8);
@@ -356,7 +358,7 @@ function getFeed() {
   display: grid;
   width: 70%;
   grid-template-columns: repeat(9, 1fr);
-  grid-gap: 10px;
+  row-gap: 10px;
   padding-left: 20px;
   padding-right: 10px;
 }
@@ -370,6 +372,7 @@ function getFeed() {
 }
 
 .channel-link {
+  cursor: pointer;
   margin-right: 10px;
   position: relative;
   display: flex;
@@ -377,7 +380,7 @@ function getFeed() {
   justify-content: center;
   text-align: center;
   background-color: #f6f7f8;
-  border-radius: 4px;
+  border-radius: .5rem;
   text-decoration: none;
 }
 
@@ -388,13 +391,14 @@ function getFeed() {
   left: 0;
   right: 0;
   bottom: 0;
-  box-shadow: 0 0 5px rgba(200, 200, 200, 0.5);
-  border-radius: 4px;
-  transition: box-shadow 0.3s ease-in-out;
+  box-shadow: $box-shadow;
+  border-radius: .5rem;
+  transition: box-shadow 0.3s $ease-out-circ;
 }
 
 .channel-link:hover::before {
-  box-shadow: 0 0 10px rgba(52, 152, 219, 1);
+  //box-shadow: 0 0 10px rgba(52, 152, 219, 1);
+  box-shadow: 0px 0px 5px 0 transparentize($color-primary, 0.1);
 }
 
 .vertical-line {

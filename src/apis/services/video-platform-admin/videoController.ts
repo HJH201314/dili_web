@@ -9,9 +9,61 @@ export async function getVideoDetailUsingGet(
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.CommonResultVo_>(`/video/detail/${param0}`, {
+  return request<API.CommonResultVideoDetailVo_>(`/video/detail/${param0}`, {
     method: 'GET',
     params: { ...queryParams },
+    ...(options || {}),
+  });
+}
+
+/** getBarrageListByVid GET /video/getBarrageList */
+export async function getBarrageListByVidUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getBarrageListByVidUsingGETParams,
+  options?: { [key: string]: any },
+) {
+  return request<API.CommonResultListBarrage_>('/video/getBarrageList', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}
+
+/** getBarrageByVid GET /video/getBarrageVoByVid */
+export async function getBarrageByVidUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getBarrageByVidUsingGETParams,
+  options?: { [key: string]: any },
+) {
+  return request<API.CommonResultListBarrageVo_>('/video/getBarrageVoByVid', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}
+
+/** 获取视频文件流 GET /video/getVideo/${param0}/${param1} */
+export async function getVideoUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getVideoUsingGETParams,
+  options?: { [key: string]: any },
+) {
+  const { bucketName: param0, objectName: param1, ...queryParams } = params;
+  return request<API.Resource>(`/video/getVideo/${param0}/${param1}`, {
+    method: 'GET',
+    params: { ...queryParams },
+    ...(options || {}),
+  });
+}
+
+/** getVideoSource GET /video/getVideoSource */
+export async function getVideoSourceUsingGet(options?: { [key: string]: any }) {
+  return request<API.CommonResultString_>('/video/getVideoSource', {
+    method: 'GET',
     ...(options || {}),
   });
 }
@@ -23,9 +75,21 @@ export async function getVideoInfoUsingGet(
   options?: { [key: string]: any },
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.CommonResultVo2>(`/video/info/${param0}`, {
+  return request<API.CommonResultVideoInfoVo_>(`/video/info/${param0}`, {
     method: 'GET',
     params: { ...queryParams },
+    ...(options || {}),
+  });
+}
+
+/** saveBarrage POST /video/saveBarrage */
+export async function saveBarrageUsingPost(body: API.Barrage, options?: { [key: string]: any }) {
+  return request<API.CommonResult>('/video/saveBarrage', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
     ...(options || {}),
   });
 }
@@ -36,7 +100,7 @@ export async function searchUsingGet(
   params: API.searchUsingGETParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.CommonResultListResult2>('/video/search', {
+  return request<API.CommonResultListResult_>('/video/search', {
     method: 'GET',
     params: {
       // page has a default value: 1
@@ -57,7 +121,7 @@ export async function searchUserUsingGet(
   params: API.searchUserUsingGETParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.CommonResultListResult_>('/video/search/user', {
+  return request<API.CommonResultListResultUserSearchDoc_>('/video/search/user', {
     method: 'GET',
     params: {
       // page has a default value: 1
@@ -78,7 +142,7 @@ export async function searchVideoUsingGet(
   params: API.searchVideoUsingGETParams,
   options?: { [key: string]: any },
 ) {
-  return request<API.CommonResultListResultVo_>('/video/search/video', {
+  return request<API.CommonResultListResultVideoVo_>('/video/search/video', {
     method: 'GET',
     params: {
       // page has a default value: 1
