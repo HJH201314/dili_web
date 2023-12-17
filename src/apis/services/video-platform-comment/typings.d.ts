@@ -38,6 +38,12 @@ declare namespace API {
     username?: string;
   };
 
+  type CommonResultInt_ = {
+    code?: number;
+    data?: number;
+    message?: string;
+  };
+
   type CommonResultListResultCommentVo_ = {
     code?: number;
     data?: ListResultCommentVo_;
@@ -54,6 +60,11 @@ declare namespace API {
     code?: number;
     data?: 'FAILED' | 'FORBIDDEN' | 'SUCCESS' | 'UNAUTHORIZED' | 'VALIDATE_FAILED';
     message?: string;
+  };
+
+  type countChildrenCommentsByPidUsingGETParams = {
+    /** 要获取子评论的根评论id */
+    pid: string;
   };
 
   type countCommentsByForeignIdUsingGETParams = {
@@ -123,7 +134,7 @@ declare namespace API {
 
   type ListResultCommentVo_ = {
     list?: CommentVo[];
-    total?: string;
+    total?: number;
   };
 
   type replyCommentUsingPOSTParams = {

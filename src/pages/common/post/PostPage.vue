@@ -67,6 +67,7 @@ watchEffect(async () => {
   if (postQueryStatus.value != 'success') return;
   if (!postResult.value) return;
   for (let item of postResult.value) {
+    if (item.vid) continue; // 此处不处理视频
     const userInfo = await getUserInfo(item.uid ?? -1);
     posts.value.push({
       type: 'post',
@@ -78,7 +79,7 @@ watchEffect(async () => {
       commentCount: 0,
       likeCount: 0,
       isLiked: false,
-      createTime: item.datetime ? new Date(item.datetime).toLocaleString() : new Date().toLocaleString(),
+      createTime: item.uploadTime ? new Date(item.uploadTime).toLocaleString() : new Date().toLocaleString(),
       images: JSON.parse(item.urls ?? '[]'),
       content: item.content ? decodeURIComponent(item.content) : '',
     });

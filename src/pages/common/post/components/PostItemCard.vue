@@ -27,6 +27,9 @@ const props = withDefaults(defineProps<PostItemCardProps>(), {
   createTime: new Date().toLocaleString(),
   content: '-',
   images: () => [],
+
+  showAction: true,
+  defaultTab: undefined,
 });
 
 const emit = defineEmits<{
@@ -109,7 +112,7 @@ function handleDeletePost() {
   emit('delete-post', props.postId);
 }
 
-const expandType = ref('none');
+const expandType = ref(props.defaultTab ?? 'none');
 /* 展开评论详情 */
 function expandPost(type: 'none' | 'forward' | 'comment') {
   if (expandType.value === type) {
@@ -176,7 +179,7 @@ function handlePreviewImage(image: string) {
         </div>
       </div>
     </div>
-    <div class="post-list-item-actions">
+    <div class="post-list-item-actions" v-if="props.showAction">
       <div class="action" :class="{'active': expandType == 'forward'}" @click="expandPost('forward')"><ShareThree /> {{ props.forwardCount }}</div>
       <div class="action" :class="{'active': expandType == 'comment'}" @click="expandPost('comment')"><CommentOne :theme="expandType == 'comment' ? 'filled' : 'outline' " /> {{ commentCount }}</div>
       <div class="action" :class="{'active': props.isLiked || likeClicked}" @click="handleLikeClick"><ThumbsUp :theme="props.isLiked || likeClicked ? 'filled' : 'outline'" /> {{ likeCount }}</div>

@@ -10,6 +10,7 @@ import showToast, { quickToast } from "@/components/toast/toast";
 import useLikeCacheStore from "@/stores/useLikeCacheStore";
 import Spinning from "@/components/spinning/Spinning.vue";
 import DiliPagination from "@/components/pagination/DiliPagination.vue";
+import { countChildrenCommentsByPidUsingGet } from "@/apis/services/video-platform-comment/commentController";
 
 const props = withDefaults(defineProps<{
   postId: number; // 动态id
@@ -27,6 +28,7 @@ const sortMode = ref<'hot'|'new'>('hot');
 
 type CommentItem = {
   id: string; // 评论id
+  userId: number;
   userAvatar: string;
   userName: string;
   userLevel?: number;
@@ -76,7 +78,7 @@ watchEffect(async () => {
     let totalSubComments = 0;
     // 如果有子评论，那么获取子评论的总数
     if (subComments.length > 0) {
-      const res = await commentApi.CommentController.countSubCommentByPidUsingGET({
+      const res = await commentApi.commentController.countChildrenCommentsByPidUsingGet({
         pid: item.id ?? '',
       });
       if (res.data.code == 200) {
@@ -85,6 +87,7 @@ watchEffect(async () => {
     }
     comments.value.push({
       id: item.id ?? '',
+      userId: item.userId!,
       userAvatar: DEFAULT_USER_AVATAR,
       userName: item.username ?? '未知用户',
       userLevel: 1,
@@ -108,6 +111,7 @@ function convertCommentVOToCommentItem(item: API.Comment, type: 'sub'): CommentI
   if (type == 'sub') {
     return {
       id: item.id ?? '',
+      userId: item.userId!,
       userAvatar: DEFAULT_USER_AVATAR,
       userName: item.username ?? '未知用户',
       userLevel: 1,
@@ -126,11 +130,12 @@ async function getComments() {
   if (!props.postId || props.postId <= 0) return;
 
   try {
-    const result = await commentApi.CommentController.listCommentByPagesUsingGET({
+    const result = await commentApi.commentController.listCommentByPagesUsingGet({
       foreignId: props.postId,
       page: currentPage.value,
       size: 5,
       sortBy: sortMode.value === 'hot' ? 'likeNum' : 'createTime',
+      uid: userStore.userInfo.id!,
     });
     commentCount.value = result.data?.data?.total ?? 0;
     emit('update-comment-num', commentCount.value);
@@ -141,11 +146,11 @@ async function getComments() {
 
 async function getSubComments(comment: CommentItem) {
   try {
-    const res = await commentApi.CommentController.listChildrenCommentByPagesUsingGET({
+    const res = await commentApi.commentController.listChildrenCommentByPagesUsingGet({
       pid: comment.id,
       page: comment.currentPage ?? 0,
       size: 3,
-      sortBy: 'createTime',
+      uid: userStore.userInfo.id!,
     });
     if (res.data.code == 200) {
       comments.value.forEach((item, index) => {
@@ -175,7 +180,7 @@ async function handleCommentPublish() {
     return;
   }
   try {
-    const res = await commentApi.CommentController.addCommentUsingPOST({
+    const res = await commentApi.commentController.addCommentUsingPost({
       foreignId: props.postId,
       content: form.comment,
       targetUsername: '',
@@ -195,21 +200,25 @@ async function handleCommentPublish() {
 }
 
 const likeCacheStore = useLikeCacheStore();
-async function handleLike(pid: string, isChild: boolean, cid: string = '') {
+async function handleLike(pid: string, isChild: boolean, cid: string = '', pUid: number) {
   try {
     const flag = likeCacheStore.isLiked(isChild ? cid : pid) ? -1 : 1;
     let res;
     if (!isChild) {
-      res = await commentApi.CommentController.likeRootCommentUsingPOST({
+      res = await commentApi.commentController.likeRootCommentUsingPost({
         pid: pid,
         flag: flag,
+        uid: userStore.userInfo.id!,
+        pUid: pUid,
       });
     } else {
       if (cid == '') return;
-      res = await commentApi.CommentController.likeChildrenCommentUsingPOST({
+      res = await commentApi.commentController.likeChildrenCommentUsingPost({
         cid: cid,
         flag: flag,
         pid: pid,
+        uid: userStore.userInfo.id!,
+        pUid: pUid,
       });
     }
     if (res.data.code == 200) {
@@ -239,11 +248,11 @@ async function handleLike(pid: string, isChild: boolean, cid: string = '') {
 
   }
 }
-async function handleDislike(pid: string, isChild: boolean, cid: string = '') {
+async function handleDislike(pid: string, isChild: boolean, cid: string = '', pUid: number) {
   try {
     const id = isChild ? cid : pid;
     if (likeCacheStore.isLiked(id)) {
-      await handleLike(pid, isChild, cid);
+      await handleLike(pid, isChild, cid, pUid);
     }
     likeCacheStore.dislike(id);
     showToast({position: 'top', text: '点踩成功'});
@@ -303,7 +312,7 @@ async function handleReplyPublish() {
     let res;
     if (!replyingCommentSub.value) {
       // 回复的是根评论
-      res = await commentApi.CommentController.replyCommentUsingPOST({
+      res = await commentApi.commentController.replyCommentUsingPost({
         pid: replyingComment.value?.id ?? '',
       }, {
         foreignId: props.postId,
@@ -314,7 +323,7 @@ async function handleReplyPublish() {
       });
     } else {
       // 回复的是子评论
-      res = await commentApi.CommentController.replyCommentUsingPOST({
+      res = await commentApi.commentController.replyCommentUsingPost({
         pid: replyingComment.value?.id ?? '',
       }, {
         foreignId: props.postId,
@@ -376,8 +385,8 @@ function getCommentContentHtml(comment: CommentItem) {
           <div class="content">{{ comment.content }}</div>
           <div class="footer">
             <DateFormat :date="comment.createTime" class="time" />
-            <span class="like" :class="{'active': likeCacheStore.isLiked(comment.id)}" @click="handleLike(comment.id, false)"><thumbs-up theme="outline" size="1rem"/>{{ comment.likeCount }}</span>
-            <span class="dislike" :class="{'active': likeCacheStore.isDisliked(comment.id)}" @click="handleDislike(comment.id, false)"><thumbs-down theme="outline" size="1rem"/></span>
+            <span class="like" :class="{'active': likeCacheStore.isLiked(comment.id)}" @click="handleLike(comment.id, false, '', comment.userId)"><thumbs-up theme="outline" size="1rem"/>{{ comment.likeCount }}</span>
+            <span class="dislike" :class="{'active': likeCacheStore.isDisliked(comment.id)}" @click="handleDislike(comment.id, false, '', comment.userId)"><thumbs-down theme="outline" size="1rem"/></span>
             <span class="reply" @click="changeReplyingComment(comment)">回复</span>
           </div>
           <!-- 根评论回复 -->
@@ -403,8 +412,8 @@ function getCommentContentHtml(comment: CommentItem) {
                 </div>
                 <div class="footer">
                   <DateFormat :date="subComment.createTime" class="time" />
-                  <span class="like" :class="{'active': likeCacheStore.isLiked(subComment.id)}" @click="handleLike(comment.id, true, subComment.id)"><thumbs-up theme="outline" size="1rem"/>{{ subComment.likeCount }}</span>
-                  <span class="dislike" :class="{'active': likeCacheStore.isDisliked(subComment.id)}" @click="handleDislike(comment.id, true, subComment.id)"><thumbs-down theme="outline" size="1rem"/></span>
+                  <span class="like" :class="{'active': likeCacheStore.isLiked(subComment.id)}" @click="handleLike(comment.id, true, subComment.id, subComment.userId)"><thumbs-up theme="outline" size="1rem"/>{{ subComment.likeCount }}</span>
+                  <span class="dislike" :class="{'active': likeCacheStore.isDisliked(subComment.id)}" @click="handleDislike(comment.id, true, subComment.id, subComment.userId)"><thumbs-down theme="outline" size="1rem"/></span>
                   <span class="reply" @click="changeReplyingComment(comment, subComment)">回复</span>
                 </div>
                 <!-- 子评论回复 -->

@@ -28,6 +28,20 @@ export async function countCommentsByForeignIdUsingGet(
   });
 }
 
+/** 根据pid获取子评论总数 GET /comment/countChildrenComments/${param0} */
+export async function countChildrenCommentsByPidUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.countChildrenCommentsByPidUsingGETParams,
+  options?: { [key: string]: any },
+) {
+  const { pid: param0, ...queryParams } = params;
+  return request<API.CommonResultInt_>(`/comment/countChildrenComments/${param0}`, {
+    method: 'GET',
+    params: { ...queryParams },
+    ...(options || {}),
+  });
+}
+
 /** 删除子评论 DELETE /comment/deleteChild/${param1}/${param0} */
 export async function deleteChildCommentUsingDelete(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)

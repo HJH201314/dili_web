@@ -21,9 +21,10 @@ const router = createRouter({
       component: () => import('@/pages/common/post/PostPage.vue'),
     },
     {
-      path: '/post/detail',
+      path: '/post/detail/:postId',
       name: 'post-detail',
-      component: () => import('@/pages/common/post/PostDetail.vue'),
+      component: () => import('@/pages/common/post/PostDetailPage.vue'),
+      props: true,
     },
     // {
     //   path: '/search',
