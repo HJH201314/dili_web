@@ -108,6 +108,7 @@ const rules = reactive<FormRules<RuleForm>>({
 //提交表单
 const submitForm = async () => {
   if (!basicFormRef.value) return
+  submitting.value = true;
   await basicFormRef.value.validate((valid, fields) => {
     if (valid) {
       console.log('submit!')
@@ -126,6 +127,9 @@ const submitForm = async () => {
       })
       .catch(err => {
         alert("失败" + err)
+      })
+      .finally(() => {
+        submitting.value = false;
       })
 
     } else {
@@ -192,6 +196,7 @@ const options = partitions;
 
 // 0~100为进度，101为后台处理中，200为成功，500为失败
 const uploadPercent = ref(-1);
+const submitting = ref(false);
 const submitted = ref(false); // 是否已经最终提交
 
 </script>
@@ -262,7 +267,9 @@ const submitted = ref(false); // 是否已经最终提交
       </el-form-item>
       <el-form-item style="margin-top: 30px;">
         <div style="display: flex; gap: 1rem; width: 100%;">
-          <DiliButton type="primary" @click="submitForm" text="    立即投稿   " :disabled="submitted"></DiliButton>
+          <DiliButton type="primary" @click="submitForm" :text="submitting ? ' 转码中, 请耐心等待...' : '  立即投稿   '" :disabled="submitted || submitting">
+            <Spinning v-if="submitting" />
+          </DiliButton>
           <DiliButton style="margin-left: auto;" type="normal" @click="resetForm" text="   重置   " :shadow="false"></DiliButton>
         </div>
       </el-form-item>

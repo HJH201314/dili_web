@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { ref, watch } from "vue";
+import type { InputEmits } from "element-plus";
 
 type CusInputProps = {
   value?: string;
@@ -22,10 +23,14 @@ watch(() => props.modelValue, (newValue, oldValue) => {
     v.value = newValue;
   }
 });
+
+function handleInput(e: any) {
+  emit('update:modelValue', e.target.value as string);
+}
 </script>
 
 <template>
-  <input class="cus-input" v-model="v" :placeholder="props.placeholder" :disabled="props.disabled" @change="$emit('update:modelValue', v!)" />
+  <input class="cus-input" :value="v" :placeholder="props.placeholder" :disabled="props.disabled" @input="handleInput" />
 </template>
 
 <style scoped lang="scss">

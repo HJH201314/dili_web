@@ -79,6 +79,9 @@ const useUserStore = defineStore('user', () => {
         avatar.value = 'https://img.yzcdn.cn/vant/cat.jpeg';
         const res = await securityApi.loginController.getCurrentUserUsingGet({token: token.value});
         userInfoStorage.value = res.data.data ?? {};
+      } else if (!newVal && oldVal) {
+        userInfoStorage.value = {};
+        avatar.value = undefined;
       }
     });
   });

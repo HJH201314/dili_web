@@ -7,6 +7,7 @@ import services from "@/apis/services";
 import { allPartitionsUsingGet } from "@/apis/services/video-platform-admin/updatesController";
 import DiliButton from "@/components/button/DiliButton.vue";
 import usePartitionStore from "@/stores/usePartitionStore";
+import useUserStore from "@/stores/useUserStore";
 
 onMounted(() => {
   iconImage.value = document.getElementById("iconImage") as HTMLImageElement;
@@ -106,12 +107,13 @@ const rightCategories = ref<Category[]>([
 ]);
 
 const video = ref<API.Vo4[]>([]);
-const feednum = ref<API.getHomePageUsingGETParams>({pageSize: 11});
+const feednum = ref<API.getHomePageUsingGETParams>({pageSize: 11, uid: 0});
 const feeds = ref<Feed[]>([]);
 const slides = ref<Feed[]>([]);
 const partition = ref<API.Partition[]>([]);
 
-const partitionStore = usePartitionStore()
+const partitionStore = usePartitionStore();
+const userStore = useUserStore();
 function getCategories() {
   leftCategories.value = partitionStore.partition.map((p) => {
     return {
@@ -123,7 +125,7 @@ function getCategories() {
 }
 
 function getslides() {
-  services.adminService.updatesController.getHomePageUsingGet({pageSize: 5}).then((res) => {
+  services.adminService.updatesController.getHomePageUsingGet({pageSize: 5, uid: userStore.userInfo.id ?? 0}).then((res) => {
     video.value = res.data.data ?? [];
     for (let i = 0; i < video.value.length; i++) {
       slides.value.push({
@@ -137,7 +139,8 @@ function getslides() {
 
 function getFeed() {
   services.adminService.updatesController.getHomePageUsingGet({
-    pageSize: feednum.value.pageSize!
+    pageSize: feednum.value.pageSize!,
+    uid: userStore.userInfo.id ?? 0,
   }).then((res) => {
     video.value = res.data.data ?? [];
     for (let i = 0; i < video.value.length; i++) {

@@ -186,7 +186,7 @@ function handlePreviewImage(image: string) {
     </div>
     <div class="expand-content" v-if="expandType != 'none'">
       <hr style="margin: .5rem;" />
-      <CommentView v-if="expandType == 'comment'" :post-id="props.postId" @update-comment-num="n => commentCount = n" />
+      <CommentView v-if="expandType == 'comment'" :post-id="props.postId" :post-user-id="props.userId" @update-comment-num="n => commentCount = n" />
     </div>
     <ImagePreview v-model="previewingImage" />
   </div>

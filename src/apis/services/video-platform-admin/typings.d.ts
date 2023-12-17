@@ -116,6 +116,8 @@ declare namespace API {
   type getHomePageUsingGETParams = {
     /** 推送多少个视频 */
     pageSize: number;
+    /** 推送给的用户的uid */
+    uid: number;
   };
 
   type getImagesUsingGETParams = {

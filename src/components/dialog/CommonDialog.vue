@@ -5,7 +5,7 @@ import CommonModal from "@/components/modal/CommonModal.vue";
 import { ref } from "vue";
 import type { CommonModalFunc } from "@/components/modal/CommonModal";
 import DiliButton from "@/components/button/DiliButton.vue";
-import type { CommonDialogEmits, CommonDialogProps } from "@/components/dialog/CommonDialog";
+import type { CommonDialogEmits, CommonDialogExpose, CommonDialogProps } from "@/components/dialog/CommonDialog";
 import { DialogManager } from "@/components/dialog";
 
 const props = withDefaults(defineProps<CommonDialogProps>(), {
@@ -15,6 +15,10 @@ const props = withDefaults(defineProps<CommonDialogProps>(), {
 const emits = defineEmits<CommonDialogEmits>();
 
 const modalRef = ref<CommonModalFunc>();
+
+function show() {
+  modalRef.value?.open();
+}
 
 function close() {
   modalRef.value?.close();
@@ -42,17 +46,19 @@ function handleCancel() {
   }
 }
 
-defineExpose({
+defineExpose<CommonDialogExpose>({
+  show,
   close,
 })
 </script>
 
 <template>
-  <CommonModal :modal-style="{ 'background-color': 'white' }" ref="modalRef" :visible="true" :show-close="false">
+  <CommonModal :modal-style="{ 'background-color': 'white', ...props.modalStyle }" ref="modalRef" :show-close="false">
     <div class="dialog">
       <header>
         <div class="dialog-title">{{ title }}</div>
       </header>
+      <hr />
       <main>
         <div>
           {{ props.content }}
@@ -80,7 +86,7 @@ defineExpose({
 
   }
   > main {
-
+    padding: 0 .5rem;
   }
   > footer {
     width: 100%;

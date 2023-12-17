@@ -168,6 +168,12 @@ function handleLevelChange(level: number) {
   search();
 }
 
+function handleSearchKeyDown(e: KeyboardEvent) {
+  if (e.key == 'Enter' && searchForm.keyword) {
+    search();
+  }
+}
+
 const videoList = ref<VideoCardProps[]>([]);
 const userList = ref<UserCardProps[]>([]);
 const hasMoreVideo = ref(true);
@@ -262,7 +268,8 @@ function handlePartitionChange(pid: number) {
   <div class="search-page">
     <section class="search-bar">
       <div class="search-bar-container">
-        <CusInput class="search-bar-input" placeholder="搜点什么呢..?" v-model="searchForm.keyword" />
+        <CusInput class="search-bar-input" placeholder="搜点什么呢..?" v-model="searchForm.keyword"
+                  @keydown="handleSearchKeyDown" />
         <DiliButton class="search-bar-button" text="搜索" type="primary" :button-style="{ 'height': '100%', 'padding-inline': '2rem'}" @click="handleSearchClick" />
 <!--        <form @submit.prevent="handleSearch">-->
 <!--          <input ref="searchInputRef" v-model="searchForm.keyword" type="text" id="nav-search-input" placeholder="搜点什么呢...?"/>-->

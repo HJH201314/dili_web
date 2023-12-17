@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref, watchEffect } from "vue";
 import useUserStore from "@/stores/useUserStore";
 import DateFormat from "@/components/date-format/DateFormat.vue";
-import { ThumbsUp, ThumbsDown, Left, Right } from "@icon-park/vue-next";
+import { ThumbsUp, ThumbsDown, Left, Right, MoreOne, DeleteOne, ToTopOne } from "@icon-park/vue-next";
 import { DEFAULT_USER_AVATAR } from "@/constants/defaultImage";
 import { useQuery } from "@tanstack/vue-query";
 import commentApi from "@/apis/services/video-platform-comment";
@@ -10,12 +10,18 @@ import showToast, { quickToast } from "@/components/toast/toast";
 import useLikeCacheStore from "@/stores/useLikeCacheStore";
 import Spinning from "@/components/spinning/Spinning.vue";
 import DiliPagination from "@/components/pagination/DiliPagination.vue";
-import { countChildrenCommentsByPidUsingGet } from "@/apis/services/video-platform-comment/commentController";
+import DiliButton from "@/components/button/DiliButton.vue";
+import DiliPopover from "@/components/popover/DiliPopover.vue";
+import variables from "@/assets/variables.module.scss";
+import { DialogManager } from "@/components/dialog";
+import DiliTooltip from "@/components/tooltip/DiliTooltip.vue";
 
 const props = withDefaults(defineProps<{
   postId: number; // 动态id
+  postUserId: number; // 动态所有者id
 }>(), {
   postId: 0,
+  postUserId: 0,
 });
 
 const emit = defineEmits<{
@@ -199,6 +205,99 @@ async function handleCommentPublish() {
   }
 }
 
+async function handleCommentDelete(commentId: string) {
+  if (!userStore.isLogin) {
+    showToast({position: 'top', text: '请先登录'});
+    return;
+  }
+  const dialogRes = await DialogManager.commonDialog({
+    title: '删除评论',
+    content: `确认要删除该评论吗？`,
+  });
+  if (!dialogRes) return;
+  try {
+    const res = await commentApi.commentController.deleteRootCommentUsingDelete({
+      pid: commentId,
+    });
+    if (res.data.code == 200) {
+      showToast({position: 'top', text: '删除成功'});
+      refetchComments();
+    } else {
+      showToast({position: 'top', text: '删除失败'});
+    }
+  } finally {
+
+  }
+}
+
+async function handleSubCommentDelete(commentId: string, subCommentId: string) {
+  if (!userStore.isLogin) {
+    showToast({position: 'top', text: '请先登录'});
+    return;
+  }
+  const dialogRes = await DialogManager.commonDialog({
+    title: '删除评论',
+    content: `确认要删除该评论吗？`,
+  });
+  if (!dialogRes) return;
+  try {
+    const res = await commentApi.commentController.deleteChildCommentUsingDelete({
+      pid: commentId,
+      cid: subCommentId,
+    });
+    if (res.data.code == 200) {
+      showToast({position: 'top', text: '删除成功'});
+      refetchComments();
+    } else {
+      showToast({position: 'top', text: '删除失败'});
+    }
+  } finally {
+
+  }
+}
+
+async function handleCommentToTop(commentId: string) {
+  if (!userStore.isLogin) {
+    showToast({position: 'top', text: '请先登录'});
+    return;
+  }
+  try {
+    const res = await commentApi.commentController.toTopCommentUsingPost({
+      flag: 1,
+      pid: commentId,
+    });
+    if (res.data.code == 200) {
+      showToast({position: 'top', text: '置顶成功'});
+      refetchComments();
+    } else {
+      showToast({position: 'top', text: '置顶失败'});
+    }
+  } finally {
+
+  }
+}
+
+async function handleCommentToGround(commentId: string) {
+  if (!userStore.isLogin) {
+    showToast({position: 'top', text: '请先登录'});
+    return;
+  }
+  try {
+    const res = await commentApi.commentController.toTopCommentUsingPost({
+      flag: 0,
+      pid: commentId,
+    });
+    if (res.data.code == 200) {
+      showToast({position: 'top', text: '取消置顶成功'});
+      refetchComments();
+    } else {
+      showToast({position: 'top', text: '取消置顶失败'});
+    }
+  } finally {
+
+  }
+}
+
 const likeCacheStore = useLikeCacheStore();
 async function handleLike(pid: string, isChild: boolean, cid: string = '', pUid: number) {
   try {
@@ -341,6 +440,7 @@ async function handleReplyPublish() {
     replyPublishing.value = false;
     form.reply = '';
     replyingComment.value = undefined;
+    replyingCommentSub.value = undefined;
   }
 }
 
@@ -388,6 +488,27 @@ function getCommentContentHtml(comment: CommentItem) {
             <span class="like" :class="{'active': likeCacheStore.isLiked(comment.id)}" @click="handleLike(comment.id, false, '', comment.userId)"><thumbs-up theme="outline" size="1rem"/>{{ comment.likeCount }}</span>
             <span class="dislike" :class="{'active': likeCacheStore.isDisliked(comment.id)}" @click="handleDislike(comment.id, false, '', comment.userId)"><thumbs-down theme="outline" size="1rem"/></span>
             <span class="reply" @click="changeReplyingComment(comment)">回复</span>
+            <DiliPopover style="margin-left: auto;" position="left">
+              <template #body>
+                <DiliButton><MoreOne /></DiliButton>
+              </template>
+              <template #popover>
+                <div style="display: flex; border-radius: .5rem; background-color: white; box-shadow: 0px 0px 5px 0 rgba(0, 0, 0, 0.1);">
+                  <DiliButton @click="handleCommentDelete(comment.id)"
+                              v-if="userStore.userInfo.id == comment.userId || userStore.userInfo.id == props.postUserId">
+                    <DeleteOne theme="outline" :fill="variables.colorDanger" />
+                  </DiliButton>
+                  <DiliButton @click="handleCommentToGround(comment.id)"
+                              v-if="userStore.userInfo.id == props.postUserId">
+                    <ToTopOne style="rotate: 180deg;" theme="outline" :fill="variables.colorPrimary" />
+                  </DiliButton>
+                  <DiliButton @click="handleCommentToTop(comment.id)"
+                              v-if="userStore.userInfo.id == props.postUserId">
+                    <ToTopOne theme="outline" :fill="variables.colorPrimary" />
+                  </DiliButton>
+                </div>
+              </template>
+            </DiliPopover>
           </div>
           <!-- 根评论回复 -->
           <div v-if="replyingComment?.id == comment.id && !replyingCommentSub" class="comment-publish">
@@ -415,6 +536,19 @@ function getCommentContentHtml(comment: CommentItem) {
                   <span class="like" :class="{'active': likeCacheStore.isLiked(subComment.id)}" @click="handleLike(comment.id, true, subComment.id, subComment.userId)"><thumbs-up theme="outline" size="1rem"/>{{ subComment.likeCount }}</span>
                   <span class="dislike" :class="{'active': likeCacheStore.isDisliked(subComment.id)}" @click="handleDislike(comment.id, true, subComment.id, subComment.userId)"><thumbs-down theme="outline" size="1rem"/></span>
                   <span class="reply" @click="changeReplyingComment(comment, subComment)">回复</span>
+                  <DiliPopover style="margin-left: auto;" position="left">
+                    <template #body>
+                      <DiliButton><MoreOne /></DiliButton>
+                    </template>
+                    <template #popover>
+                      <div style="display: flex; border-radius: .5rem; background-color: white; box-shadow: 0px 0px 5px 0 rgba(0, 0, 0, 0.1);">
+                        <DiliButton @click="handleSubCommentDelete(comment.id, subComment.id)"
+                                    v-if="userStore.userInfo.id == subComment.userId || userStore.userInfo.id == props.postUserId">
+                          <DeleteOne theme="outline" :fill="variables.colorDanger" />
+                        </DiliButton>
+                      </div>
+                    </template>
+                  </DiliPopover>
                 </div>
                 <!-- 子评论回复 -->
                 <div v-if="replyingCommentSub?.id == subComment.id" class="comment-publish">
@@ -586,6 +720,7 @@ function getCommentContentHtml(comment: CommentItem) {
         .footer {
           margin-top: .5rem;
           display: flex;
+          align-items: center;
           gap: 1rem;
           .time {
             font-size: .75rem;

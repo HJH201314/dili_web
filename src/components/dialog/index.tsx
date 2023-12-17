@@ -1,8 +1,8 @@
 import { getRandomString } from "@/utils/string";
-import { createApp, h, ref } from "vue";
 import type { App, VNode } from "vue";
+import { createApp, h, nextTick, ref } from "vue";
 import CommonDialog from "@/components/dialog/CommonDialog.vue";
-import type { CommonDialogProps } from "@/components/dialog/CommonDialog";
+import type { CommonDialogExpose, CommonDialogProps } from "@/components/dialog/CommonDialog";
 import CusInput from "@/components/input/CusInput.vue";
 import type { CusInputProps } from "@/components/input/CusInput";
 
@@ -19,26 +19,32 @@ export class DialogManager {
     const id = getRandomString(5);
     const dialogDiv = document.createElement('div');
     document.querySelector('#app')?.appendChild(dialogDiv);
+    const dialogRef = ref<CommonDialogExpose>();
     const dialogApp = createApp({
       render() {
         return h(CommonDialog, {
-            ...props,
-            onConfirm: (close) => {
-              close();
-              resolve(true);
+              ...props,
+              onConfirm: (close) => {
+                close();
+                resolve(true);
+              },
+              onCancel: (close) => {
+                close();
+                resolve(false);
+              },
+              _id: id, // 指定组件全局唯一ID
+              ref: dialogRef,
             },
-            onCancel: (close) => {
-              close();
-              resolve(false);
-            },
-            _id: id, // 指定组件全局唯一ID
-          },
-          {
-            default: () => defaultSlot
-          });
+            {
+              default: () => defaultSlot
+            });
       }
     });
     dialogApp.mount(dialogDiv);
+    nextTick(() => {
+      // nextTick确保dialog已完成挂载
+      dialogRef.value?.show();
+    });
     this.instances.set(id, {
       dom: dialogDiv,
       app: dialogApp,
