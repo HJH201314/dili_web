@@ -8,7 +8,6 @@ import { allPartitionsUsingGet } from "@/apis/services/video-platform-admin/upda
 import DiliButton from "@/components/button/DiliButton.vue";
 import usePartitionStore from "@/stores/usePartitionStore";
 import useUserStore from "@/stores/useUserStore";
-import App from "@/App.vue";
 
 onMounted(() => {
   iconImage.value = document.getElementById("iconImage") as HTMLImageElement;

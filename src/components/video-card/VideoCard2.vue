@@ -14,7 +14,6 @@ const props = withDefaults(defineProps<VideoCardProps>(), {
   dmNum: 514,
   createTime: new Date().toLocaleString(),
   duration: '08:40',
-  shadowed: false,
 });
 
 function truncateText(text: string, length: number) {
@@ -73,6 +72,10 @@ function truncateText(text: string, length: number) {
   background-color: rgba(0, 0, 0, 0.3);
   color: #fff;
   padding: 5px;
+  display: inline-block;
+  line-height: 14px;
+  transform: scale(.85);
+  transform-origin: center top;
 }
 
 .card-box:hover img {
