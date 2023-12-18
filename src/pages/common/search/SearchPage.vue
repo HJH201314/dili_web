@@ -266,18 +266,18 @@ function handlePartitionChange(pid: number) {
 
 <template>
   <div class="search-page">
-    <section class="search-bar">
-      <div class="search-bar-container">
-        <CusInput class="search-bar-input" placeholder="搜点什么呢..?" v-model="searchForm.keyword"
-                  @keydown="handleSearchKeyDown" />
-        <DiliButton class="search-bar-button" text="搜索" type="primary" :button-style="{ 'height': '100%', 'padding-inline': '2rem'}" @click="handleSearchClick" />
-<!--        <form @submit.prevent="handleSearch">-->
-<!--          <input ref="searchInputRef" v-model="searchForm.keyword" type="text" id="nav-search-input" placeholder="搜点什么呢...?"/>-->
-<!--          <Search class="search" size="1.25rem" @click="handleSearch" />-->
-<!--        </form>-->
-      </div>
-    </section>
-    <section class="search-tab">
+<!--    <section class="search-bar">-->
+<!--      <div class="search-bar-container">-->
+<!--        <CusInput class="search-bar-input" placeholder="搜点什么呢..?" v-model="searchForm.keyword"-->
+<!--                  @keydown="handleSearchKeyDown" />-->
+<!--        <DiliButton class="search-bar-button" text="搜索" type="primary" :button-style="{ 'height': '100%', 'padding-inline': '2rem'}" @click="handleSearchClick" />-->
+<!--&lt;!&ndash;        <form @submit.prevent="handleSearch">&ndash;&gt;-->
+<!--&lt;!&ndash;          <input ref="searchInputRef" v-model="searchForm.keyword" type="text" id="nav-search-input" placeholder="搜点什么呢...?"/>&ndash;&gt;-->
+<!--&lt;!&ndash;          <Search class="search" size="1.25rem" @click="handleSearch" />&ndash;&gt;-->
+<!--&lt;!&ndash;        </form>&ndash;&gt;-->
+<!--      </div>-->
+<!--    </section>-->
+    <section class="search-tab" style="margin-top: 2rem">
       <div id="search-tab-type-video" class="search-tab-item" :class="{'search-tab-item--active': searchForm.type == 'video'}" @click="handleTypeChange('video')">
         视频
       </div>

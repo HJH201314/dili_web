@@ -28,6 +28,7 @@ import {
 } from "@/apis/services/video-platform-recommend/tuijianmokuai";
 import { getVideoDetailUsingGet, getVideoInfoUsingGet } from "@/apis/services/video-platform-admin/videoController";
 import VideoCard from "@/components/video-card/VideoCard.vue";
+import useLikeCacheStore from "@/stores/useLikeCacheStore";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -129,23 +130,23 @@ async function getVideoInfo(vid: number) {
       initBarrage();
       // 记录历史记录信息
       const time = new Date();
-      services.adminService.historyController.addHistoryUsingPost({
-        mediaId: vid,
-        mediaType: 0,
-        userId: userStore.userInfo.id,
-        watchedAt: {
-          year: time.getFullYear(),
-          month: time.getMonth() + 1,
-          date: time.getDate(),
-          hours: time.getHours(),
-          minutes: time.getMinutes(),
-        }
-      });
+      // services.adminService.historyController.addHistoryUsingPost({
+      //   mediaId: vid,
+      //   mediaType: 0,
+      //   userId: userStore.userInfo.id,
+      //   watchedAt: {
+      //     year: time.getFullYear(),
+      //     month: time.getMonth() + 1,
+      //     date: time.getDate(),
+      //     hours: time.getHours(),
+      //     minutes: time.getMinutes(),
+      //   }
+      // });
     } else {
-      ToastManager.danger('获取信息失败');
+      // ToastManager.danger('获取信息失败');
     }
   } catch (e) {
-    ToastManager.danger('获取信息失败');
+    // ToastManager.danger('获取信息失败');
   } finally {
 
   }
@@ -153,14 +154,14 @@ async function getVideoInfo(vid: number) {
 
 const partitionStore = usePartitionStore();
 const partitionName = ref<string>('');
-
+const likeCacheStore = useLikeCacheStore();
 
 /* 视频播放相关 */
 let art: Artplayer;
 const initBarrage = () => {
   art = new Artplayer({
     container: videoRef.value!,
-    url: `/api/minio/video-platform.updates/${urls.value[0]}`,
+    url: `/api/minio/video-platform.updates/${urls.value[0]}`, // 此处minio代理在vite.config.ts中修改
     type: 'm3u8',
     customType: {
       m3u8: playM3u8,
@@ -332,6 +333,8 @@ function handleChooseStar(item: API.Star) {
     });
   }
 }
+
+const commentViewRef = ref();
 </script>
 
 <template>
@@ -385,7 +388,7 @@ function handleChooseStar(item: API.Star) {
             <DiliButton :text="partitionName"></DiliButton>
           </div>
         </div>
-        <CommentView :post-id="videoInfo?.update?.id" :post-user-id="videoInfo?.user?.id" />
+        <CommentView v-if="videoInfo?.video?.id" ref="commentViewRef" :post-id="videoInfo?.update?.id" :post-user-id="videoInfo?.user?.id" />
 <!--        <div class="comment-list">-->
 <!--          <div class="list-header">-->
 <!--            <div class="list-title">评论</div>-->

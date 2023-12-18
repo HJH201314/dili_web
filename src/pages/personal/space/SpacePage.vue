@@ -100,19 +100,19 @@ function handleTabChange(tabName: string) {
 <!--            <div class="space-nav-item__icon"><HomeTwo fill="#00c091" theme="filled" size="1.5rem" /></div>-->
 <!--            <div class="space-nav-item__text">主页</div>-->
 <!--          </div>-->
-          <div class="space-nav-item" @click="handleTabChange('post')">
-            <div class="space-nav-item__icon"><Tips fill="#fb7299" theme="filled" size="1.5rem" /></div>
-            <div class="space-nav-item__text">动态</div>
-          </div>
+<!--          <div class="space-nav-item" @click="handleTabChange('post')">-->
+<!--            <div class="space-nav-item__icon"><Tips fill="#fb7299" theme="filled" size="1.5rem" /></div>-->
+<!--            <div class="space-nav-item__text">动态</div>-->
+<!--          </div>-->
           <div class="space-nav-item" @click="handleTabChange('video')">
             <div class="space-nav-item__icon"><VideoOne fill="#02b5da" theme="filled" size="1.5rem" /></div>
             <div class="space-nav-item__text">投稿</div>
-            <div class="space-nav-item__count">{{ info.videoNum }}</div>
+<!--            <div class="space-nav-item__count">{{ info.videoNum }}</div>-->
           </div>
           <div class="space-nav-item" @click="handleTabChange('star')">
             <div class="space-nav-item__icon"><Like fill="#f3a034" theme="filled" size="1.5rem" /></div>
             <div class="space-nav-item__text">收藏</div>
-            <div class="space-nav-item__count">{{ info.starNum }}</div>
+<!--            <div class="space-nav-item__count">{{ info.starNum }}</div>-->
           </div>
 <!--          <div class="space-nav-item" @click="handleTabChange('setting')" v-if="props.pathId == 'me'">-->
 <!--            <div class="space-nav-item__icon"><Config fill="#ff5d47" theme="filled" size="1.5rem" /></div>-->
