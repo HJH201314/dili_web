@@ -86,7 +86,7 @@ const height = ref<number>(0);
 const resizeObserver = new ResizeObserver(entries => {
   for (let entry of entries) {
     if (entry.target.className.endsWith('cover')) {
-      if (Math.round(entry.contentRect.width) != width.value) {
+      if ((Math.round(entry.contentRect.width) - width.value) > 5) {
         width.value = entry.contentRect.width;
         height.value = entry.contentRect.width * 9 / 16;
       }

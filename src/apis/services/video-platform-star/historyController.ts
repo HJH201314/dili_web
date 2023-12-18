@@ -49,12 +49,12 @@ export async function addHistoryUsingPost(body: API.HistoryDto, options?: { [key
   });
 }
 
-/** 获取最近20条历史记录 GET /his/list */
+/** 获取最近历史记录,用于历史记录列表 GET /his/list */
 export async function getRecentHistoryListUsingGet(
   body: API.HisQueryDto,
   options?: { [key: string]: any },
 ) {
-  return request<API.CommonResultListVo_>('/his/list', {
+  return request<API.CommonResultListHistoryVo_>('/his/list', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
