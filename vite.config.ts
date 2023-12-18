@@ -68,7 +68,13 @@ export default defineConfig({
         // target: 'http://127.0.0.1:4523/m1/3578335-0-0c83f97b/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/star/, ''),
-      }
+      },
+      '/api/minio': {
+        target: 'http://localhost:9000/',
+        // target: 'http://127.0.0.1:4523/m1/3578335-0-0c83f97b/',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/minio/, ''),
+      },
     }
   },
 })
