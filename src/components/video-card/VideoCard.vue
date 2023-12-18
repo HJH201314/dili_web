@@ -38,8 +38,8 @@ function handleUpNameClick() {
 }
 
 function handleTitleClick() {
-  if (props.vid > 0)
-    router.replace(`/video/${props.vid}`);
+  if (displayInfo.value.vid > 0)
+    router.replace(`/video/${displayInfo.value.vid}`);
 }
 
 const displayInfo = ref<VideoCardProps>({
@@ -57,7 +57,7 @@ async function getVideoInfoByPid(pid: number) {
         displayInfo.value = {
           vid: d?.id!,
           coverUrl: props.coverUrl, // 需要另一个函数来获取
-          title: d?.title,
+          title: displayInfo.value?.title || d?.title,
           upId: undefined,
           upName: d?.upName,
           playNum: d?.playNum,

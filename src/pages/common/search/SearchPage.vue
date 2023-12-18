@@ -196,7 +196,7 @@ async function getVideos() {
         videoList.value?.push({
           pid: v.id,
           title: v.title,
-          coverUrl: v.url,
+          coverUrl: undefined, // 让组件自己获取
           upName: v.upName,
           upId: undefined,
           duration: v.totalTime,

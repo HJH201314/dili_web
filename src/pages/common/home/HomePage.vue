@@ -21,6 +21,8 @@ onMounted(() => {
 const loading = ref(false);
 const scrollContainer = ref();
 
+const userStore = useUserStore();
+
 function handleScroll() {
   const scrollTop = scrollContainer.value.scrollTop;
   const scrollHeight = scrollContainer.value.scrollHeight;

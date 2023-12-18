@@ -113,7 +113,7 @@ const initBarrage = () => {
                 vid: parseInt(props.videoID),
               }
             }).then((res) => {
-              return resovle(res.data.data)
+              return resolve(res.data.data)
             })
           })
         },
