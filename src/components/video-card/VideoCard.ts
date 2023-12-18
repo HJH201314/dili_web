@@ -1,4 +1,5 @@
 export type VideoCardInfo = {
+  pid?: number; // 动态ID，传入则表明要自动获取vid
   /* 必要信息 */
   vid: number; // 视频ID
   coverUrl?: string; // 封面URL

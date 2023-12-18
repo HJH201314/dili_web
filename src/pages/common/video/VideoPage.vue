@@ -36,6 +36,7 @@ const videoRef = ref<HTMLDivElement>();
 const videoInfo = ref<API.VideoInfoVo>();
 const userInfo = useUserInfo(() => videoInfo.value?.user?.id);
 const upInfo = useUserInfo(() => videoInfo.value?.user?.id);
+const urls = ref<string[]>(['video/3/1702828228177/1080.m3u8']);
 onMounted(() => {
   if (!props.videoID) router.replace('/home');
   const vid = parseInt(props.videoID!);
@@ -54,7 +55,25 @@ async function getVideoInfo(vid: number) {
     });
     if (res.data.code == 200) {
       videoInfo.value = res.data.data;
+      urls.value = JSON.parse(videoInfo.value?.video?.url ?? '[]') as string[];
+      art.url = `/api/minio/video-platform.updates/${urls.value[0]}`
       partitionName.value = partitionStore.getPartitionNameById(videoInfo.value?.video?.pid);
+
+      initBarrage();
+      // 记录历史记录信息
+      const time = new Date();
+      services.adminService.historyController.addHistoryUsingPost({
+        mediaId: vid,
+        mediaType: 0,
+        userId: userStore.userInfo.id,
+        watchedAt: {
+          year: time.getFullYear(),
+          month: time.getMonth() + 1,
+          date: time.getDate(),
+          hours: time.getHours(),
+          minutes: time.getMinutes(),
+        }
+      });
     } else {
       ToastManager.danger('获取信息失败');
     }
@@ -74,7 +93,7 @@ let art: Artplayer;
 const initBarrage = () => {
   art = new Artplayer({
     container: videoRef.value!,
-    url: 'http://localhost:9000/video-platform.updates/video/video/3/1702828228177/1080.m3u8',
+    url: `/api/minio/video-platform.updates/${urls.value[0]}`,
     type: 'm3u8',
     customType: {
       m3u8: playM3u8,
@@ -88,10 +107,10 @@ const initBarrage = () => {
     plugins: [
       artplayerPluginDanmuku({
         danmuku: function () {
-          return new Promise((resovle) => {
+          return new Promise((resolve) => {
             axios.get("/api/admin/video/getBarrageVoByVid", {
               params: {
-                vid: 1
+                vid: parseInt(props.videoID),
               }
             }).then((res) => {
               return resovle(res.data.data)
@@ -109,9 +128,9 @@ const initBarrage = () => {
         ... danmu,
         // vid: 1,
         vid: parseInt(props.videoID!),
-        uid: userStore.userInfo?.id
+        uid: userStore.userInfo?.id,
         // uid: 1
-      })
+      });
   });
   art.theme = 'rgb(0, 174, 236)'
 }
@@ -273,15 +292,15 @@ function handleChooseStar(item: API.Star) {
         </div>
         <div class="video-actions">
           <div class="video-like">
-            <Like theme="outline" size="2rem" />
+            <svg width="36" height="36" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.77234 30.8573V11.7471H7.54573C5.50932 11.7471 3.85742 13.3931 3.85742 15.425V27.1794C3.85742 29.2112 5.50932 30.8573 7.54573 30.8573H9.77234ZM11.9902 30.8573V11.7054C14.9897 10.627 16.6942 7.8853 17.1055 3.33591C17.2666 1.55463 18.9633 0.814421 20.5803 1.59505C22.1847 2.36964 23.243 4.32583 23.243 6.93947C23.243 8.50265 23.0478 10.1054 22.6582 11.7471H29.7324C31.7739 11.7471 33.4289 13.402 33.4289 15.4435C33.4289 15.7416 33.3928 16.0386 33.3215 16.328L30.9883 25.7957C30.2558 28.7683 27.5894 30.8573 24.528 30.8573H11.9911H11.9902Z" fill="currentColor"></path></svg>
             <span>{{ videoInfo?.updateheat?.likeNum ?? 0 }}</span>
           </div>
           <div class="video-coin">
-            <Baokemeng theme="outline" size="2rem" />
+            <svg width="36" height="36" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg" data-v-3b3ce5ad=""><path fill-rule="evenodd" clip-rule="evenodd" d="M14.045 25.5454C7.69377 25.5454 2.54504 20.3967 2.54504 14.0454C2.54504 7.69413 7.69377 2.54541 14.045 2.54541C20.3963 2.54541 25.545 7.69413 25.545 14.0454C25.545 17.0954 24.3334 20.0205 22.1768 22.1771C20.0201 24.3338 17.095 25.5454 14.045 25.5454ZM9.66202 6.81624H18.2761C18.825 6.81624 19.27 7.22183 19.27 7.72216C19.27 8.22248 18.825 8.62807 18.2761 8.62807H14.95V10.2903C17.989 10.4444 20.3766 12.9487 20.3855 15.9916V17.1995C20.3854 17.6997 19.9799 18.1052 19.4796 18.1052C18.9793 18.1052 18.5738 17.6997 18.5737 17.1995V15.9916C18.5667 13.9478 16.9882 12.2535 14.95 12.1022V20.5574C14.95 21.0577 14.5444 21.4633 14.0441 21.4633C13.5437 21.4633 13.1382 21.0577 13.1382 20.5574V12.1022C11.1 12.2535 9.52148 13.9478 9.51448 15.9916V17.1995C9.5144 17.6997 9.10883 18.1052 8.60856 18.1052C8.1083 18.1052 7.70273 17.6997 7.70265 17.1995V15.9916C7.71158 12.9487 10.0992 10.4444 13.1382 10.2903V8.62807H9.66202C9.11309 8.62807 8.66809 8.22248 8.66809 7.72216C8.66809 7.22183 9.11309 6.81624 9.66202 6.81624Z" fill="currentColor"></path></svg>
             <span>{{ videoInfo?.video?.dmNum ?? 0 }}</span>
           </div>
           <div class="video-star" @click="handleStarClick">
-            <Star theme="outline" size="2rem" />
+            <svg width="36" height="36" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg" data-v-c9ebd4c8=""><path fill-rule="evenodd" clip-rule="evenodd" d="M19.8071 9.26152C18.7438 9.09915 17.7624 8.36846 17.3534 7.39421L15.4723 3.4972C14.8998 2.1982 13.1004 2.1982 12.4461 3.4972L10.6468 7.39421C10.1561 8.36846 9.25639 9.09915 8.19315 9.26152L3.94016 9.91102C2.63155 10.0734 2.05904 11.6972 3.04049 12.6714L6.23023 15.9189C6.96632 16.6496 7.29348 17.705 7.1299 18.7605L6.39381 23.307C6.14844 24.6872 7.62063 25.6614 8.84745 25.0119L12.4461 23.0634C13.4276 22.4951 14.6544 22.4951 15.6359 23.0634L19.2345 25.0119C20.4614 25.6614 21.8518 24.6872 21.6882 23.307L20.8703 18.7605C20.7051 17.705 21.0339 16.6496 21.77 15.9189L24.9597 12.6714C25.9412 11.6972 25.3687 10.0734 24.06 9.91102L19.8071 9.26152Z" fill="currentColor"></path></svg>
             <span>{{ videoInfo?.video?.starNum ?? 0 }}</span>
           </div>
         </div>
@@ -322,7 +341,7 @@ function handleChooseStar(item: API.Star) {
           :uid="videoInfo?.user?.id"
           :name="videoInfo?.user?.name"
           :fan-num="userInfo.userInfo?.value?.fan"
-          :video-num="userInfo.essayCount"
+          :video-num="userInfo.essayCount.value"
           :level="videoInfo?.user?.level"
         />
         <div class="recommend-list">
@@ -512,6 +531,7 @@ a {
   line-height: 28px;
   border-bottom: 1px solid #e3e5e7;
   gap: 1rem;
+  color: $color-grey-300;
 }
 
 .video-like,
@@ -525,8 +545,8 @@ a {
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  color: #18191c;
   gap: .5rem;
+  color: lighten(black, 30%);
 }
 
 .video-detail {

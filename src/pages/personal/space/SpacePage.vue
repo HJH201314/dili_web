@@ -96,10 +96,10 @@ function handleTabChange(tabName: string) {
           </div>
         </div>
         <div class="space-nav">
-          <div class="space-nav-item" @click="handleTabChange('home')">
-            <div class="space-nav-item__icon"><HomeTwo fill="#00c091" theme="filled" size="1.5rem" /></div>
-            <div class="space-nav-item__text">主页</div>
-          </div>
+<!--          <div class="space-nav-item" @click="handleTabChange('home')">-->
+<!--            <div class="space-nav-item__icon"><HomeTwo fill="#00c091" theme="filled" size="1.5rem" /></div>-->
+<!--            <div class="space-nav-item__text">主页</div>-->
+<!--          </div>-->
           <div class="space-nav-item" @click="handleTabChange('post')">
             <div class="space-nav-item__icon"><Tips fill="#fb7299" theme="filled" size="1.5rem" /></div>
             <div class="space-nav-item__text">动态</div>
@@ -114,10 +114,10 @@ function handleTabChange(tabName: string) {
             <div class="space-nav-item__text">收藏</div>
             <div class="space-nav-item__count">{{ info.starNum }}</div>
           </div>
-          <div class="space-nav-item" @click="handleTabChange('setting')" v-if="props.pathId == 'me'">
-            <div class="space-nav-item__icon"><Config fill="#ff5d47" theme="filled" size="1.5rem" /></div>
-            <div class="space-nav-item__text">设置</div>
-          </div>
+<!--          <div class="space-nav-item" @click="handleTabChange('setting')" v-if="props.pathId == 'me'">-->
+<!--            <div class="space-nav-item__icon"><Config fill="#ff5d47" theme="filled" size="1.5rem" /></div>-->
+<!--            <div class="space-nav-item__text">设置</div>-->
+<!--          </div>-->
           <div class="space-nav-stat" style="margin-left: auto;">
             <div class="space-nav-stat__text">关注数</div>
             <div class="space-nav-stat__count">{{ getStatString(spaceUserInfo.follow ?? 0) }}</div>

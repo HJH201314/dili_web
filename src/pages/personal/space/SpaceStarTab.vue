@@ -105,6 +105,7 @@ const currentPage = ref(0);
 const pageSize = ref(20);
 function handleCollectionChange(item: CollectionItem) {
   currentCollection.value = item;
+  starList.value = [];
   getVideoList(item.id);
 }
 
@@ -187,17 +188,17 @@ async function getVideoList(sid: string) {
 
   } finally {
     if (starList.value.length === 0) {
-      for (let i = 0; i < 10; i++) {
-        starList.value.push({
-          vid: i,
-          coverUrl: undefined,
-          title: `随机标题${i}`,
-          upName: `UP主${i}`,
-          playNum: i * 100,
-          createTime: new Date().toLocaleString(),
-          starDate: new Date().toLocaleDateString(),
-        })
-      }
+      // for (let i = 0; i < 10; i++) {
+      //   starList.value.push({
+      //     vid: i,
+      //     coverUrl: undefined,
+      //     title: `随机标题${i}`,
+      //     upName: `UP主${i}`,
+      //     playNum: i * 100,
+      //     createTime: new Date().toLocaleString(),
+      //     starDate: new Date().toLocaleDateString(),
+      //   })
+      // }
     }
   }
 }
@@ -266,7 +267,7 @@ async function handleStarVideoDelete(vid: number) {
       </section>
       <hr style="border: 1px solid grey; opacity: 0.3; margin: .5rem 0" />
       <section class="video-list">
-        <VideoCard class="video-list-item" v-for="item in starList" v-bind="item">
+        <VideoCard class="video-list-item" v-for="item in starList" v-bind="item" auto-fetch>
           <template #footer>
             <div class="video-list-item-footer">
               收藏于 {{ item.starDate }}

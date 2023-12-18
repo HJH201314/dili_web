@@ -125,7 +125,7 @@ function getCategories() {
 }
 
 function getslides() {
-  services.adminService.updatesController.getHomePageUsingGet({pageSize: 5, uid: /*userStore.userInfo.id ??*/ 0}).then((res) => {
+  services.adminService.updatesController.getHomePageUsingGet({pageSize: 5, uid: userStore.userInfo.id ?? 0}).then((res) => {
     video.value = res.data.data ?? [];
     for (let i = 0; i < video.value.length; i++) {
       slides.value.push({
@@ -140,7 +140,7 @@ function getslides() {
 function getFeed() {
   services.adminService.updatesController.getHomePageUsingGet({
     pageSize: feednum.value.pageSize!,
-    uid: /*userStore.userInfo.id ??*/ 0,
+    uid: userStore.userInfo.id ?? 0,
   }).then((res) => {
     video.value = res.data.data ?? [];
     for (let i = 0; i < video.value.length; i++) {

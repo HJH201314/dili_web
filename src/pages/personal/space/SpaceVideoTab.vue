@@ -78,7 +78,7 @@ async function getVideos() {
       if (res.data.data.list.length > 0) {
         res.data?.data?.list?.map((v) => {
           videoList.value?.push({
-            vid: v?.id!,
+            pid: v?.id!,
             coverUrl: v?.url,
             title: v?.title,
             upId: undefined,

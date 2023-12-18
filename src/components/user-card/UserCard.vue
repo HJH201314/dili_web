@@ -6,6 +6,7 @@ import type { UserCardProps } from "@/components/user-card/UserCard";
 import variables from "@/assets/variables.module.scss";
 import useFollowCacheStore from "@/stores/useFollowCacheStore";
 import DiliPopover from "@/components/popover/DiliPopover.vue";
+import router from "@/router";
 
 const props = withDefaults(defineProps<UserCardProps>(), {
   uid: 1,
@@ -24,9 +25,9 @@ onMounted(() => {
   user.value.isFollowed = followCacheStore.isFollowed(user.value.uid);
 });
 
-watch(() => props.autoFetch, (v) => {
+watch(() => props.name, (v) => {
   if (v) {
-    // todo: auto-fetch
+    user.value = { ...props };
   }
 });
 
@@ -41,15 +42,19 @@ function handleUnfollow() {
   followCacheStore.unfollow(user.value.uid);
   user.value.isFollowed = followCacheStore.isFollowed(user.value.uid);
 }
+
+function goToSpace() {
+  router.push(`/space/${user.value.uid}`);
+}
 </script>
 
 <template>
   <div class="user-card">
-    <section class="avatar">
+    <section class="avatar" @click="goToSpace">
       <img :src="avatar ?? `/avatar/${Math.ceil(Math.random() * 30)}.png`" />
     </section>
     <section class="info">
-      <div class="name">
+      <div class="name" @click="goToSpace">
         {{ user.name }}
       </div>
       <div class="statistic">
@@ -80,6 +85,7 @@ function handleUnfollow() {
   gap: 1rem;
 
   > .avatar {
+    cursor: pointer;
     height: 6rem;
     width: 6rem;
     border-radius: 50%;
@@ -97,6 +103,7 @@ function handleUnfollow() {
     align-items: center;
     justify-content: space-between;
     > .name {
+      cursor: pointer;
       font-size: 1.1rem;
       font-weight: bold;
     }

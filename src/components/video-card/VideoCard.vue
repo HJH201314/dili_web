@@ -13,6 +13,7 @@ import { useRouter } from "vue-router";
 import services from "@/apis/services";
 
 const props = withDefaults(defineProps<VideoCardProps>(), {
+  pid: -1,
   vid: -1,
   coverUrl: 'https://cdn.fcraft.cn/image/dilidili/cover.jpg',
   title: '未知标题未知标题未知标题未未知标题未知标题未知标题未知标题',
@@ -41,27 +42,52 @@ function handleTitleClick() {
     router.replace(`/video/${props.vid}`);
 }
 
-const displayInfo = shallowRef<VideoCardProps>({
+const displayInfo = ref<VideoCardProps>({
   vid: props.vid,
 });
 
-async function getVideoInfoByVid(vid: number) {
-  const res = await services.adminService.videoController.getVideoInfoUsingGet({
-    id: vid,
-  });
-  if (res.data.code == 200) {
-    const d = res.data.data;
-    displayInfo.value = {
-      vid: d?.video?.id!,
-      coverUrl: d?.video?.url,
-      title: d?.video?.title,
-      upId: d?.user?.id,
-      upName: d?.user?.name,
-      playNum: d?.video?.playNum,
-      dmNum: d?.video?.dmNum,
-      createTime: d?.update?.uploadTime,
-      duration: d?.video?.totalTime,
+async function getVideoInfoByPid(pid: number) {
+  try {
+    if (displayInfo.value.vid <= 0 && displayInfo.value.pid > 0) {
+      const res = await services.adminService.videoController.getVideoDetailUsingGet({
+        id: pid,
+      });
+      if (res.data.code == 200) {
+        const d = res.data.data;
+        displayInfo.value = {
+          vid: d?.id!,
+          coverUrl: props.coverUrl, // 需要另一个函数来获取
+          title: d?.title,
+          upId: undefined,
+          upName: d?.upName,
+          playNum: d?.playNum,
+          dmNum: d?.dmNUm,
+          createTime: d?.uploadTime,
+          duration: undefined,
+        }
+        console.log(displayInfo)
+      }
     }
+    if (displayInfo.value.vid > 0) {
+      const res2 = await services.adminService.videoController.getVideoInfoUsingGet({
+        id: displayInfo.value.vid,
+      });
+      if (res2.data.code == 200) {
+        const d = res2.data.data;
+        displayInfo.value = { ...displayInfo.value, ...{
+            coverUrl: JSON.parse(d?.update?.urls ?? '[]')[0] || props.coverUrl,
+            upId: d?.user?.id,
+            upName: d?.user?.name,
+            playNum: d?.video?.playNum,
+            dmNum: d?.video?.dmNum,
+            createTime: d?.update?.uploadTime,
+            duration: d?.video?.totalTime,
+          } }
+        console.log(displayInfo)
+      }
+    }
+  } finally {
+
   }
 }
 
@@ -74,11 +100,11 @@ watch(() => props, (val) => {
   };
 }, { immediate: true, deep: true });
 
-watch(() => props.vid, (val) => {
+watch(() => props.pid, (val) => {
   if (val && props.autoFetch) {
-    getVideoInfoByVid(val);
+    getVideoInfoByPid(val);
   }
-});
+}, { immediate: true });
 
 const width = ref<number>(0);
 const height = ref<number>(0);
@@ -104,7 +130,7 @@ onMounted(() => {
   <div class="video-card" :class="{'shadowed': displayInfo.shadowed}" >
     <section ref="coverRef" class="cover" :style="{'height': `${height}px`, 'max-height': `${height}px`}" @click="handleTitleClick">
       <picture class="cover-image">
-        <img :src="displayInfo.coverUrl" alt="cover-image" />
+        <img :src="'/api/minio/video-platform.updates/' + displayInfo.coverUrl" alt="cover-image" />
       </picture>
       <div class="cover-mask">
         <div class="cover-stats">

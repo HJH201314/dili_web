@@ -232,7 +232,7 @@ const searchFromHistory = (SearchHisStr: string) => {
 }
 
 function handleSearch(keyword?: string) {
-  if (keyword) {
+  if (keyword && keyword.replace) {
     keyword = keyword?.replace(/<em>/g, '');
     keyword = keyword?.replace(/<\/em>/g, '');
     form.searchVal = keyword;

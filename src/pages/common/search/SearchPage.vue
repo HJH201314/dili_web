@@ -194,7 +194,7 @@ async function getVideos() {
     if (res.data.code == 200) {
       res.data.data?.list?.forEach((v) => {
         videoList.value?.push({
-          vid: v.id!,
+          pid: v.id,
           title: v.title,
           coverUrl: v.url,
           upName: v.upName,
