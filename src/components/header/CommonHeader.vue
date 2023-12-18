@@ -309,7 +309,7 @@ function handleSearch(keyword?: string) {
             </template>
             <template #popover>
               <div v-if="entry.key == 'history'">
-                <HistorySpinner />
+                <HistorySpinner :myuid="userStore.userInfo.id" />
               </div>
             </template>
           </DiliPopover>
