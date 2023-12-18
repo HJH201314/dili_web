@@ -22,6 +22,12 @@ import UserCard from "@/components/user-card/UserCard.vue";
 import CommonDialog from "@/components/dialog/CommonDialog.vue";
 import type { CommonDialogExpose } from "@/components/dialog/CommonDialog";
 import { DialogManager } from "@/components/dialog";
+import {
+  getRecommendByUpdateIdUsingGet,
+  getRecommendUsingGet
+} from "@/apis/services/video-platform-recommend/tuijianmokuai";
+import { getVideoDetailUsingGet, getVideoInfoUsingGet } from "@/apis/services/video-platform-admin/videoController";
+import VideoCard from "@/components/video-card/VideoCard.vue";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -29,8 +35,69 @@ const props = defineProps<{
   videoID?: string
 }>()
 
+onMounted(() => {
+  getRecommendList();
+});
+
 const playerWindowRef = ref<HTMLDivElement>();
 const videoRef = ref<HTMLDivElement>();
+
+type recommendList = {
+  vid?: number;
+  duration?: string;
+  title?: string;
+  upName?: string;
+  coverUrl?: string;
+  dmNum?: number;
+  playNum?: number;
+  url?: string;
+};
+
+const rList = ref<recommendList[]>([]);
+const back_rListId = ref<number[]>([]);
+//const back_rList = ref<API.VideoInfoVo[]>([]);
+const back_rList = ref<API.VideoVo[]>([]);
+
+/*function getRecommendList() {
+  services.recommendService.tuijianmokuai.getRecommendUsingGet({
+    uid: videoInfo.value?.video?.id!,
+  }).then((res) => {
+    back_rListId.value = res.data.data ?? [];
+    for (let i = 0; i < back_rListId.value.length; i++) {
+      services.adminService.videoController.getVideoInfoUsingGet({ id: back_rListId.value[i]
+      }).then((result) => {
+        back_rList.value[i] = result.data.data!;
+        rList.value.push({
+          vid: back_rList.value[i].video?.id,
+          duration: back_rList.value[i].video?.totalTime,
+          title: back_rList.value[i].video?.title,
+          upName: back_rList.value[i].user?.name,
+          dmNum: back_rList.value[i].video?.dmNum,
+          playNum: back_rList.value[i].video?.playNum,
+        })
+      });
+    }
+    });
+}*/
+function getRecommendList() {
+  services.adminService.updatesController.getHomePageUsingGet({
+    pageSize: 15,
+    uid: /*userStore.userInfo.id ??*/ 0,
+  }).then((res) => {
+    back_rList.value = res.data.data ?? [];
+    for (let i = 0; i < back_rList.value.length; i++) {
+      rList.value.push({
+        vid: back_rList.value[i].id!,
+        title: back_rList.value[i].title,
+        upName: back_rList.value[i].upName!,
+        dmNum: back_rList.value[i].dmNum,
+        playNum: back_rList.value[i].playNum,
+        duration: back_rList.value[i].totalTime,
+        url: "/video/vid",
+      })
+    }
+  });
+}
 
 /* 视频信息相关 */
 const videoInfo = ref<API.VideoInfoVo>();
@@ -135,7 +202,7 @@ const initBarrage = () => {
   art.theme = 'rgb(0, 174, 236)'
 }
 const isFollowed = ref(false)
-const isMenuVisivle = ref(false)
+const isMenuVisible = ref(false)
 
 watch(() => videoRef.value, (val) => {
   if (val) {
@@ -163,6 +230,11 @@ function setGroup() {
 
 function toggleFollow() {
   isFollowed.value = !isFollowed.value
+}
+
+function toggleFollowbt() {
+  isFollowed.value = !isFollowed.value
+  isMenuVisivle.value = false
 }
 
 
@@ -347,14 +419,14 @@ function handleChooseStar(item: API.Star) {
         <div class="recommend-list">
           <div class="recommend-list-title">相关推荐</div>
           <video-card2
-            v-for="item in 10"
-            :key="item"
-            :cover="`https://cdn.fcraft.cn/image/dilidili/${item}.webp`"
-            :title="`赤壁之战的锅谁背？【小约翰】`"
-            :up-name="`小约翰`"
-            :play="`173.4万`"
-            :danmaku="`1.4万`"
-            :duration="'10:11'"
+            v-for="item in rList"
+            :key="item.vid"
+            :cover-url="'https://api.likepoems.com/img/pc/'"
+            :title="item.title"
+            :up-name="item.upName"
+            :play="item.playNum"
+            :danmaku="item.dmNum"
+            :duration="item.duration"
           >
           </video-card2>
         </div>
