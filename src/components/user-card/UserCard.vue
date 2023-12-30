@@ -33,14 +33,14 @@ watch(() => props.name, (v) => {
 
 function handleFollow() {
   if (!user.value.isFollowed) {
-    followCacheStore.follow(user.value.uid);
-    user.value.isFollowed = followCacheStore.isFollowed(user.value.uid);
+    followCacheStore.follow(user.value.uid ?? -1);
+    user.value.isFollowed = followCacheStore.isFollowed(user.value.uid ?? -1);
   }
 }
 
 function handleUnfollow() {
-  followCacheStore.unfollow(user.value.uid);
-  user.value.isFollowed = followCacheStore.isFollowed(user.value.uid);
+  followCacheStore.unfollow(user.value.uid ?? -1);
+  user.value.isFollowed = followCacheStore.isFollowed(user.value.uid ?? -1);
 }
 
 function goToSpace() {
@@ -51,7 +51,7 @@ function goToSpace() {
 <template>
   <div class="user-card">
     <section class="avatar" @click="goToSpace">
-      <img :src="avatar ?? `/avatar/${Math.ceil(Math.random() * 30)}.png`" />
+      <img :src="avatar ?? `https://api.dicebear.com/7.x/pixel-art/svg?seed=id${props.uid}`" />
     </section>
     <section class="info">
       <div class="name" @click="goToSpace">
@@ -88,7 +88,7 @@ function goToSpace() {
     cursor: pointer;
     height: 6rem;
     width: 6rem;
-    border-radius: 50%;
+    border-radius: .5rem;
     overflow: hidden;
     > img {
       width: 100%;

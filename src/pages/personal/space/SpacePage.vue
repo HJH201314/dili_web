@@ -193,7 +193,7 @@ function handleTabChange(tabName: string) {
       &__avatar {
         width: 4rem;
         aspect-ratio: 1;
-        border-radius: 50%;
+        border-radius: .5rem;
         overflow: hidden;
         border: 2px solid $color-grey-50;
       }

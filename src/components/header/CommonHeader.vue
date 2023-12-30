@@ -486,7 +486,7 @@ header {
   &-avatar {
     width: 1.75rem;
     height: 1.75rem;
-    border-radius: 50%;
+    border-radius: .5rem;
     transition: transform .2s $ease-out-circ;
 
     &:hover {
@@ -501,6 +501,7 @@ header {
     overflow: hidden;
     align-items: center;
     background-color: white;
+    box-shadow: $box-shadow;
   }
 
   &-action {

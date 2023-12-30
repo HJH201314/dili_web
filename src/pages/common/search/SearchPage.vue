@@ -3,13 +3,10 @@
 
 import VideoCard from "@/components/video-card/VideoCard.vue";
 import type { VideoCardProps } from "@/components/video-card/VideoCard";
-import { nextTick, onMounted, reactive, ref, watch } from "vue";
+import { onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { rangeArr } from "element-plus";
-import { Search } from "@icon-park/vue-next";
 import CusInput from "@/components/input/CusInput.vue";
 import DiliButton from "@/components/button/DiliButton.vue";
-import { quickToast } from "@/components/toast/toast";
 import services from "@/apis/services";
 import usePartitionStore from "@/stores/usePartitionStore";
 import UserCard from "@/components/user-card/UserCard.vue";
@@ -266,17 +263,17 @@ function handlePartitionChange(pid: number) {
 
 <template>
   <div class="search-page">
-<!--    <section class="search-bar">-->
-<!--      <div class="search-bar-container">-->
-<!--        <CusInput class="search-bar-input" placeholder="搜点什么呢..?" v-model="searchForm.keyword"-->
-<!--                  @keydown="handleSearchKeyDown" />-->
-<!--        <DiliButton class="search-bar-button" text="搜索" type="primary" :button-style="{ 'height': '100%', 'padding-inline': '2rem'}" @click="handleSearchClick" />-->
-<!--&lt;!&ndash;        <form @submit.prevent="handleSearch">&ndash;&gt;-->
-<!--&lt;!&ndash;          <input ref="searchInputRef" v-model="searchForm.keyword" type="text" id="nav-search-input" placeholder="搜点什么呢...?"/>&ndash;&gt;-->
-<!--&lt;!&ndash;          <Search class="search" size="1.25rem" @click="handleSearch" />&ndash;&gt;-->
-<!--&lt;!&ndash;        </form>&ndash;&gt;-->
-<!--      </div>-->
-<!--    </section>-->
+    <section class="search-bar">
+      <div class="search-bar-container">
+        <CusInput class="search-bar-input" placeholder="搜点什么呢..?" v-model="searchForm.keyword"
+                  @keydown="handleSearchKeyDown" />
+        <DiliButton class="search-bar-button" text="搜索" type="primary" :button-style="{ 'height': '100%', 'padding-inline': '2rem'}" @click="handleSearchClick" />
+<!--        <form @submit.prevent="handleSearch">-->
+<!--          <input ref="searchInputRef" v-model="searchForm.keyword" type="text" id="nav-search-input" placeholder="搜点什么呢...?"/>-->
+<!--          <Search class="search" size="1.25rem" @click="handleSearch" />-->
+<!--        </form>-->
+      </div>
+    </section>
     <section class="search-tab" style="margin-top: 2rem">
       <div id="search-tab-type-video" class="search-tab-item" :class="{'search-tab-item--active': searchForm.type == 'video'}" @click="handleTypeChange('video')">
         视频
@@ -383,8 +380,14 @@ function handlePartitionChange(pid: number) {
       display: flex;
       justify-content: center;
       margin: 2rem auto;
-      gap: 1rem;
+      gap: .25rem;
       position: relative;
+      background-color: $color-grey-100;
+      transition: background-color .2s $ease-out-circ;
+      &:focus-within {
+        background-color: $color-grey-300;
+      }
+      border-radius: .5rem;
     }
     &-input {
       height: 3rem;
@@ -392,10 +395,6 @@ function handlePartitionChange(pid: number) {
       font-size: 1.25rem;
     }
     &-button {
-      position: absolute;
-      right: 0;
-      top: 0;
-      bottom: 0;
       box-sizing: border-box;
       border: 5px solid transparent;
     }

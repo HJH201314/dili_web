@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import EasyTyper from 'easy-typer-js';
-import { nextTick, reactive, ref, watch } from "vue";
+import { nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { Close, Right, Switch } from "@icon-park/vue-next";
 import CommonModal from "@/components/modal/CommonModal.vue";
 import type { CommonModalFunc } from "@/components/modal/CommonModal";
@@ -8,6 +8,18 @@ import useUserStore from "@/stores/useUserStore";
 import showToast from "@/components/toast/toast";
 import Spinning from "@/components/spinning/Spinning.vue";
 import { delay } from "@/utils/delay";
+
+const props = withDefaults(defineProps<{
+  showByDefault?: boolean;
+}>(), {
+  showByDefault: false,
+});
+
+onMounted(() => {
+  if (props.showByDefault) {
+    open();
+  }
+});
 
 const userStore = useUserStore();
 const refLoginModal = ref<CommonModalFunc>();
@@ -26,24 +38,21 @@ const typerObj = reactive({
 const typer = ref<EasyTyper>();
 
 const show = ref(false);
+function open() {
+  // show=true时创建CommonModal实例
+  show.value = true;
+  // 创建完成后，下一刻再初始化
+  nextTick(() => {
+    init();
+  });
+}
+function close() {
+  // 关闭模态框
+  show.value = false;
+}
 defineExpose({
-  open: () => {
-    // show=true时创建CommonModal实例
-    show.value = true;
-    // 创建完成后，下一刻再打开模态框
-    nextTick(() => {
-      refLoginModal.value?.open();
-      init();
-    });
-  },
-  close: () => {
-    // 关闭模态框
-    refLoginModal.value?.close();
-    // 关闭模态框后，下一刻再销毁CommonModal实例
-    nextTick(() => {
-      show.value = false;
-    });
-  },
+  open,
+  close,
 });
 
 const loginForm = reactive({
@@ -198,14 +207,14 @@ watch(() => userStore.isLogin, (v) => {
     typer.value = new EasyTyper(typerObj, '欢迎回来');
     showToast({ text: `登录成功，欢迎回来，UUID:${userStore.token}`, position: 'top' });
     setTimeout(() => {
-      refLoginModal.value?.close();
+      show.value = false;
     }, 1500);
   }
 });
 </script>
 
 <template>
-  <CommonModal ref="refLoginModal" :show-close="false" style="padding-bottom: 100px;" v-if="show">
+  <CommonModal ref="refLoginModal" :show-close="false" v-model:visible="show">
     <template #default>
       <div class="login">
         <Close class="login-close" size="20" @click="() => refLoginModal?.close()" />

@@ -1,7 +1,6 @@
 <!-- 动态 -->
 <script setup lang="ts">
 
-import { DEFAULT_USER_AVATAR } from "@/constants/defaultImage";
 import DateFormat from "@/components/date-format/DateFormat.vue";
 import { MoreOne, ShareThree, CommentOne, ThumbsUp, DeleteOne } from "@icon-park/vue-next";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
@@ -19,7 +18,7 @@ const props = withDefaults(defineProps<PostItemCardProps>(), {
   postId: 0,
   userId: 0,
   userName: '测试用户',
-  avatar: DEFAULT_USER_AVATAR,
+  avatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=not_found`,
   forwardCount: 0,
   commentCount: 0,
   likeCount: 0,
@@ -205,7 +204,7 @@ function handlePreviewImage(image: string) {
     & img {
       width: 100%;
       height: 100%;
-      border-radius: 50%;
+      border-radius: .5rem;
     }
   }
   &-header {

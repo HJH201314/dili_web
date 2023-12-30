@@ -44,13 +44,11 @@ const usePartitionStore = defineStore('partition', () => {
    * 根据分区id获取分区名
    */
   function getPartitionNameById(pid: number) {
-    partition.value.forEach((v) => {
+    return partition.value.find((v) => {
       if (v.id == pid) {
-        console.log(v)
-        return v.name;
+        return true;
       }
-    });
-    return '';
+    })?.name ?? '';
   }
 
   return {

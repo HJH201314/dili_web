@@ -94,7 +94,7 @@ watchEffect(async () => {
     comments.value.push({
       id: item.id ?? '',
       userId: item.userId!,
-      userAvatar: DEFAULT_USER_AVATAR,
+      userAvatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=id${item.userId}`,
       userName: item.username ?? '未知用户',
       userLevel: 1,
       targetUsername: item.targetUsername,
@@ -118,7 +118,7 @@ function convertCommentVOToCommentItem(item: API.Comment, type: 'sub'): CommentI
     return {
       id: item.id ?? '',
       userId: item.userId!,
-      userAvatar: DEFAULT_USER_AVATAR,
+      userAvatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=id${item.userId}`,
       userName: item.username ?? '未知用户',
       userLevel: 1,
       content: item.content ?? '',
@@ -465,7 +465,7 @@ function getCommentContentHtml(comment: CommentItem) {
     </div>
     <div class="comment-publish">
       <div class="avatar">
-        <img :src="userStore.avatar ?? DEFAULT_USER_AVATAR" alt="avatar" />
+        <img :src="userStore.avatar ?? `https://api.dicebear.com/7.x/pixel-art/svg?seed=id${userStore.userInfo.id}`" alt="avatar" />
       </div>
       <div class="input">
         <textarea placeholder="你猜我的评论区在等谁？" v-model="form.comment" />
@@ -476,7 +476,7 @@ function getCommentContentHtml(comment: CommentItem) {
     </div>
     <div class="comment-list">
       <div class="item" v-for="comment in comments">
-        <div class="avatar"><img :src="comment.userAvatar || DEFAULT_USER_AVATAR" alt="avatar" /></div>
+        <div class="avatar"><img :src="comment.userAvatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=id${comment.userId}`" alt="avatar" /></div>
         <div class="body">
           <div class="header user-info">
             <span class="name">{{ comment.userName }}</span>
@@ -522,7 +522,7 @@ function getCommentContentHtml(comment: CommentItem) {
           </div>
           <div class="sub-comment-list">
             <div class="item" v-for="subComment in comment.subComments">
-              <div class="avatar-small"><img :src="subComment.userAvatar || DEFAULT_USER_AVATAR"  alt="avatar-small"/></div>
+              <div class="avatar-small"><img :src="subComment.userAvatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=id${subComment.userId}`"  alt="avatar-small"/></div>
               <div class="body">
                 <div class="header">
                   <div class="user-info">
@@ -614,7 +614,7 @@ function getCommentContentHtml(comment: CommentItem) {
       width: 3rem;
       height: 3rem;
       > img {
-        border-radius: 50%;
+        border-radius: .5rem;
         width: 100%;
         height: 100%;
         object-fit: cover;
@@ -662,7 +662,7 @@ function getCommentContentHtml(comment: CommentItem) {
         width: 2.5rem;
         height: 2.5rem;
         img {
-          border-radius: 50%;
+          border-radius: .5rem;
           width: 100%;
           height: 100%;
           object-fit: cover;
@@ -673,7 +673,7 @@ function getCommentContentHtml(comment: CommentItem) {
         width: 1.75rem;
         height: 1.75rem;
         img {
-          border-radius: 50%;
+          border-radius: .5rem;
           width: 100%;
           height: 100%;
           object-fit: cover;

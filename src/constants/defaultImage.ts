@@ -1,1 +1,1 @@
-export const DEFAULT_USER_AVATAR = 'https://img.yzcdn.cn/vant/cat.jpeg';
+export const DEFAULT_USER_AVATAR = `https://api.dicebear.com/7.x/pixel-art/svg?seed=not_found`;

@@ -94,7 +94,7 @@ watchEffect(async () => {
     comments.value.push({
       id: item.id ?? '',
       userId: item.userId!,
-      userAvatar: DEFAULT_USER_AVATAR,
+      userAvatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=id${item.userId}`,
       userName: item.username ?? '未知用户',
       userLevel: 1,
       targetUsername: item.targetUsername,
@@ -118,7 +118,7 @@ function convertCommentVOToCommentItem(item: API.Comment, type: 'sub'): CommentI
     return {
       id: item.id ?? '',
       userId: item.userId!,
-      userAvatar: DEFAULT_USER_AVATAR,
+      userAvatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=id${item.userId}`,
       userName: item.username ?? '未知用户',
       userLevel: 1,
       content: item.content ?? '',
@@ -614,7 +614,7 @@ function getCommentContentHtml(comment: CommentItem) {
       width: 3rem;
       height: 3rem;
       > img {
-        border-radius: 50%;
+        border-radius: .5rem;
         width: 100%;
         height: 100%;
         object-fit: cover;
@@ -662,7 +662,7 @@ function getCommentContentHtml(comment: CommentItem) {
         width: 2.5rem;
         height: 2.5rem;
         img {
-          border-radius: 50%;
+          border-radius: .5rem;
           width: 100%;
           height: 100%;
           object-fit: cover;
@@ -673,7 +673,7 @@ function getCommentContentHtml(comment: CommentItem) {
         width: 1.75rem;
         height: 1.75rem;
         img {
-          border-radius: 50%;
+          border-radius: .5rem;
           width: 100%;
           height: 100%;
           object-fit: cover;

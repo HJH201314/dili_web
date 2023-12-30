@@ -247,14 +247,7 @@ function getFeed() {
         <!--        </div>-->
         <video-card
           v-for="feed in feeds" :key="feed.id"
-          :vid="feed.id"
-          :cover-url="'https://api.likepoems.com/img/pc/'"
-          :title="feed.title"
-          :up-name="feed.author"
-          :play-num="feed.playnum"
-          :create-time="feed.publishTime"
-          :dm-num="feed.dmnum"
-          :duration="feed.duration"
+          :pid="feed.id"
           auto-fetch
         />
         <div v-if="loading">Loading...</div>
@@ -338,7 +331,7 @@ function getFeed() {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: .5rem;
   transition: background-position .3s;
 }
 
@@ -356,7 +349,7 @@ function getFeed() {
 .icon-bg--dt {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+  border-radius: .5rem;
   overflow: hidden;
   transition: transform .3s;
 }

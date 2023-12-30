@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { computed, nextTick, reactive, ref, watch } from "vue";
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 import securityApi from "@/apis/services/video-platform-security";
 import { useLocalStorage } from "@vueuse/core";
 
@@ -76,15 +76,16 @@ const useUserStore = defineStore('user', () => {
     // 等一下个tick，不然token可能还没写入storage
     await nextTick(async() => {
       if (newVal && !oldVal) {
-        avatar.value = 'https://img.yzcdn.cn/vant/cat.jpeg';
         const res = await securityApi.loginController.getCurrentUserUsingGet({token: token.value});
         userInfoStorage.value = res.data.data ?? {};
+        avatar.value = `https://api.dicebear.com/7.x/pixel-art/svg?seed=id${res.data.data?.id}`;
+        console.log('user_info', userInfoStorage.value);
       } else if (!newVal && oldVal) {
         userInfoStorage.value = {};
-        avatar.value = undefined;
+        avatar.value = `https://api.dicebear.com/7.x/pixel-art/svg?seed=notlogin`;
       }
     });
-  });
+  }, { immediate: true });
 
   return {
     token,

@@ -14,6 +14,7 @@ import { delay } from "@/utils/delay";
 import Spinning from "@/components/spinning/Spinning.vue";
 import { useQuery } from "@tanstack/vue-query";
 import useUserInfo, { getUserInfo } from "@/stores/publicUserInfo";
+import { useIntersectionObserver } from '@vueuse/core';
 
 const userStore = useUserStore();
 
@@ -74,7 +75,7 @@ watch(() => postResult.value, async () => {
       postId: item.id ?? -1,
       userId: item.uid ?? -1,
       userName: userInfo.name ?? '测试用户',
-      avatar: DEFAULT_USER_AVATAR,
+      avatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=id${item.uid}`,
       forwardCount: 0,
       commentCount: 0,
       likeCount: 0,
@@ -145,7 +146,7 @@ async function handlePublishPost() {
     publishForm.images.forEach(image => {
       formData.append('images', image.file);
     });
-    const res = await adminApi.updatesControllerFix.publishUsingPost({
+    const res = await adminApi.updatesController.publishUsingPost({
       content: publishForm.content,
     }, formData);
     if (res.data?.code == 200) {
@@ -173,6 +174,10 @@ function handlePostDeleted(id: number) {
 function handleLoadMore() {
   currentPage.value++;
   refetchPosts();
+  delay(100).then(() => {
+    observeLoadMore.pause();
+    observeLoadMore.resume();
+  });
 }
 
 function clearInput() {
@@ -186,6 +191,15 @@ function clearInput() {
 }
 
 const publicUserInfo = useUserInfo(() => userStore.userInfo.id);
+
+const loadMoreRef = ref<HTMLDivElement>();
+const observeLoadMore = useIntersectionObserver(loadMoreRef, ([{ isIntersecting }]) => {
+  if (isIntersecting) {
+    handleLoadMore();
+  }
+}, {
+  threshold: 0,
+});
 </script>
 
 <template>
@@ -248,7 +262,7 @@ const publicUserInfo = useUserInfo(() => userStore.userInfo.id);
                         @delete-post="(id) => handlePostDeleted(id)"
           />
           <div class="post-loading" v-if="postQueryStatus == 'pending'">加载中...</div>
-          <div class="load-more" v-if="!hasNoMore" @click="handleLoadMore">加载更多...</div>
+          <div ref="loadMoreRef" class="load-more" v-if="!hasNoMore" @click="handleLoadMore">加载更多...</div>
         </section>
       </main>
       <aside class="post-right">
@@ -307,7 +321,7 @@ const publicUserInfo = useUserInfo(() => userStore.userInfo.id);
         width: 4rem;
         height: 4rem;
         overflow: hidden;
-        border-radius: 50%;
+        border-radius: .5rem;
         img {
           width: 100%;
           height: 100%;
@@ -442,7 +456,7 @@ const publicUserInfo = useUserInfo(() => userStore.userInfo.id);
         .publish {
           @extend %transition-all-circ;
           color: white;
-          background-color: $color-secondary;
+          background-color: $color-primary;
           border-radius: .5rem;
           padding: .25rem 1rem;
           margin: 0 .25rem .25rem .5rem;
@@ -450,10 +464,10 @@ const publicUserInfo = useUserInfo(() => userStore.userInfo.id);
           align-items: center;
           gap: .5rem;
           &:hover {
-            background-color: shade-color($color-secondary, 3%);
+            background-color: shade-color($color-primary, 3%);
           }
           &:active {
-            background-color: shade-color($color-secondary, 6%);
+            background-color: shade-color($color-primary, 6%);
           }
         }
       }
